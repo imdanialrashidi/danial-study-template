@@ -1,0 +1,88 @@
+# Changelog
+
+## Unreleased — LSP host dependency repair
+
+- Correct the reviewed `pi-lsp-adapter@0.1.3` installed manifest before launcher startup: Pi TUI and TypeBox become optional wildcard peers supplied by Pi, preserving LSP source and all unrelated settings.
+- Reapply after successful launcher install/update commands; prepare missing LSP on the first trusted session and keep help/opt-out runs free of pre-installs.
+- Add a read-only doctor check and focused preservation/idempotence/drift regressions. Keep other extension warnings visible.
+
+## Unreleased — Pi 1.0 compatibility
+
+- Upgrade the reviewed runtime to Pi 1.0.0, todo to 2.12.0, web search to 0.5.1, and Playwright MCP to 0.0.83; refresh registry integrities.
+- Replace the third-party MCP adapter and root config with native `.pi/mcp.json` and selective `tool_search`; preserve guard enforcement for direct and nested calls.
+- Use project `defaultTools` instead of a CLI allowlist that hides native MCP tools; remove three unintended startup helpers and forced experimental setup.
+- Pass native CLI subcommands through correctly; update browser guidance, migration notes, theme schema and runtime checks.
+- Retain model/provider choice, design contracts, economical tests, and native run metrics.
+
+## Unreleased — saved design direction and run cost
+
+- Capture natural-language design preferences in the existing DESIGN contract; preserve owner choices across design, build, bootstrap, and resume, with semantic code-token mappings and optional reference calibration.
+- Show observed tool wall time, post-error model retries, and native foreground USD cost estimates alongside run time and effective tok/s. Unknown pricing stays unavailable; overlapping tools count once.
+- Add no dependencies, tool schemas, or extra setup command.
+
+## Unreleased — deliberate testing
+
+- Make no-new-test decisions explicit in the always-loaded map and review; choose test layers by the actual failure mechanism.
+- Replace prose-matching test-design checks with executable evaluation-grader controls for a copy edit and already-covered behavior; keep the existing defect-sensitive pricing regression.
+- Reject evaluation records that omit declared post-check results. No new dependencies, tools, or mandatory test quotas.
+
+## Unreleased — writing, terminal theme, and run visibility
+
+- Add a Pi-native, MIT-attributed adaptation of Peter Yang’s `no-ai-slop` for substantive prose, with technical and multilingual exceptions.
+- Consolidate the generic `risk-review` skill into `docs/QUALITY.md`; preserve review severity and evidence requirements.
+- Add the dependency-free `slate` dark theme and a footer status for elapsed run time and effective output tok/s. Keep Pi’s native footer and provider/model choice.
+- Measure through automatic recovery until `agent_settled`; show unavailable usage honestly, clean up timers, and keep print mode silent.
+- Add `./p --add-provider` for Pi's four supported custom API protocols; store models and private credentials in the user's Pi config, preserving existing entries.
+
+## Unreleased — evidence integrity and smaller context
+
+- Reduce always-loaded instructions from 8,689 to 5,355 bytes without changing the fixed-branch delivery policy.
+- Restore continuity from the active Pi branch, including `/tree`, and discard in-flight tracking on navigation.
+- Replace ambiguous shell success with `unproven`; record simple command success as `process-ok`, never acceptance proof. Conservatively migrate legacy `passed` snapshots.
+- Adapt OMP's small eval-isolation helper: prevent accidental parent Git discovery, fingerprint immutable inputs and detect symlink/mode changes.
+- Reject comparisons with changed inputs or missing required metrics. No new package, provider, tool schema or agent role.
+- Model-backed quality improvement remains unmeasured; see the 2026-09-05 amendment in `docs/RESEARCH.md`.
+
+All notable workflow changes are documented here. This project follows the spirit of Keep a Changelog; versioning begins when the first release is tagged.
+
+## Unreleased
+
+### Added
+
+- Native Vision-aware browser QA: live model-capability guidance, image-block delivery diagnostics, reference/baseline inspection, focused crops, and bounded visual re-checks with honest evidence gaps.
+- Pi-native `/skill:quick-fix` routing for obvious low-risk edits, with targeted-only verification and explicit escalation boundaries.
+- Behavioral coverage for autonomous/strict guard modes and launcher trust overrides.
+- Product design contract, distinctive frontend-design skill, visual hard gates, and scored craft rubric.
+- Idea-to-production prompts: discover, design, spec, ADR, build UI, design review, release plan, and incident response.
+- Evidence-gated product roadmap template.
+- Safety-guard behavior tests and a contained Docker launcher.
+- Security reporting and dependency-review policy.
+- `test-design` and `/test` workflows with red/pre-fix defect-sensitivity guidance.
+- Deterministic affected-file verification routing with a conservative full-gate fallback.
+- Workflow eval schema v2 with executable assertions, trace metrics, baseline comparison, and a real code/test repair fixture.
+- Primary-source research and audit record in `docs/RESEARCH.md`.
+- Owner-controlled Git/GitHub policy with guard, launcher, prompt, and deterministic-eval enforcement.
+- Materialized-file filtering and a Git-independent pre-fix fixture for disposable workflow evaluations.
+- A model-neutral harness runtime with capability-group tool loading, Smart Read, bounded identical-call retries, and resume/compaction continuity snapshots.
+- Deterministic runtime tests for tool activation/reset, read focusing, retry recovery, state restoration, and secret redaction.
+
+### Changed
+
+- Playwright screenshot responses now include native images (`allow` instead of `omit`); Pi still owns image resizing/filtering, no extra Vision provider is installed, and sensitive captures remain prohibited.
+- Adopted automatic scoped PR delivery on persistent `ai-changes`, with a tested helper, opt-out/eval isolation, owner-only main integration, and no per-task branches; this supersedes the earlier per-action Git approval default.
+
+- Reworked `test-design`, `/test`, and `/build` around a Test Value Gate that rejects redundant/coverage-only cases, permits a deliberate `no new test` outcome, and requires independent oracles plus defect-sensitivity evidence.
+- Made `./p` trust the checked-out project and grant full-workspace implementation access by default, while independently denying all Git/GitHub mutation until the owner authorizes an exact action; the optional Docker launcher selects strict repository scope.
+- Strengthened the safety guard around secrets, destructive host actions, Git metadata/commands, publication/deployment/production mutation, and browser file exfiltration while preserving read-only Git inspection.
+- Replaced archived `pi-context7` with maintained `pi-doc-search`.
+- Removed delegated image-analysis extensions, model configuration, tools, and workflow guidance; browser QA now relies on browser-native evidence and saved screenshots as artifacts.
+- Removed the template's forced model/provider/thinking selection and unmeasured compaction/retry/timeout overrides so the operator's active Pi model and official defaults apply.
+- Pinned Pi installation guidance and GitHub Actions by immutable revision.
+- Raised browser QA, accessibility, responsive, and Core Web Vitals requirements for visual work.
+- Made the canonical full verification gate validate the template before product source is bootstrapped.
+- Reduced duplicate always-loaded policy by 30.5%, removed the duplicate `docs/PI_WORKFLOW.md`, and tightened the combined context-size ratchet.
+- Reduced the launcher from 22 to 19 active tool schemas and made subagents conditional with a universal self-review fallback.
+- Reduced the initial launcher surface again from 19 to eight schemas while retaining twelve specialist schemas across six on-demand capability groups.
+- Enabled capability-aware strict-prefer JSON-schema sampling for supported built-in tools on the exact Pi `0.84.2` pin, with explicit environment opt-outs.
+- Reduced routine eval default trials from three to one while retaining explicit repeated trials and stronger efficiency thresholds for promotion comparisons.
+- Updated reviewed pins to Pi `0.84.2`, `pi-mcp-adapter@2.26.1`, `@juicesharp/rpiv-todo@2.6.2`, and `@bytetrue/pi-web-search@0.2.1` with exact registry integrity records.
