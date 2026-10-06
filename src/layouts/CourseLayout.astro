@@ -37,8 +37,9 @@ const difficultyLabel = entry?.difficulty
   {/* Content pages use a narrower shell so the reading column and the contents
       rail sit together instead of floating at opposite ends of a 1200px band. */}
   <div class={`mx-auto px-4 py-8 sm:px-6 lg:py-10 ${wide ? 'max-w-shell' : 'max-w-5xl'}`}>
-    <!-- Breadcrumb. The separators only render when something follows them, so
-         pages without an entry never show a dangling chevron. -->
+    <!-- Breadcrumb. Suppressed on the wide homepage (a self-link to «خانه»
+         adds noise above the hero); content pages always show the trail. -->
+    {!(wide && !entry) && (
     <nav aria-label="مسیر" class="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-ink-muted">
       <a href={withBase('/')} class="transition-colors hover:text-primary-deep">خانه</a>
       {
@@ -52,10 +53,12 @@ const difficultyLabel = entry?.difficulty
         )
       }
     </nav>
+    )}
 
-    {/* Reading column + contents rail. */}
+    {/* Reading column + contents rail. Wide pages (homepage) own the full
+        shell; content pages keep the capped reading measure beside the rail. */}
     <div class={wide ? '' : 'lg:flex lg:gap-10 xl:gap-14'}>
-      <div class="min-w-0 lg:max-w-measure">
+      <div class={wide ? 'min-w-0' : 'min-w-0 lg:max-w-measure'}>
         <!-- Entry header -->
         {
           entry && (

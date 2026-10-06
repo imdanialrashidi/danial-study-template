@@ -43,9 +43,11 @@ const columns = [
 
 <footer class="no-print mt-20 border-t border-line bg-surface">
   <div class="mx-auto max-w-shell px-4 py-12 sm:px-6">
-    <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
-      <!-- Creator attribution: the permanent identity of this site. -->
-      <div>
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+      <!-- Creator attribution: the permanent identity of this site.
+           Full width on tablet so social buttons sit 2–3 per row instead of
+           stacking into a tower; first column on desktop. -->
+      <div class="sm:col-span-2 lg:col-span-1">
         <div class="flex items-center gap-3">
           <span
             class="flex h-11 w-11 items-center justify-center rounded-[6px] bg-primary font-display text-base font-extrabold leading-none text-primary-on"
