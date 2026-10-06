@@ -1,0 +1,94 @@
+---
+/**
+ * BaseLayout — the HTML shell: <html dir="rtl">, SEO metadata, theme bootstrap,
+ * and global styles. Everything else renders inside it.
+ */
+import '../styles/global.css';
+import { courseConfig } from '../config/course';
+import { basePath, absoluteUrl, SEO } from '../config/site';
+import { withBase } from '../lib/url';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import TelegramPopup from '../components/ui/TelegramPopup.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Extra CSS applied only on this page. */
+  class?: string;
+  /** Set true for pages that should not be indexed (e.g. search). */
+  noindex?: boolean;
+}
+
+const { title, description = courseConfig.description, noindex = false } = Astro.props;
+
+const pageTitle = title === courseConfig.title ? `${courseConfig.title} — ${SEO.defaultTitleSuffix}` : `${title} — ${courseConfig.title}`;
+const canonical = absoluteUrl(Astro.url.pathname.replace(basePath, '') || '/');
+---
+
+<!doctype html>
+<html lang={SEO.language} dir={SEO.dir} data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={courseConfig.title} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={SEO.locale} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={SEO.twitter} />
+    <meta name="twitter:creator" content={SEO.twitter} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <meta name="theme-color" content={SEO.themeColor} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={SEO.themeColorDark} media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+
+    <!--
+      Apply the saved theme before first paint so there is no flash.
+      This is the only inline script on the page; everything else is deferred.
+    -->
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('dr-theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.dataset.theme = saved || (prefersDark ? 'dark' : 'light');
+        } catch {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="flex min-h-screen flex-col">
+    <a
+      href="#main"
+      class="sr-only-focusable absolute end-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-on"
+    >
+      رفتن به محتوای اصلی
+    </a>
+
+    <Header pathname={Astro.url.pathname.replace(basePath, '') || '/'} />
+
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+
+    <Footer />
+    <TelegramPopup />
+  </body>
+</html>

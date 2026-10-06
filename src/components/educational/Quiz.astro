@@ -1,0 +1,24 @@
+---
+/**
+ * Quiz — educational wrapper that hydrates the Quiz island.
+ *
+ * MDX renders a React component to static HTML only; a `client:*` directive is
+ * what makes it interactive, and directives cannot be placed on components
+ * used inside MDX prose. This Astro wrapper exists for exactly that reason:
+ * content authors write `<Quiz ... />` and get a hydrated, working quiz.
+ */
+import Quiz from '../../islands/common/Quiz';
+import type { QuizQuestion } from '../../lib/types';
+
+interface Props {
+  id: string;
+  title: string;
+  description?: string;
+  questions: QuizQuestion[];
+  allowRetry?: boolean;
+}
+
+const { id, title, description, questions, allowRetry = true } = Astro.props;
+---
+
+<Quiz client:load id={id} title={title} description={description} questions={questions} allowRetry={allowRetry} />

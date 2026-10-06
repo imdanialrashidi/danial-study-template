@@ -1,0 +1,59 @@
+---
+type: formula
+title: قاعدهٔ زنجیره‌ای
+name: "قاعدهٔ زنجیره‌ای (Chain Rule)"
+description: "رابطهٔ مشتق تابع مرکب؛ پایهٔ بسیاری از محاسبات مشتق پیچیده."
+section: foundations
+difficulty: intermediate
+order: 2
+estimatedMinutes: 7
+prerequisites: [derivative]
+tags: [مشتق, تابع مرکب]
+latex: "\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}"
+concepts: [derivative]
+conditions:
+  - برای توابع مرکب از نوع f(g(x)) به کار می‌رود.
+  - فرض می‌کند تابع درونی در نزدیکی نقطهٔ موردنظر مشتق‌پذیر است.
+  - مشتق تابع بیرونی باید در نقطهٔ تصویرِ تابع درونی محاسبه شود.
+---
+
+import Formula from '../../components/educational/Formula.astro';
+import FormulaBreakdown from '../../components/educational/FormulaBreakdown.astro';
+import Callout from '../../components/educational/Callout.astro';
+
+## قاعدهٔ زنجیره‌ای چه می‌گوید؟
+
+اگر <Formula inline latex={"y"} /> تابعی از <Formula inline latex={"u"} /> باشد و <Formula inline latex={"u"} /> هم تابعی از <Formula inline latex={"x"} />، آن‌وقت مشتق <Formula inline latex={"y"} /> نسبت به <Formula inline latex={"x"} /> برابر است با حاصل‌ضرب مشتق‌ها:
+
+<Formula
+  id="chain-rule"
+  latex={"\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}"}
+  caption="قاعدهٔ زنجیره‌ای"
+/>
+
+به بیان ساده: **نرخِ تغییرِ کل، حاصل‌ضربِ نرخِ تغییرِ هر مرحله است.**
+
+## چرا درست است؟
+
+فرض کنید <Formula inline latex={"y"} /> با سرعت <Formula inline latex={"\frac{dy}{du}"} /> نسبت به <Formula inline latex={"u"} /> تغییر می‌کند، و <Formula inline latex={"u"} /> با سرعت <Formula inline latex={"\frac{du}{dx}"} /> نسبت به <Formula inline latex={"x"} />. برای اینکه بفهمیم <Formula inline latex={"y"} /> نسبت به <Formula inline latex={"x"} /> چطور تغییر می‌کند، این دو نرخ را در هم ضرب می‌کنیم — درست مثل ضرب دو نسبت مسافت.
+
+<FormulaBreakdown
+  title="اجزای قاعده"
+  terms={[
+    { term: "\\frac{dy}{dx}", label: 'نرخ تغییر کل', detail: 'اثر نهایی روی x' },
+    { term: "\\frac{dy}{du}", label: 'اثر مرحلهٔ اول', detail: 'چقدر u روی y اثر می‌گذارد' },
+    { term: "\\frac{du}{dx}", label: 'اثر مرحلهٔ دوم', detail: 'چقدر x روی u اثر می‌گذارد' },
+  ]}
+/>
+
+## چطور زنجیره را بشکنیم؟
+
+هر تابع مرکب را لایه‌لایه باز کنید و به هر لایه یک متغیر موقت بدهید، سپس مشتق‌ها را جدا حساب کنید و در پایان ضرب کنید.
+
+<Callout type="tip" title="روش چهار مرحله‌ای">
+  برای هر تابع مرکب: (۱) متغیر موقت بگذارید، (۲) مشتق لایهٔ بیرونی را بنویسید، (۳) مشتق لایهٔ درونی را بنویسید، (۴) ضرب کنید و متغیر موقت را برگردانید. یک <a href="/examples/chain-rule-example">مثال حل‌شدهٔ کامل</a> همین روش را قدم‌به‌قدم نشان می‌دهد.
+</Callout>
+
+<Callout type="warning" title="دام رایج">
+  فراموش نکردنِ مشتقِ لایهٔ درونی رایج‌ترین اشتباه است. اگر متغیر موقت مشتق صفر یا ثابتی دارد، حتماً ضریب آن را نگه دارید؛ حذف‌کردن آن یکی از رایج‌ترین اشتباهات در این قاعده است.
+</Callout>

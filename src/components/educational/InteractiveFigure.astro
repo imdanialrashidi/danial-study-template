@@ -1,0 +1,43 @@
+---
+/**
+ * InteractiveFigure — an inline SVG figure with an optional caption.
+ *
+ * The figure is a static SVG rendered at build time, so it works offline and
+ * needs no JavaScript. Use it for diagrams; for genuinely interactive diagrams
+ * use an island (see src/islands/registry.ts).
+ *
+ * Usage in MDX:
+ *   <InteractiveFigure id="fig-derivative" caption="شیب خط مماس" viewBox="0 0 320 200">
+ *     <rect ... />
+ *   </InteractiveFigure>
+ */
+interface Props {
+  id?: string;
+  caption?: string;
+  viewBox?: string;
+  /** Short accessible description; read by screen readers. */
+  alt?: string;
+}
+
+const { id, caption, viewBox = '0 0 320 200', alt } = Astro.props;
+---
+
+<figure id={id} class="my-7">
+  <div
+    class="overflow-hidden rounded-lg border border-line bg-surface-sunken/70 p-3"
+    role="img"
+    aria-label={alt ?? caption ?? 'نمودار'}
+  >
+    <svg
+      viewBox={viewBox}
+      class="block h-auto w-full"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <slot />
+    </svg>
+  </div>
+  {caption && <figcaption class="mt-2 text-center text-xs text-ink-muted">{caption}</figcaption>}
+</figure>

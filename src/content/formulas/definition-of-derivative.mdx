@@ -1,0 +1,39 @@
+---
+type: formula
+title: تعریف مشتق
+name: تعریف مشتق تابع
+description: "فرمول بنیادی مشتق بر پایهٔ حد؛ شیب لحظه‌ای تابع در یک نقطه."
+section: foundations
+difficulty: beginner
+order: 1
+estimatedMinutes: 4
+tags: [مشتق, حد]
+latex: "f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"
+---
+
+import Formula from '../../components/educational/Formula.astro';
+import FormulaBreakdown from '../../components/educational/FormulaBreakdown.astro';
+import Callout from '../../components/educational/Callout.astro';
+
+این فرمول پایهٔ تمام حساب دیفرانسیل است. می‌گوید مشتق تابع در نقطهٔ <Formula inline latex={"x"} /> برابر است با حدِ نسبتِ تغییرات، وقتی گام <Formula inline latex={"h"} /> به صفر نزدیک می‌شود.
+
+<Formula
+  id="definition-of-derivative"
+  latex={"f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"}
+  caption="تعریف مشتق تابع f در نقطهٔ x"
+/>
+
+## اجزای فرمول
+
+<FormulaBreakdown
+  terms={[
+    { term: "f'(x)", label: 'مشتق تابع', detail: 'شیب لحظه‌ای نمودار در نقطهٔ x' },
+    { term: "f(x+h) - f(x)", label: 'تغییر خروجی', detail: 'اختلاف مقدار تابع بین دو نقطه' },
+    { term: "h", label: 'تغییر ورودی', detail: 'فاصلهٔ افقی بین دو نقطه' },
+    { term: "h \\to 0", label: 'حد', detail: 'نقطه را بی‌نهایت به x نزدیک می‌کنیم' },
+  ]}
+/>
+
+<Callout type="info" title="چرا نسبت و بعد حد؟">
+  نسبتِ تغییرات، «شیبِ دو نقطه» است و خودش به نقطهٔ دوم وابسته است. با گرفتن حد وقتی گام به صفر می‌رود، وابستگی به نقطهٔ دوم از بین می‌رود و تنها یک عدد باقی می‌ماند: شیب لحظه‌ای.
+</Callout>

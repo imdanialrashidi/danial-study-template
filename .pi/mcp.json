@@ -9,6 +9,8 @@
         "--headless",
         "--isolated",
         "--block-service-workers",
+        "--executable-path",
+        "/usr/bin/chromium",
         "--image-responses",
         "allow",
         "--output-dir",

@@ -1,0 +1,133 @@
+/*
+ * Canonical design token source for every study.danialrashidi.ir course.
+ * Role names and intent live in docs/DESIGN.md; this file owns resolved values.
+ *
+ * Colors are declared as raw channel triplets in --rgb-* so Tailwind can apply
+ * opacity modifiers (e.g. bg-primary/10) via `rgb(var(--rgb-primary) / <alpha-value>)`.
+ *
+ * Course theming: a course overrides only --color-primary and --color-accent
+ * (and optionally --color-primary-deep) from src/config/course.ts. It never
+ * forks this file.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ── Color ─────────────────────────────────────────────────────────────── */
+  --rgb-canvas: 250 247 240; /* #FAF7F0 */
+  --rgb-surface: 255 255 255; /* #FFFFFF */
+  --rgb-surface-sunken: 241 237 228; /* #F1EDE4 */
+
+  --rgb-ink: 34 30 26; /* #221E1A */
+  --rgb-ink-muted: 107 98 87; /* #6B6257 */
+  --rgb-ink-faint: 139 129 114; /* #8B8172 — meta only, never body copy */
+
+  --rgb-primary: 14 124 123; /* #0E7C7B */
+  --rgb-primary-deep: 10 92 91; /* #0A5C5B */
+  --rgb-on-primary: 255 255 255; /* #FFFFFF */
+
+  --rgb-accent: 154 91 0; /* #9A5B00 */
+  --rgb-accent-deep: 122 71 0; /* #7A4700 */
+
+  --rgb-border: 228 220 205; /* #E4DCCD — decorative hairline */
+  --rgb-border-control: 125 115 98; /* #7D7362 — ≥3:1 for controls */
+  --rgb-focus: 14 124 123; /* #0E7C7B */
+
+  --rgb-success: 31 107 58; /* #1F6B3A */
+  --rgb-success-soft: 233 244 235; /* #E9F4EB */
+  --rgb-warning: 138 90 0; /* #8A5A00 */
+  --rgb-warning-soft: 250 240 219; /* #FAF0DB */
+  --rgb-danger: 163 43 30; /* #A32B1E */
+  --rgb-danger-soft: 250 232 228; /* #FAE8E4 */
+
+  /* Soft tints derived from the accent, used behind formula/definition plates */
+  --rgb-primary-wash: 232 243 241; /* #E8F3F1 */
+  --rgb-accent-wash: 249 241 228; /* #F9F1E4 */
+
+  /* ── Typography ────────────────────────────────────────────────────────── */
+  --font-display: 'Estedad Variable', 'Vazirmatn Variable', system-ui, Tahoma, sans-serif;
+  --font-body: 'Vazirmatn Variable', system-ui, Tahoma, 'Iranian Sans', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* fluid type scale */
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-body: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: clamp(1.25rem, 1.12rem + 0.55vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.28rem + 0.95vw, 2rem);
+  --text-3xl: clamp(1.9rem, 1.2rem + 2.6vw, 3.1rem);
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.45;
+  --leading-body: 1.95;
+
+  --tracking-utility: 0.06em;
+
+  /* ── Geometry ──────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+
+  /* ── Depth ─────────────────────────────────────────────────────────────── */
+  --shadow-plate: 0 1px 2px rgb(34 30 26 / 0.05), 0 6px 20px -12px rgb(34 30 26 / 0.18);
+  --shadow-float: 0 2px 6px rgb(34 30 26 / 0.08), 0 18px 40px -18px rgb(34 30 26 / 0.28);
+
+  /* ── Motion ────────────────────────────────────────────────────────────── */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ── Layout ────────────────────────────────────────────────────────────── */
+  --measure: 68ch;
+  --shell-max: 1200px;
+  --rail-width: 2px;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --rgb-canvas: 20 18 15; /* #14120F */
+  --rgb-surface: 29 26 22; /* #1D1A16 */
+  --rgb-surface-sunken: 36 32 25; /* #242019 */
+
+  --rgb-ink: 242 237 227; /* #F2EDE3 */
+  --rgb-ink-muted: 167 157 142; /* #A79D8E */
+  --rgb-ink-faint: 138 128 112; /* #8A8070 */
+
+  --rgb-primary: 94 234 212; /* #5EEAD4 */
+  --rgb-primary-deep: 153 246 228; /* #99F6E4 */
+  --rgb-on-primary: 8 32 31; /* #08201F */
+
+  --rgb-accent: 240 180 41; /* #F0B429 */
+  --rgb-accent-deep: 252 211 77; /* #FCD34D */
+
+  --rgb-border: 59 53 44; /* #3B352C */
+  --rgb-border-control: 122 112 94; /* #7A705E */
+  --rgb-focus: 94 234 212; /* #5EEAD4 */
+
+  --rgb-success: 134 239 172; /* #86EFAC */
+  --rgb-success-soft: 30 48 34; /* #1E3022 */
+  --rgb-warning: 252 211 77; /* #FCD34D */
+  --rgb-warning-soft: 52 42 20; /* #342A14 */
+  --rgb-danger: 252 165 165; /* #FCA5A5 */
+  --rgb-danger-soft: 55 27 25; /* #371B19 */
+
+  --rgb-primary-wash: 22 44 42; /* #162C2A */
+  --rgb-accent-wash: 46 37 20; /* #2E2514 */
+
+  --shadow-plate: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 20px -12px rgb(0 0 0 / 0.7);
+  --shadow-float: 0 2px 6px rgb(0 0 0 / 0.5), 0 18px 40px -18px rgb(0 0 0 / 0.8);
+}
+
+/* Course theme override — written by src/config/course.ts through the
+   inline theme bootstrap in BaseLayout.astro. Only these three roles move. */
+[data-course-accent] {
+  --rgb-primary: var(--course-rgb-primary, var(--rgb-primary));
+  --rgb-primary-deep: var(--course-rgb-primary-deep, var(--rgb-primary-deep));
+  --rgb-accent: var(--course-rgb-accent, var(--rgb-accent));
+  --rgb-primary-wash: var(--course-rgb-primary-wash, var(--rgb-primary-wash));
+}

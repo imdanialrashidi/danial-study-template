@@ -1,0 +1,55 @@
+---
+type: concept
+title: مشتق
+short: نرخ تغییر لحظه‌ای یک تابع؛ شیب خط مماس بر نمودار در یک نقطهٔ مشخص.
+description: "مشتق توصیف می‌کند که یک تابع در یک نقطه چقدر سریع و با چه جهتی تغییر می‌کند."
+section: foundations
+difficulty: beginner
+order: 2
+estimatedMinutes: 7
+prerequisites: [limit]
+tags: [مشتق, مبانی]
+formulas: [definition-of-derivative]
+---
+
+import Formula from '../../components/educational/Formula.astro';
+import FormulaBreakdown from '../../components/educational/FormulaBreakdown.astro';
+import Misconception from '../../components/educational/Misconception.astro';
+
+## مشتق چیست؟
+
+مشتقِ تابع در نقطهٔ <Formula inline latex={"x"} /> یعنی **شیب لحظه‌ای** نمودار در آن نقطه. به بیان هندسی، شیب خط مماس؛ و به بیان فیزیکی، نرخ تغییر در همان لحظه.
+
+<Formula
+  id="definition-of-derivative"
+  latex={"f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"}
+  caption="تعریف مشتق"
+/>
+
+## خواندن فرمول
+
+<FormulaBreakdown
+  terms={[
+    { term: "f'(x)", label: 'مشتق تابع', detail: 'شیب لحظه‌ای در نقطهٔ x' },
+    { term: "f(x+h)", label: 'مقدار تابع در نقطهٔ کمی جلوتر', detail: 'نقطهٔ دوم روی نمودار' },
+    { term: "f(x)", label: 'مقدار تابع در نقطهٔ مبدأ', detail: 'نقطهٔ اول روی نمودار' },
+    { term: "h", label: 'گام افقی', detail: 'وقتی h به صفر نزدیک شود، به شیب واقعی می‌رسیم' },
+  ]}
+/>
+
+## مثبت، منفی، صفر
+
+مقدارِ خودِ مشتق دربارهٔ رفتار تابع چیزهای زیادی می‌گوید:
+
+- اگر <Formula inline latex={"f'(x) > 0"} /> باشد، تابع در آن نقطه **در حال افزایش** است.
+- اگر <Formula inline latex={"f'(x) < 0"} /> باشد، تابع در آن نقطه **در حال کاهش** است.
+- اگر <Formula inline latex={"f'(x) = 0"} /> باشد، تابع در آن نقطه یک **نقطهٔ بحرانی** دارد (نه لزوماً ماکزیمم یا مینیمم).
+
+<Misconception
+  wrong="مشتق همیشه مثبت است، چون نرخ تغییر «رشد» است."
+  correct="مشتق می‌تواند منفی، صفر یا حتی ناموجود باشد. تابع کاهشی مشتق منفی دارد و بعضی توابع در برخی نقاط اصلاً مشتق ندارند."
+/>
+
+## ارتباط با نرخ فیزیکی
+
+اگر ورودی، زمان و خروجی، موقعیت باشد، مشتق همان سرعت است. این تفسیر فیزیکی یکی از سریع‌ترین راه‌ها برای فهمیدن معنای مشتق است.

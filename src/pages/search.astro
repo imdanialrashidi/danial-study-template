@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SearchIsland from '../islands/common/SearchIsland';
+import { getAllEntries, buildSearchIndex } from '../lib/content';
+import { toPersianDigits } from '../lib/utils';
+
+const searchIndex = buildSearchIndex(await getAllEntries());
+
+// Read a shared ?q= so results are linkable.
+const initialQuery = Astro.url.searchParams.get('q') ?? '';
+---
+
+<BaseLayout
+  title="جست‌وجو"
+  description="جست‌وجو در درس‌ها، مفاهیم، فرمول‌ها، مثال‌ها و واژه‌نامهٔ دوره."
+  noindex={true}
+>
+  <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-16">
+    <header class="mb-8">
+      <h1 class="text-3xl">جست‌وجو</h1>
+      <p class="mt-3 text-body leading-relaxed text-ink-muted">
+        نام یک مفهوم، فرمول یا عنوان درس را بنویسید. جست‌وجو روی همهٔ
+        {toPersianDigits(searchIndex.length)} مدخل دوره انجام می‌شود.
+      </p>
+    </header>
+
+    <SearchIsland client:load items={searchIndex} initialQuery={initialQuery} />
+  </div>
+</BaseLayout>

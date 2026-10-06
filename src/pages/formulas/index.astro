@@ -1,0 +1,12 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import { getEntriesByKind } from '../../lib/content';
+
+const entries = await getEntriesByKind('formula');
+---
+
+<ListingLayout
+  title="فرمول‌ها"
+  description="هر فرمول با معنی نمادها، شرایط اعتبار و یک مثال کاربردی همراه است تا بتوانید مستقیم از آن استفاده کنید."
+  entries={entries}
+/>

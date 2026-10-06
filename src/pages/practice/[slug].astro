@@ -1,0 +1,39 @@
+---
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import { getCollection } from 'astro:content';
+import { getAllEntries, getSectionGroups, getCrossLinks, type CourseEntry } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const questions = await getCollection('question', ({ data }) => data.draft !== true);
+  const all = await getAllEntries();
+  const sections = await getSectionGroups();
+
+  return questions.map((question) => {
+    const index = all.findIndex((e) => e.id === question.id);
+    return {
+      params: { slug: question.id },
+      props: {
+        entry: all.find((e) => e.id === question.id)!,
+        sections,
+        prev: index > 0 ? all[index - 1] : undefined,
+        next: index < all.length - 1 ? all[index + 1] : undefined,
+      },
+    };
+  });
+}
+
+interface Props {
+  entry: CourseEntry;
+  sections: Awaited<ReturnType<typeof getSectionGroups>>;
+  prev?: CourseEntry;
+  next?: CourseEntry;
+}
+
+const { entry, sections, prev, next } = Astro.props;
+const crossLinks = await getCrossLinks(entry);
+
+// The instructions, points and the <Quiz> island all live in the MDX body, so
+// this page adds no slot content of its own.
+---
+
+<ContentLayout entry={entry} sections={sections} crossLinks={crossLinks} prev={prev} next={next} />

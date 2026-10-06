@@ -1,0 +1,56 @@
+---
+/**
+ * Prerequisite — links to content that must be understood first.
+ *
+ * Reads the learner's local progress through the ProgressBridge data island so
+ * a prerequisite already marked done shows its state instead of a dead link.
+ *
+ * Usage in MDX:
+ *   <Prerequisite ids={["what-is-a-function"]} />
+ */
+import Icon from '../ui/Icon.astro';
+import { withBase } from '../../lib/url';
+
+interface Props {
+  /** Glossary/lesson/concept/formula ids that should be read first. */
+  ids: string[];
+  title?: string;
+}
+
+// Resolve ids to real entries so a typo breaks the build, not the page.
+const { getEntryById, SINGULAR_LABELS } = await import('../../lib/content');
+const { ids, title = 'پیش‌نیازها' } = Astro.props;
+
+const resolved = await Promise.all(ids.map((id) => getEntryById(id)));
+const missing = ids.filter((_, index) => !resolved[index]);
+const found = resolved.filter((r): r is NonNullable<typeof r> => Boolean(r));
+
+if (missing.length > 0) {
+  throw new Error(
+    `Prerequisite references content that does not exist: ${missing.join(', ')}. ` +
+      'Fix the ids in the MDX or create the referenced entry.',
+  );
+}
+---
+
+<nav class="my-7 rounded-lg border border-line bg-surface-sunken/50 px-5 py-4" aria-label={title}>
+  <div class="mb-3 flex items-center gap-2">
+    <Icon name="layers" size={17} class="text-primary-deep" />
+    <span class="text-xs font-bold tracking-wide text-ink-muted">{title}</span>
+  </div>
+  <ul class="flex flex-wrap gap-2">
+    {
+      found.map((entry) => (
+        <li>
+          <a
+            href={withBase(entry.path)}
+            class="inline-flex min-h-[40px] items-center gap-2 rounded-md border border-line bg-surface px-3 py-1.5 text-sm transition-colors duration-fast hover:border-primary hover:bg-primary-wash"
+          >
+            <span class="text-2xs text-ink-faint">{SINGULAR_LABELS[entry.kind]}</span>
+            <span class="font-semibold">{entry.title}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

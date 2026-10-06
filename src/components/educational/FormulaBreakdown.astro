@@ -1,0 +1,53 @@
+---
+/**
+ * FormulaBreakdown — explains a formula symbol by symbol.
+ *
+ * Each row pairs a term (inline math) with a Persian explanation, so a learner
+ * can read any expression in the course without guessing what a symbol means.
+ *
+ * Usage in MDX:
+ *   <FormulaBreakdown>
+ *     {[{ term: "\\frac{dy}{dx}", label: 'نرخ تغییر', detail: 'شیب لحظه‌ای تابع' }]}
+ *   </FormulaBreakdown>
+ */
+import { renderInlineMath } from '../../lib/math';
+
+interface Term {
+  term: string;
+  label: string;
+  detail?: string;
+}
+
+interface Props {
+  terms: Term[];
+  title?: string;
+}
+
+const { terms, title = 'اجزای فرمول' } = Astro.props;
+
+const rows = terms.map((t) => ({
+  ...t,
+  html: renderInlineMath(t.term, `breakdown term ${t.term}`),
+}));
+---
+
+<div class="formula-breakdown my-7 rounded-lg border border-line bg-surface">
+  <div class="flex items-center gap-2 border-b border-line px-5 py-3">
+    <span class="text-xs font-bold tracking-wide text-ink-muted">{title}</span>
+  </div>
+  <dl class="divide-y divide-line">
+    {
+      rows.map((row) => (
+        <div class="flex flex-col gap-1 px-5 py-3.5 sm:flex-row sm:items-baseline sm:gap-4">
+          <dt class="shrink-0 sm:w-40" dir="ltr">
+            <span class="inline-block rounded bg-surface-sunken px-2 py-1 font-mono text-sm text-ink" set:html={row.html} />
+          </dt>
+          <dd class="text-sm leading-relaxed">
+            <span class="font-semibold text-ink">{row.label}</span>
+            {row.detail && <span class="text-ink-muted"> — {row.detail}</span>}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>

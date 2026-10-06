@@ -1,0 +1,19 @@
+---
+/**
+ * StepReveal — educational wrapper that hydrates the StepReveal island.
+ *
+ * See Quiz.astro for why interactive islands need an Astro wrapper.
+ */
+import StepReveal from '../../islands/common/StepReveal';
+import type { Step } from '../../islands/common/StepReveal';
+
+interface Props {
+  steps: Step[];
+  title?: string;
+  mode?: 'manual' | 'all';
+}
+
+const { steps, title, mode = 'manual' } = Astro.props;
+---
+
+<StepReveal client:visible steps={steps} title={title} mode={mode} />

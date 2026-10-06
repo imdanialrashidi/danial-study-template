@@ -1,0 +1,77 @@
+---
+/**
+ * Inline SVG icon family: 20px grid, 1.5px stroke, currentColor.
+ * Authored in this repository; no icon font or third-party dependency.
+ *
+ * Icons are declared as raw SVG markup in a plain object and injected with
+ * set:html, so there is no conditional markup to compile.
+ */
+import type { IconName } from './icon-names';
+
+export type { IconName };
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+  strokeWidth?: number;
+}
+
+const paths: { [key: string]: string } = {
+  search: '<circle cx="9" cy="9" r="5.5"/><path d="m13.5 13.5 3.5 3.5"/>',
+  book: '<path d="M3 4.5A1.5 1.5 0 0 1 4.5 3H9a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4.5A1.5 1.5 0 0 1 3 13.5z"/><path d="M17 4.5A1.5 1.5 0 0 0 15.5 3H11a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h4.5a1.5 1.5 0 0 0 1.5-1.5z"/>',
+  formula:
+    '<path d="M4 16 8.5 4"/><path d="M3 8.5h6.5"/><path d="M12.5 8.5a2 2 0 1 1 3.5 1.3c-.7.9-1.7 1.4-3.5 1.6"/><path d="M12.5 15.5h4.5"/>',
+  beaker:
+    '<path d="M7.5 3v5L3.8 14.4A1.6 1.6 0 0 0 5.2 17h9.6a1.6 1.6 0 0 0 1.4-2.6L12.5 8V3"/><path d="M6.8 3h6.4"/><path d="M5.6 13.5h8.8"/>',
+  question:
+    '<circle cx="10" cy="10" r="7.5"/><path d="M6.5 8a3.5 3.5 0 1 1 4.9 3.2c-.9.5-1.4 1.1-1.4 2.1"/><path d="M10 16.5h.01"/>',
+  glossary:
+    '<path d="M4 4.5h5.5A1.5 1.5 0 0 1 11 6v10a1.2 1.2 0 0 0-1.2-1.2H4z"/><path d="M16 4.5h-3.5A1.5 1.5 0 0 0 11 6v10a1.2 1.2 0 0 1 1.2-1.2H16z"/><path d="M6 8.5h2.5M6 11h2.5"/>',
+  menu: '<path d="M3 6h14M3 10h14M3 14h14"/>',
+  close: '<path d="m5 5 10 10M15 5 5 15"/>',
+  'chevron-start': '<path d="m12 4-6 6 6 6"/>',
+  'chevron-end': '<path d="m8 4 6 6-6 6"/>',
+  'chevron-down': '<path d="m4 8 6 6 6-6"/>',
+  check: '<path d="m4 10.5 4 4 8-9"/>',
+  cross: '<path d="m5.5 5.5 9 9M14.5 5.5l-9 9"/>',
+  alert: '<path d="M10 3.5 18 16.5H2z"/><path d="M10 8v4"/><path d="M10 14.5h.01"/>',
+  info: '<circle cx="10" cy="10" r="7.5"/><path d="M10 9.5v4"/><path d="M10 6.8h.01"/>',
+  bulb: '<path d="M7.5 12.5a4 4 0 1 1 5 0v1.2a1.3 1.3 0 0 1-1.3 1.3h-2.4a1.3 1.3 0 0 1-1.3-1.3z"/><path d="M8.2 16.5h3.6"/>',
+  target: '<circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.5"/><circle cx="10" cy="10" r="0.5" fill="currentColor"/>',
+  clock: '<circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 1.8"/>',
+  layers:
+    '<path d="m10 3 7 3.5-7 3.5-7-3.5z"/><path d="m3.5 10.5 6.5 3.2 6.5-3.2"/><path d="m3.5 14 6.5 3.2 6.5-3.2"/>',
+  telegram:
+    '<path d="M17.5 4.5 3.8 9.2c-.8.3-.8 1.4 0 1.7l3.5 1.3 1.4 4.4c.2.6 1 .8 1.5.3l2-1.9 3.6 2.7c.5.4 1.3.2 1.5-.4l2.3-9.9c.2-.8-.6-1.5-1.4-1.2z"/><path d="m7.3 12.2 8-6.4-5.4 7.2"/>',
+  github:
+    '<path d="M10 2.8a7.2 7.2 0 0 0-2.3 14c.4.1.5-.1.5-.3v-1.1c-2 .4-2.5-.9-2.5-.9-.3-.8-.8-1-.8-1-.7-.5.1-.5.1-.5.7.1 1.1.8 1.1.8.7 1.1 1.7.8 2.1.6.1-.5.3-.8.5-1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.2-.1-.2-.3-1 0-2.1 0 0 .7-.2 2.2.8a7.5 7.5 0 0 1 4 0c1.5-1 2.2-.8 2.2-.8.3 1.1.1 1.9 0 2.1.5.6.8 1.3.8 2.2 0 3.1-1.8 3.8-3.6 4 .3.3.6.8.6 1.6v2.4c0 .2.1.4.5.3a7.2 7.2 0 0 0-2.3-14z"/>',
+  instagram:
+    '<rect x="3.5" y="3.5" width="13" height="13" rx="3.5"/><circle cx="10" cy="10" r="3"/><path d="M14.2 5.8h.01"/>',
+  globe:
+    '<circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15"/><path d="M10 2.5c2 2.2 3 4.7 3 7.5s-1 5.3-3 7.5c-2-2.2-3-4.7-3-7.5s1-5.3 3-7.5z"/>',
+  sun: '<circle cx="10" cy="10" r="3.5"/><path d="M10 2v1.8M10 16.2V18M2 10h1.8M16.2 10H18M4.4 4.4l1.3 1.3M14.3 14.3l1.3 1.3M15.6 4.4l-1.3 1.3M5.7 14.3l-1.3 1.3"/>',
+  moon: '<path d="M16.5 11.7A7 7 0 0 1 8.3 3.5a7 7 0 1 0 8.2 8.2z"/>',
+  bookmark: '<path d="M5.5 3.5h9a1 1 0 0 1 1 1v12l-5.5-3.5-5.5 3.5v-12a1 1 0 0 1 1-1z"/>',
+  external:
+    '<path d="M11 3.5h5.5V9"/><path d="M16.5 3.5 9 11"/><path d="M15 12.5v3a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3"/>',
+};
+
+const { name, size = 20, class: className = '', strokeWidth = 1.5 } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 20 20"
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+  aria-hidden="true"
+  focusable="false"
+  set:html={paths[name]}
+/>

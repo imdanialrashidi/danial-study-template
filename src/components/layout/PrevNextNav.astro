@@ -1,0 +1,50 @@
+---
+/**
+ * PrevNextNav — previous/next links through the course reading order.
+ */
+import type { CourseEntry } from '../../lib/content';
+import { SINGULAR_LABELS } from '../../lib/content';
+import Icon from '../ui/Icon.astro';
+import { withBase } from '../../lib/url';
+
+interface Props {
+  prev?: CourseEntry;
+  next?: CourseEntry;
+}
+
+const { prev, next } = Astro.props;
+---
+
+{
+  (prev || next) && (
+    <nav aria-label="پیمایش درس" class="no-print mt-16 grid gap-3 border-t border-line pt-8 sm:grid-cols-2">
+      {prev ? (
+        <a
+          href={withBase(prev.path)}
+          class="group flex min-h-[72px] flex-col justify-center rounded-lg border border-line bg-surface px-4 py-3 transition-colors duration-fast hover:border-primary hover:bg-primary-wash/50"
+        >
+          <span class="flex items-center gap-1.5 text-2xs text-ink-faint">
+            <Icon name="chevron-start" size={13} />
+            {SINGULAR_LABELS[prev.kind]} قبلی
+          </span>
+          <span class="mt-1 line-clamp-2 text-sm font-bold text-ink group-hover:text-primary-deep">{prev.title}</span>
+        </a>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+
+      {next && (
+        <a
+          href={withBase(next.path)}
+          class="group flex min-h-[72px] flex-col items-end justify-center rounded-lg border border-line bg-surface px-4 py-3 text-end transition-colors duration-fast hover:border-primary hover:bg-primary-wash/50"
+        >
+          <span class="flex items-center gap-1.5 text-2xs text-ink-faint">
+            {SINGULAR_LABELS[next.kind]} بعدی
+            <Icon name="chevron-end" size={13} />
+          </span>
+          <span class="mt-1 line-clamp-2 text-sm font-bold text-ink group-hover:text-primary-deep">{next.title}</span>
+        </a>
+      )}
+    </nav>
+  )
+}

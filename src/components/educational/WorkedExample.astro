@@ -1,0 +1,89 @@
+---
+/**
+ * WorkedExample — a problem statement with its solution hidden behind a reveal.
+ *
+ * The wrapper renders each step's LaTeX at build time and passes finished HTML
+ * to the StepReveal island, so the island adds interaction without shipping a
+ * math renderer.
+ *
+ * Usage in MDX:
+ *   <WorkedExample
+ *     id="ex-1"
+ *     title="مسیر متحرک"
+ *     problem="جسمی با شتاب ثابت …"
+ *     difficulty="intermediate"
+ *     steps={[
+ *       { title: 'گام ۱', content: 'داده‌ها را جدا کنید.' },
+ *       { title: 'گام ۲', content: 'رابطهٔ سرعت را بنویسید.', latex: 'v = v_0 + at' },
+ *     ]}
+ *   />
+ */
+import StepReveal from '../../islands/common/StepReveal';
+import type { Step } from '../../islands/common/StepReveal';
+import { renderDisplayMath } from '../../lib/math';
+import { DIFFICULTY_LABELS } from '../../lib/utils';
+import type { Difficulty } from '../../lib/types';
+
+interface AuthorStep {
+  title?: string;
+  content?: string;
+  /** Raw TeX, rendered to static HTML here so the island ships no renderer. */
+  latex?: string;
+}
+
+interface Props {
+  id?: string;
+  title: string;
+  problem: string;
+  difficulty?: Difficulty;
+  steps: AuthorStep[];
+}
+
+const { id, title, problem, difficulty, steps } = Astro.props;
+
+const prepared: Step[] = steps.map((step, index) => {
+  if (!step.title && !step.content && !step.latex) {
+    throw new Error(
+      `WorkedExample step ${index + 1} is empty. Each step needs at least one of: title, content, latex.`,
+    );
+  }
+
+  let html: string | undefined;
+  if (step.latex) {
+    try {
+      html = renderDisplayMath(step.latex);
+    } catch (e) {
+      throw new Error(
+        `WorkedExample step ${index + 1} has invalid LaTeX: ${
+          e instanceof Error ? e.message : String(e)
+        }\nSource: ${step.latex}`,
+      );
+    }
+  }
+
+  return { title: step.title, content: step.content, html };
+});
+---
+
+<div id={id} class="my-8 rounded-lg border border-line bg-surface shadow-plate">
+  <header class="flex flex-wrap items-start justify-between gap-2 border-b border-line bg-surface-sunken/50 px-5 py-3.5">
+    <div>
+      <span class="text-2xs font-bold tracking-wide text-ink-faint">مثال حل‌شده</span>
+      <h3 class="mt-0.5 font-display text-base font-bold text-ink">{title}</h3>
+    </div>
+    {difficulty && (
+      <span class="rounded-pill border border-line bg-surface px-2.5 py-1 text-2xs font-bold text-ink-muted">
+        {DIFFICULTY_LABELS[difficulty]}
+      </span>
+    )}
+  </header>
+
+  <div class="border-b border-line px-5 py-4">
+    <p class="mb-1.5 text-2xs font-bold tracking-wide text-ink-faint">صورت مسئله</p>
+    <div class="text-body leading-relaxed">
+      <slot name="problem">{problem}</slot>
+    </div>
+  </div>
+
+  <StepReveal client:visible steps={prepared} title="راه‌حل گام‌به‌گام" />
+</div>

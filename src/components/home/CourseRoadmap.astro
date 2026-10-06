@@ -1,0 +1,112 @@
+---
+/**
+ * CourseRoadmap — the answer to «از کجا شروع کنم و بعدش کجا برم؟»
+ *
+ * A vertical start-edge timeline through the course sections, in configuration
+ * order. Reuses the same `SectionGroup[]` the contents index renders, so there
+ * is no second hard-coded structure to drift. Entry counts and reading minutes
+ * are derived from the entries themselves — never invented.
+ *
+ * Mobile: single column with 44px touch targets; the rail collapses to a 2px
+ * start-edge bar per section (the same language as the contents index).
+ */
+import Icon from '../ui/Icon.astro';
+import { toPersianDigits, toPersianNumeral, formatMinutes } from '../../lib/utils';
+import { withBase } from '../../lib/url';
+import type { SectionGroup } from '../../lib/content';
+
+interface Props {
+  sections: SectionGroup[];
+}
+
+const { sections } = Astro.props;
+
+const minutesOf = (section: SectionGroup) =>
+  section.entries.reduce((sum, e) => sum + (e.estimatedMinutes ?? 0), 0);
+
+const PREVIEW_COUNT = 4;
+---
+
+<section id="roadmap" aria-labelledby="roadmap-heading" class="scroll-mt-24 border-t border-line py-10 sm:py-12">
+  <div class="mb-8 max-w-measure">
+    <p class="text-xs font-bold tracking-wide text-primary-deep">نقشهٔ راه</p>
+    <h2 id="roadmap-heading" class="mt-2 font-display text-2xl font-bold text-ink">
+      از کجا شروع کنم و بعدش کجا برم؟
+    </h2>
+    <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+      از بالای فهرست شروع کنید و به‌ترتیب پایین بروید. هر بخش روی بخش قبلی سوار می‌شود؛
+      اگر مطلبی آشنا بود، مستقیم سراغ بخش بعد بروید.
+    </p>
+  </div>
+
+  <ol class="grid gap-0">
+    {sections.map((section, sIndex) => {
+      const minutes = minutesOf(section);
+      const preview = section.entries.slice(0, PREVIEW_COUNT);
+      const rest = section.entries.length - preview.length;
+      const isFirst = sIndex === 0;
+      const isLast = sIndex === sections.length - 1;
+      return (
+        <li class="relative flex gap-4 pb-8 last:pb-0 sm:gap-5">
+          {/* Rail: marker + connecting line */}
+          <div class="flex flex-col items-center" aria-hidden="true">
+            <span
+              class:list={[
+                'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-display text-sm font-extrabold',
+                isFirst
+                  ? 'border-primary bg-primary font-display text-primary-on'
+                  : 'border-line-control bg-surface text-primary-deep',
+              ]}
+            >
+              {toPersianDigits(sIndex + 1)}
+            </span>
+            {!isLast && <span class="mt-1 w-px flex-1 bg-line" />}
+          </div>
+
+          <div class="min-w-0 flex-1 pb-1">
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h3 class="font-display text-lg font-bold text-ink">{section.title}</h3>
+              <span class="text-2xs font-bold tracking-wide text-ink-faint">
+                بخش {toPersianNumeral(sIndex + 1)}
+              </span>
+              {isFirst && (
+                <span class="rounded-pill bg-primary-wash px-2.5 py-0.5 text-2xs font-bold text-primary-deep">
+                  از اینجا شروع کنید
+                </span>
+              )}
+            </div>
+            {section.description && (
+              <p class="mt-1 max-w-measure text-sm leading-relaxed text-ink-muted">{section.description}</p>
+            )}
+            <p class="mt-1.5 text-xs text-ink-faint">
+              {toPersianDigits(section.entries.length)} مطلب
+              {minutes > 0 && ` · حدود ${formatMinutes(minutes)}`}
+            </p>
+
+            <ul class="mt-3 grid gap-1">
+              {preview.map((entry) => (
+                <li>
+                  <a
+                    href={withBase(entry.path)}
+                    class="group flex min-h-[44px] items-center gap-2 rounded-md px-2 py-2 text-sm text-ink transition-colors hover:bg-primary-wash hover:text-primary-deep"
+                  >
+                    <Icon name="chevron-end" size={14} class="shrink-0 text-ink-faint group-hover:text-primary" />
+                    <span class="min-w-0 flex-1 truncate">{entry.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {rest > 0 && (
+              <p class="mt-1 px-2 text-xs text-ink-faint">
+                و {toPersianDigits(rest)} مطلب دیگر در این بخش —
+                <a href={withBase('/#faresh')} class="font-bold text-primary-deep underline decoration-primary/40 underline-offset-4 hover:decoration-primary">
+                  مشاهده در فهرست
+                </a>
+              </p>
+            )}
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+</section>

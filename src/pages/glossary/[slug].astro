@@ -1,0 +1,60 @@
+---
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import {
+  getSectionGroups,
+  type CourseEntry,
+  type CrossLinks,
+} from '../../lib/content';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('glossary', ({ data }) => data.draft !== true);
+  const sections = await getSectionGroups();
+
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, sections },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'glossary'>;
+  sections: Awaited<ReturnType<typeof getSectionGroups>>;
+}
+
+const { entry, sections } = Astro.props;
+
+/**
+ * Glossary entries have no section, order, or difficulty, so the shared
+ * `project()` in content.ts would discard that shape. They are projected here
+ * into the same `CourseEntry` contract instead, so every page can use the
+ * same layout and every id stays globally unique.
+ */
+const projected: CourseEntry = {
+  id: entry.id,
+  qualifiedId: `glossary/${entry.id}`,
+  kind: 'glossary',
+  title: entry.data.term,
+  description: entry.data.short,
+  path: `/glossary/${entry.id}`,
+  section: undefined,
+  order: 0,
+  difficulty: undefined,
+  estimatedMinutes: undefined,
+  prerequisites: [],
+  tags: entry.data.tags ?? [],
+  searchText: `${entry.data.term} ${entry.data.short}`,
+  normalized: '',
+  entry,
+};
+
+const noLinks: CrossLinks = {
+  formulas: [],
+  concepts: [],
+  prerequisites: [],
+  dependents: [],
+  unresolved: [],
+};
+---
+
+<ContentLayout entry={projected} sections={sections} crossLinks={noLinks} />

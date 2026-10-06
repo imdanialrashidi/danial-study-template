@@ -1,0 +1,36 @@
+---
+import { getCollection } from 'astro:content';
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import { getAllEntries, getSectionGroups, getCrossLinks, type CourseEntry } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const lessons = await getCollection('lesson', ({ data }) => data.draft !== true);
+  const all = await getAllEntries();
+  const sections = await getSectionGroups();
+
+  return lessons.map((lesson) => {
+    const index = all.findIndex((e) => e.id === lesson.id);
+    return {
+      params: { slug: lesson.id },
+      props: {
+        entry: all.find((e) => e.id === lesson.id)!,
+        sections,
+        prev: index > 0 ? all[index - 1] : undefined,
+        next: index < all.length - 1 ? all[index + 1] : undefined,
+      },
+    };
+  });
+}
+
+interface Props {
+  entry: CourseEntry;
+  sections: Awaited<ReturnType<typeof getSectionGroups>>;
+  prev?: CourseEntry;
+  next?: CourseEntry;
+}
+
+const { entry, sections, prev, next } = Astro.props;
+const crossLinks = await getCrossLinks(entry);
+---
+
+<ContentLayout entry={entry} sections={sections} crossLinks={crossLinks} prev={prev} next={next} />

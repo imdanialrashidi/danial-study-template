@@ -1,0 +1,12 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import { getEntriesByKind } from '../../lib/content';
+
+const entries = await getEntriesByKind('lesson');
+---
+
+<ListingLayout
+  title="درس‌ها"
+  description="درس‌ها به ترتیب وابستگی طراحی شده‌اند: هر درس فرض می‌کند درس‌های قبلی را خوانده‌اید."
+  entries={entries}
+/>

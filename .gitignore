@@ -33,6 +33,7 @@ vendor/
 
 # Build, test, browser, and framework output
 dist/
+.astro/
 build/
 coverage/
 target/

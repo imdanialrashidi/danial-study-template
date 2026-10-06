@@ -1,0 +1,100 @@
+---
+/**
+ * Formula — a mathematical expression rendered as an "illuminated plate".
+ *
+ * KaTeX runs at build time (src/lib/math.ts), so this component ships no
+ * client JavaScript. Math is wrapped in an LTR isolate so Persian text around
+ * it never reorders the symbols.
+ *
+ * Display form:
+ *   <Formula latex="\\frac{dy}{dx}" caption="قاعدهٔ زنجیره‌ای" />
+ *
+ * Inline form (running text inside a Persian paragraph):
+ *   مشتق تابع <Formula inline latex="f'(x)" /> در نقطهٔ x ...
+ *
+ * Note: MDX processes escape sequences inside JSX attribute strings, so LaTeX
+ * backslashes must be doubled (`\\frac`). Inline math always goes through the
+ * `inline` prop rather than `\(…\)` delimiters, which MDX parses inconsistently.
+ */
+import { renderDisplayMath, renderInlineMath } from '../../lib/math';
+
+interface Props {
+  /** Stable id so other content can deep-link to this formula. */
+  id?: string;
+  latex: string;
+  caption?: string;
+  /** Show the raw TeX source — useful while authoring. */
+  showSource?: boolean;
+  /** Render as running text instead of a display plate. */
+  inline?: boolean;
+}
+
+const { id, latex, caption, showSource = false, inline = false } = Astro.props;
+
+let rendered: string;
+let error: string | null = null;
+try {
+  rendered = inline ? renderInlineMath(latex, `inline math in ${id ?? 'content'}`) : renderDisplayMath(latex, `formula ${id ?? ''}`);
+} catch (e) {
+  // Fail loudly: a broken formula must not silently render as an empty plate.
+  error = e instanceof Error ? e.message : String(e);
+  rendered = '';
+}
+---
+
+{
+  inline ? (
+    <span id={id} class="formula-inline" dir="ltr" set:html={rendered} />
+  ) : (
+    <figure id={id} class="formula-plate my-7 scroll-mt-24">
+      {error ? (
+        <div class="rounded-lg border border-danger/50 bg-danger-soft p-5 text-sm text-danger" role="alert">
+          <p class="font-bold">فرمول قابل رندر نبود.</p>
+          <p class="mt-1 font-mono text-xs">{error}</p>
+          <p class="mt-2 font-mono text-xs opacity-80">{latex}</p>
+        </div>
+      ) : (
+        <>
+          {/* A long formula scrolls inside its own plate, never widening the page. */}
+          <div
+            class="formula-scroll overflow-x-auto rounded-lg border border-line bg-surface px-4 py-6 text-center"
+            dir="ltr"
+            set:html={rendered}
+          />
+          {caption && <figcaption class="mt-2 text-center text-xs text-ink-muted">{caption}</figcaption>}
+          {showSource && (
+            <details class="mt-2">
+              <summary class="cursor-pointer text-xs text-ink-faint hover:text-ink-muted">نمایش کد TeX</summary>
+              <pre
+                class="mt-2 overflow-x-auto rounded bg-surface-sunken p-3 text-start font-mono text-xs text-ink-muted"
+                dir="ltr">{latex}</pre>
+            </details>
+          )}
+        </>
+      )}
+    </figure>
+  )
+}
+
+<style>
+  .formula-plate :global(.katex-display) {
+    margin: 0;
+  }
+  .formula-scroll :global(.katex-display > .katex) {
+    white-space: nowrap;
+  }
+  .formula-plate :global(.katex),
+  .formula-inline :global(.katex) {
+    font-size: 1.06em;
+  }
+  .formula-inline {
+    display: inline-block;
+    vertical-align: -0.15em;
+    padding-inline: 0.12em;
+  }
+  @media (min-width: 1024px) {
+    .formula-plate :global(.katex) {
+      font-size: 1.18em;
+    }
+  }
+</style>

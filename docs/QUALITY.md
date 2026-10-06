@@ -159,6 +159,75 @@ The overall task cannot be called complete while a required criterion is `FAIL` 
 
 ## Project-specific quality invariants
 
-`/bootstrap` should replace this paragraph with a concise set of confirmed project-specific rules and canonical commands where the repository provides enough evidence. Examples might include an architectural dependency direction, exact accessibility target, API compatibility guarantee, performance budget, supported browser/device matrix, or canonical release gate.
+Confirmed for this repository. Each one has a mechanical check; a change that
+breaks one fails CI rather than relying on review.
 
-Do not invent quality targets that the product or repository has not accepted.
+**Architecture**
+
+1. **Static-first.** No page may require JavaScript to be readable. Interactive
+   islands add behaviour, never content. Verified: `tests/unit/build-output.test.ts`
+   asserts rendered KaTeX markup and `scripts/check-budgets.mjs` fails if any
+   KaTeX runtime JavaScript is emitted.
+2. **Globally unique content identity.** Every entry has `qualifiedId`
+   (`<kind>/<slug>`); slugs are unique only per collection. Enforced by types in
+   `src/lib/content.ts` and by the reference resolver's ambiguity handling.
+3. **Every internal link goes through `withBase()`** (`src/lib/url.ts`). Astro
+   does not rewrite hand-written `href` attributes, so a project-site
+   deployment breaks silently otherwise. Verified by building with
+   `BASE_PATH=/physics2` and running `npm run validate:links`.
+4. **The engine has no subject coupling.** No module may branch on a discipline.
+
+**Content**
+
+5. Frontmatter is validated by Zod at build time; cross-file references,
+   fragments, and declared sections are validated by
+   `scripts/validate-content.mjs`. An unresolvable reference is a build error,
+   never a broken page.
+6. **The MDX LaTeX rule is mechanical.** LaTeX in MDX uses the expression
+   container `latex={"\\frac{…}"}`. `assertTeXIntact` in `src/lib/math.ts`
+   throws when a structural command arrives without its backslash, and
+   `scripts/validate-content.mjs` reports it with the offending command name.
+   This exists because the failure is otherwise silent.
+7. React components used inside MDX must be reached through an Astro wrapper
+   that carries a `client:*` directive. Islands expose `data-hydrated` so
+   `scripts/interaction-qa.mjs` can prove hydration rather than assume it.
+
+**Rendered output** (`tests/unit/build-output.test.ts` reads the real `dist/`)
+
+8. Every page declares `lang="fa"` and `dir="rtl"`.
+9. Exactly one `<h1>` per page.
+10. No unrendered TeX command appears in visible page text.
+11. Creator identity (`imdanialrashidi.github.io`, `t.me/imdanialrashidi`) is
+    present on every page.
+12. No institutional branding: no institutional email domains, no staff/student
+    identifier labels, no named universities.
+13. No analytics, no third-party runtime calls, no server endpoints.
+
+**Design**
+
+14. Semantic colour tokens live in `src/styles/theme.css` and are the only
+    source; components reference roles, never raw hex. Every text pair meets
+    4.5:1 and every interactive control border meets 3:1, measured and recorded
+    in `docs/DESIGN.md`.
+15. A course themes itself only through `theme.colors` in `src/config/course.ts`.
+    Forking `theme.css` for one course is a defect.
+16. Meaning is never carried by colour alone; focus is visible on every control;
+    motion respects `prefers-reduced-motion`.
+
+**Canonical commands**
+
+| Purpose | Command |
+|---|---|
+| Fastest useful loop while editing content | `npm run validate && npm run test` |
+| Before delivering a change | `npm run check` (validate + typecheck + test + build + budgets) |
+| Full gate | `npm run ci` |
+| Browser evidence | `npm run preview`, then `node scripts/visual-qa.mjs` and `node scripts/interaction-qa.mjs` |
+| Reproduce a project-site deployment | `BASE_PATH=/<repo> npm run build && BASE_PATH=/<repo> npm run validate:links` |
+
+**Regenerating a regression test.** Decide first whether behaviour is at risk;
+`No new test` is a valid outcome. When a test is warranted: name the observable
+contract, the plausible regression, and the evidence gap; derive the expectation
+independently of the implementation; then show it fails without the fix (or via
+a focused mutation). During development prefer the existing
+`tests/unit/build-output.test.ts` and the two browser scripts over new unit
+tests for layout, styling, or rendering questions.

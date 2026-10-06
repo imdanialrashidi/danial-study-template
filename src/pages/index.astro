@@ -1,0 +1,308 @@
+---
+/**
+ * Homepage — front matter, roadmap, contents index, and creator attribution.
+ *
+ * Identity and links come from `src/config/site.ts`; course structure from
+ * `src/config/course.ts`. Counts and minutes are derived from content with
+ * `getAllEntries()` / `getSectionGroups()` — never invented, never duplicated
+ * in config. Only sections that actually contain entries are counted or shown.
+ */
+import CourseLayout from '../layouts/CourseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
+import CourseRoadmap from '../components/home/CourseRoadmap.astro';
+import { courseConfig } from '../config/course';
+import { creator, socialLinks, heroCtas } from '../config/site';
+import { getSectionGroups, getAllEntries } from '../lib/content';
+import { toPersianDigits, toPersianNumeral, formatMinutes, DIFFICULTY_LABELS } from '../lib/utils';
+import { withBase } from '../lib/url';
+import CourseProgress from '../islands/common/CourseProgress';
+
+const sections = (await getSectionGroups()).filter((s) => s.entries.length > 0);
+const all = await getAllEntries();
+
+const trackable = all.filter((e) => e.kind !== 'glossary');
+const glossaryCount = all.length - trackable.length;
+const entryIds = trackable.map((e) => e.qualifiedId);
+const totalMinutes = trackable.reduce((sum, e) => sum + (e.estimatedMinutes ?? 0), 0);
+
+const firstEntry = sections[0]?.entries[0];
+const primaryHref = firstEntry ? withBase(firstEntry.path) : withBase('/lessons');
+
+const socialIcon: Record<string, 'github' | 'instagram' | 'telegram' | 'globe' | 'book'> = {
+  github: 'github',
+  instagram: 'instagram',
+  telegram: 'telegram',
+  website: 'globe',
+  studyHub: 'book',
+};
+
+const learnerGains = [
+  'هر مفهوم با یک مثال حل‌شده',
+  'هر فرمول با توضیح دقیق و کاربرد',
+  'در پایان هر بخش، تمرین با پاسخ تشریحی',
+];
+---
+
+<CourseLayout
+  title={courseConfig.title}
+  description={courseConfig.description}
+  sections={sections}
+  wide={true}
+>
+  <!-- ── Hero: what this is, what you get, what to do next ────────────────── -->
+  <section class="border-b border-line pb-10 pt-2 sm:pb-12 lg:pt-6" aria-labelledby="course-title">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:items-center lg:gap-14">
+      <div class="min-w-0">
+        <p class="flex items-center gap-2 text-xs font-bold tracking-wide text-primary-deep">
+          <span class="inline-block h-px w-6 bg-primary" aria-hidden="true"></span>
+          درس‌نامهٔ آزاد — {creator.name}
+        </p>
+        <h1 id="course-title" class="mt-3 text-3xl leading-[1.2] lg:text-[3.25rem] lg:leading-[1.15]">
+          {courseConfig.title}
+        </h1>
+        {courseConfig.tagline && (
+          <p class="mt-4 max-w-measure text-lg font-medium leading-relaxed text-ink">
+            {courseConfig.tagline}
+          </p>
+        )}
+        <p class="mt-3 max-w-measure text-body leading-relaxed text-ink-muted">
+          {courseConfig.description}
+        </p>
+
+        <ul class="mt-5 grid max-w-measure gap-2" aria-label="این دوره چه چیزی به شما می‌دهد">
+          {learnerGains.map((gain) => (
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-ink">
+              <span class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-wash text-primary-deep" aria-hidden="true">
+                <Icon name="check" size={13} />
+              </span>
+              {gain}
+            </li>
+          ))}
+        </ul>
+
+        {/* One dominant action; everything else steps back. */}
+        <div class="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <a
+            href={primaryHref}
+            class="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-md bg-primary px-7 py-3 text-[15px] font-bold text-primary-on transition-colors duration-fast hover:bg-primary-deep sm:justify-start"
+          >
+            {heroCtas.primaryLabel}
+            <Icon name="chevron-end" size={17} />
+          </a>
+          <a
+            href={withBase(heroCtas.secondaryHref)}
+            class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-md border border-line-control px-5 py-2.5 text-sm font-bold text-ink transition-colors duration-fast hover:border-primary hover:bg-primary-wash sm:justify-start"
+          >
+            <Icon name="search" size={17} />
+            {heroCtas.secondaryLabel}
+          </a>
+          <a
+            href={withBase(heroCtas.roadmapHref)}
+            class="inline-flex min-h-[44px] items-center justify-center px-3 py-2 text-sm font-bold text-primary-deep underline decoration-primary/40 underline-offset-[5px] transition-colors hover:decoration-primary sm:justify-start"
+          >
+            {heroCtas.roadmapLabel}
+          </a>
+        </div>
+        {firstEntry && (
+          <p class="mt-3 text-xs text-ink-faint">
+            پیشنهاد شروع: <a href={primaryHref} class="font-bold text-ink-muted underline decoration-line-control underline-offset-4 hover:text-primary-deep">{firstEntry.title}</a>
+          </p>
+        )}
+      </div>
+
+      {/* Course visual: a thin-stroke derivative plate, not decoration. */}
+      <figure class="min-w-0 overflow-hidden rounded-lg border border-line bg-surface">
+        <svg
+          viewBox="0 0 400 260"
+          role="img"
+          aria-label="نمودار یک تابع صعودی با خط مماس در یک نقطه — شیب مماس همان مشتق است"
+          class="block h-auto w-full"
+        >
+          <rect x="0.5" y="0.5" width="399" height="259" fill="none" />
+          {/* grid */}
+          <g stroke="currentColor" stroke-width="1" opacity="0.12" class="text-ink">
+            {Array.from({ length: 7 }, (_, i) => (
+              <line x1={40 + i * 50} y1="16" x2={40 + i * 50} y2="228" />
+            ))}
+            {Array.from({ length: 5 }, (_, i) => (
+              <line x1="24" y1={44 + i * 44} x2="384" y2={44 + i * 44} />
+            ))}
+          </g>
+          {/* axes */}
+          <g stroke="currentColor" stroke-width="1.5" opacity="0.55" class="text-ink">
+            <line x1="24" y1="228" x2="384" y2="228" />
+            <line x1="40" y1="16" x2="40" y2="244" />
+          </g>
+          {/* curve f(x) */}
+          <path
+            d="M40 208 C 110 200, 150 168, 195 138 S 300 76, 360 44"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            class="text-primary"
+          />
+          {/* tangent at the marked point */}
+          <line x1="130" y1="196" x2="270" y2="92" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" class="text-accent" />
+          <circle cx="200" cy="142" r="5" fill="currentColor" class="text-accent" />
+          <circle cx="200" cy="142" r="10" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5" class="text-accent" />
+          {/* labels */}
+          <text x="352" y="240" font-size="13" fill="currentColor" opacity="0.6" class="text-ink" text-anchor="middle">x</text>
+          <text x="28" y="32" font-size="13" fill="currentColor" opacity="0.6" class="text-ink" text-anchor="middle">y</text>
+          <text x="282" y="86" font-size="12.5" fill="currentColor" class="text-accent">مماس = مشتق</text>
+          <text x="120" y="222" font-size="12.5" fill="currentColor" opacity="0.75" class="text-ink">تابع</text>
+        </svg>
+        <figcaption class="border-t border-line px-4 py-2.5 text-xs leading-relaxed text-ink-muted">
+          شیب خط مماس در هر نقطه، مشتق تابع در همان نقطه است — ایده‌ای که این دوره دور آن ساخته شده.
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- Catalogue strip: bibliographic facts with dot leaders, not stat cards. -->
+    <dl class="mt-10 border-t border-line pt-5" aria-label="شناسنامهٔ دوره">
+      <div class="grid gap-x-10 gap-y-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="flex items-baseline gap-2 text-sm">
+          <dt class="shrink-0 text-ink-muted">سطح</dt>
+          <span class="index-dot-leader" aria-hidden="true"></span>
+          <dd class="shrink-0 font-bold text-ink">{DIFFICULTY_LABELS[courseConfig.difficulty]}</dd>
+        </div>
+        <div class="flex items-baseline gap-2 text-sm">
+          <dt class="shrink-0 text-ink-muted">ساختار</dt>
+          <span class="index-dot-leader" aria-hidden="true"></span>
+          <dd class="shrink-0 font-bold text-ink">
+            {toPersianDigits(sections.length)} بخش · {toPersianDigits(trackable.length)} مطلب
+          </dd>
+        </div>
+        <div class="flex items-baseline gap-2 text-sm">
+          <dt class="shrink-0 text-ink-muted">زمان مطالعه</dt>
+          <span class="index-dot-leader" aria-hidden="true"></span>
+          <dd class="shrink-0 font-bold text-ink">{totalMinutes ? `حدود ${formatMinutes(totalMinutes)}` : 'خودآموز'}</dd>
+        </div>
+        <div class="flex items-baseline gap-2 text-sm">
+          <dt class="shrink-0 text-ink-muted">مرجع</dt>
+          <span class="index-dot-leader" aria-hidden="true"></span>
+          <dd class="shrink-0 font-bold text-ink">{toPersianDigits(glossaryCount)} واژهٔ تخصصی</dd>
+        </div>
+      </div>
+      {courseConfig.tags.length > 0 && (
+        <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-faint">
+          <span>موضوع‌ها:</span>
+          {courseConfig.tags.map((tag, i) => (
+            <span>{tag}{i < courseConfig.tags.length - 1 && <span aria-hidden="true"> · </span>}</span>
+          ))}
+        </div>
+      )}
+    </dl>
+  </section>
+
+  <!-- ── Course progress ─────────────────────────────────────────────────── -->
+  <section class="no-print border-b border-line py-6" aria-label="پیشرفت شما در دوره">
+    <CourseProgress client:load entryIds={entryIds} />
+  </section>
+
+  <!-- ── Roadmap: where to start, where to go next ───────────────────────── -->
+  <CourseRoadmap sections={sections} />
+
+  <!-- ── Contents: dot-leader index ──────────────────────────────────────── -->
+  <section id="faresh" class="scroll-mt-24 border-t border-line py-10" aria-labelledby="contents-heading">
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 id="contents-heading" class="text-2xl">فهرست کامل دوره</h2>
+        <p class="mt-1.5 text-sm text-ink-muted">
+          همهٔ مطالب، بخش‌به‌بخش. برای شروع، همان ترتیب نقشهٔ راه را دنبال کنید.
+        </p>
+      </div>
+    </div>
+
+    <ol class="grid gap-8">
+      {
+        sections.map((section, sIndex) => (
+          <li class="border-s-2 border-line ps-5 transition-colors hover:border-primary sm:ps-7">
+            <div class="flex flex-wrap items-baseline gap-3">
+              <span class="font-display text-sm font-extrabold text-primary-deep">
+                بخش {toPersianNumeral(sIndex + 1)}
+              </span>
+              <h3 class="font-display text-xl font-bold text-ink">{section.title}</h3>
+            </div>
+            {section.description && <p class="mt-1 max-w-measure text-sm text-ink-muted">{section.description}</p>}
+
+            <ul class="mt-4 grid gap-2">
+              {section.entries.map((entry, eIndex) => (
+                <li>
+                  <a
+                    href={withBase(entry.path)}
+                    class="group flex min-h-[44px] items-baseline gap-2 py-1.5 text-sm transition-colors hover:text-primary-deep"
+                  >
+                    <span class="min-w-0 flex-1 truncate">{entry.title}</span>
+                    <span class="index-dot-leader" aria-hidden="true" />
+                    {/* Continuous sequence within the section, like a printed
+                        contents page — not the per-type `order` field. */}
+                    <span class="shrink-0 text-2xs tabular-nums text-ink-faint group-hover:text-primary">
+                      {toPersianDigits(eIndex + 1)}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <!-- ── Creator block: identity, not badges ─────────────────────────────── -->
+  <section class="mt-6 rounded-lg border border-line bg-surface px-6 py-8 sm:px-10" aria-labelledby="creator-heading">
+    <div class="grid gap-6 sm:grid-cols-[auto_1fr] sm:gap-8">
+      <span
+        class="flex h-16 w-16 items-center justify-center rounded-lg bg-primary font-display text-xl font-extrabold leading-none text-primary-on"
+        aria-hidden="true"
+      >د‌ر</span>
+      <div class="min-w-0">
+        <h2 id="creator-heading" class="font-display text-xl font-bold text-ink">دربارهٔ {creator.name}</h2>
+        <p class="mt-3 max-w-measure text-body leading-relaxed text-ink-muted">
+          این درس‌نامه را {creator.name} می‌سازد و نگهداری می‌کند — یک مجموعهٔ باز از
+          وب‌سایت‌های آموزشی برای موضوع‌های مختلف. موضوع‌های تازه و وب‌سایت‌های تازه را در
+          تلگرام اعلام می‌کند.
+        </p>
+        <ul class="mt-5 flex flex-wrap gap-2" aria-label="راه‌های دنبال کردن سازنده">
+          {socialLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                rel="me noopener"
+                target="_blank"
+                class="inline-flex min-h-[48px] items-center gap-2 rounded-md border border-line-control px-4 py-2.5 text-sm font-bold text-ink transition-colors duration-fast hover:border-primary hover:bg-primary-wash"
+              >
+                <Icon name={socialIcon[link.kind] ?? 'globe'} size={18} />
+                {link.label}
+                {link.detail && (
+                  <span dir="ltr" class="text-xs font-normal text-ink-faint">{link.detail}</span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-4 text-xs text-ink-faint">
+          فهرست همهٔ وب‌سایت‌های آموزشی: <a href={creator.studyHub} rel="noopener" target="_blank" dir="ltr" class="font-bold text-ink-muted underline decoration-line-control underline-offset-4 hover:text-primary-deep">{creator.studyHub.replace('https://', '')}</a>
+          {' '}·{' '}
+          <a href={creator.supportUrl} rel="me noopener" target="_blank" class="font-bold text-ink-muted underline decoration-line-control underline-offset-4 hover:text-primary-deep">{creator.supportLabel}</a>
+        </p>
+      </div>
+    </div>
+  </section>
+</CourseLayout>
+
+<style>
+  /* Dot leader: the book-typography signature of the contents index. */
+  .index-dot-leader {
+    flex: 1 1 auto;
+    min-width: 1rem;
+    height: 1em;
+    align-self: center;
+    background-image: radial-gradient(circle, rgb(var(--rgb-ink-faint)) 0.5px, transparent 0.6px);
+    background-size: 6px 1px;
+    background-repeat: repeat-x;
+    background-position: 0 center;
+    opacity: 0.6;
+  }
+</style>

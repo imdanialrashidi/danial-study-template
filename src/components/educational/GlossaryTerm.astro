@@ -1,0 +1,49 @@
+---
+/**
+ * GlossaryTerm — an inline term that expands to its definition.
+ *
+ * Uses <details> so it works with zero JavaScript and is keyboard accessible
+ * by default. The "see full entry" link is optional.
+ *
+ * Usage in MDX:
+ *   <GlossaryTerm id="derivative" href="/glossary/derivative">مشتق</GlossaryTerm>
+ */
+interface Props {
+  /** Glossary entry id (file slug) for the deep link. */
+  id?: string;
+  href?: string;
+}
+
+const { id, href } = Astro.props;
+const term = await Astro.slots.render('default');
+---
+
+<details id={id} class="glossary-term group inline-block align-baseline">
+  <summary class="inline-flex cursor-pointer list-none items-baseline gap-1 rounded-sm border-b-2 border-dotted border-primary text-ink underline-offset-4 transition-colors duration-fast hover:border-solid">
+    <span class="font-semibold">{term}</span>
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="translate-y-px text-primary transition-transform duration-fast group-open:rotate-180"
+      aria-hidden="true"
+    >
+      <path d="m4 8 6 6 6-6" />
+    </svg>
+  </summary>
+  <span class="mt-2 block rounded-md border border-line bg-surface px-3 py-2 text-sm leading-relaxed text-ink/90 shadow-plate">
+    <slot name="definition" />
+    {
+      href && (
+        <a href={href} class="mt-1.5 block text-xs font-bold text-primary-deep underline underline-offset-2">
+          مدخل کامل در واژه‌نامه
+        </a>
+      )
+    }
+  </span>
+</details>

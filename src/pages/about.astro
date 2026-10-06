@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Callout from '../components/educational/Callout.astro';
+import { withBase } from '../lib/url';
+import { courseConfig } from '../config/course';
+import { creator } from '../config/site';
+import { getSectionGroups } from '../lib/content';
+
+const sections = (await getSectionGroups()).filter((s) => s.entries.length > 0);
+---
+
+<BaseLayout title="دربارهٔ این دوره" description={`دربارهٔ ${courseConfig.title} و روش مطالعهٔ پیشنهادی.`}>
+  <div class="mx-auto max-w-measure px-4 py-12 sm:px-6 lg:py-16">
+    <header class="mb-10">
+      <h1 class="text-3xl">دربارهٔ این دوره</h1>
+    </header>
+
+    <div class="prose-lesson">
+      <p>
+        این سایت یک <strong>درس‌نامهٔ آزاد</strong> است که {creator.name} ساخته و نگهداری
+        می‌کند. هدف آن این است که هر مطلب، دقیق و با منبع کافی توضیح داده شود و بتوانید بدون
+        حضور در کلاس هم آن را یاد بگیرید.
+      </p>
+
+      <h2>روش مطالعهٔ پیشنهادی</h2>
+      <ol>
+        <li>از <a href={withBase('/lessons')}>فهرست درس‌ها</a> شروع کنید و به ترتیب پیش بروید.</li>
+        <li>پیش از هر بخش، <a href={withBase('/formulas')}>فهرست فرمول‌ها</a> را مرور کنید.</li>
+        <li>بعد از خواندن هر درس، مثال‌های حل‌شده را خودتان از پایان حل کنید.</li>
+        <li>در پایان هر بخش، <a href={withBase('/practice')}>تمرین‌ها</a> را انجام دهید.</li>
+        <li>برای مرور سریع، از <a href={withBase('/glossary')}>واژه‌نامه</a> و <a href={withBase('/search')}>جست‌وجو</a> استفاده کنید.</li>
+      </ol>
+
+      <h2>ساختار دوره</h2>
+      <ul>
+        {
+          sections.map((section) => (
+            <li>
+              <strong>{section.title}</strong> — {section.description ?? ''}
+            </li>
+          ))
+        }
+      </ul>
+
+      <h2>یادداشت‌هایی دربارهٔ محتوا</h2>
+      <Callout type="info" title="دربارهٔ دقت محتوا">
+        <p>
+          محتوا با دقت نوشته می‌شود، اما هیچ متنی جای درس استاد و کتاب مرجع را نمی‌گیرد. اگر
+          جایی اشتباهی دیدید، خوشحال می‌شوم نظرتان را بگویید.
+        </p>
+      </Callout>
+
+      <h2>ارتباط</h2>
+      <p>
+        پرسش، پیشنهاد یا گزارش اشتباه را می‌توانید از طریق تلگرام بفرستید:{' '}
+        <a href={creator.telegram} rel="me noopener" target="_blank" dir="ltr">t.me/{creator.telegramUsername}</a>.
+        وب‌سایت شخصی:{' '}
+        <a href={creator.website} rel="noopener" target="_blank" dir="ltr">{creator.website.replace('https://', '')}</a>.
+      </p>
+      <h2>دیگر ساخته‌ها</h2>
+      <p>
+        موضوع‌های تازه و وب‌سایت‌های آموزشی تازه را در تلگرام اعلام می‌کنم:{' '}
+        <a href={creator.telegram} rel="me noopener" target="_blank">تلگرام {creator.handle}</a>.
+        فهرست همهٔ وب‌سایت‌های آموزشی:{' '}
+        <a href={creator.studyHub} rel="noopener" target="_blank" dir="ltr">{creator.studyHub.replace('https://', '')}</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

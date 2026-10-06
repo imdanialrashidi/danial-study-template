@@ -1,0 +1,113 @@
+---
+/**
+ * Footer — creator identity, course scope, and site-wide links.
+ *
+ * The creator identity is presented as a real attribution block, not a legal
+ * line buried at the bottom. Every username and URL comes from
+ * `src/config/site.ts`.
+ */
+import Icon from '../ui/Icon.astro';
+import { creator, socialLinks } from '../../config/site';
+import { withBase } from '../../lib/url';
+
+const year = new Date().getFullYear();
+
+const socialIcon: Record<string, 'github' | 'instagram' | 'telegram' | 'globe'> = {
+  github: 'github',
+  instagram: 'instagram',
+  telegram: 'telegram',
+  website: 'globe',
+};
+
+const columns = [
+  {
+    title: 'دوره',
+    links: [
+      { href: '/lessons', label: 'درس‌ها' },
+      { href: '/concepts', label: 'مفاهیم' },
+      { href: '/formulas', label: 'فرمول‌ها' },
+      { href: '/examples', label: 'مثال‌های حل‌شده' },
+      { href: '/practice', label: 'تمرین‌ها' },
+    ],
+  },
+  {
+    title: 'مرجع',
+    links: [
+      { href: '/glossary', label: 'واژه‌نامه' },
+      { href: '/search', label: 'جست‌وجو' },
+      { href: '/about', label: 'دربارهٔ دوره' },
+    ],
+  },
+];
+---
+
+<footer class="no-print mt-20 border-t border-line bg-surface">
+  <div class="mx-auto max-w-shell px-4 py-12 sm:px-6">
+    <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+      <!-- Creator attribution: the permanent identity of this site. -->
+      <div>
+        <div class="flex items-center gap-3">
+          <span
+            class="flex h-11 w-11 items-center justify-center rounded-[6px] bg-primary font-display text-base font-extrabold leading-none text-primary-on"
+            aria-hidden="true"
+          >د‌ر</span>
+          <div class="leading-tight">
+            <p class="font-display text-base font-extrabold text-ink">{creator.name}</p>
+            <p class="mt-1 text-xs text-ink-faint">سازنده و مولف دوره</p>
+          </div>
+        </div>
+        <p class="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
+          این یک سایت آموزشی شخصی است. محتوا با هدف یادگیری مستقل نوشته شده و جایگزین کلاس
+          رسمی نیست.
+        </p>
+        <div class="mt-5">
+          <p class="mb-2 text-2xs font-bold tracking-wide text-ink-faint">دنبال کردن {creator.name}</p>
+          <ul class="flex flex-wrap gap-2" aria-label="شبکه‌های اجتماعی سازنده">
+            {socialLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  rel="me noopener"
+                  target="_blank"
+                  class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line-control px-3 py-2 text-sm text-ink transition-colors duration-fast hover:border-primary hover:bg-primary-wash"
+                >
+                  <Icon name={socialIcon[link.kind] ?? 'globe'} size={17} />
+                  {link.label}
+                  {link.detail && (
+                    <span dir="ltr" class="text-xs font-normal text-ink-faint">{link.detail}</span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {
+        columns.map((column) => (
+          <nav aria-label={column.title}>
+            <h2 class="text-xs font-bold tracking-wide text-ink-faint">{column.title}</h2>
+            <ul class="mt-4 grid gap-2.5">
+              {column.links.map((link) => (
+                <li>
+                  <a href={withBase(link.href)} class="text-sm text-ink-muted transition-colors duration-fast hover:text-primary-deep">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div class="mt-10 flex flex-col gap-2 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-xs text-ink-faint">
+        © {year} — {creator.name}. ساخته‌شده با Astro و محتوای باز.
+      </p>
+      <p class="text-xs text-ink-faint">
+        <span dir="ltr">{creator.handle}</span>
+      </p>
+    </div>
+  </div>
+</footer>

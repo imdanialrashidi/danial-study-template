@@ -1,0 +1,12 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import { getEntriesByKind } from '../../lib/content';
+
+const entries = await getEntriesByKind('question');
+---
+
+<ListingLayout
+  title="تمرین"
+  description="پرسش‌هایی برای سنجش فهم. پاسخ شما در مرورگر خودتان ذخیره می‌شود و می‌توانید هر زمان دوباره تلاش کنید."
+  entries={entries}
+/>

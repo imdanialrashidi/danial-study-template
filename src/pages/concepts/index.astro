@@ -1,0 +1,12 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import { getEntriesByKind } from '../../lib/content';
+
+const entries = await getEntriesByKind('concept');
+---
+
+<ListingLayout
+  title="مفاهیم"
+  description="هر مفهوم یک بار تعریف و توضیح داده می‌شود تا از آن در همهٔ درس‌ها و فرمول‌ها به‌صورت یکسان استفاده کنید."
+  entries={entries}
+/>

@@ -1,0 +1,96 @@
+---
+/**
+ * ListingLayout — index page for one content type.
+ *
+ * Shows a title, an explanatory line, and a grid of EntryCards grouped by
+ * section. Every content kind uses this, so listing pages stay consistent.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EntryCard from '../components/content/EntryCard.astro';
+import Icon from '../components/ui/Icon.astro';
+import type { CourseEntry } from '../lib/content';
+import { courseConfig } from '../config/course';
+import { toPersianDigits } from '../lib/utils';
+
+interface Props {
+  title: string;
+  description: string;
+  entries: CourseEntry[];
+  /** Group entries under their configured section headings. */
+  grouped?: boolean;
+  noindex?: boolean;
+}
+
+const { title, description, entries, grouped = true, noindex } = Astro.props;
+
+const sections = courseConfig.sections
+  .slice()
+  .sort((a, b) => a.order - b.order)
+  .map((s) => ({ ...s, items: entries.filter((e) => e.section === s.id) }))
+  .filter((s) => s.items.length > 0);
+
+const unsectioned = entries.filter((e) => !e.section);
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+  <div class="mx-auto max-w-shell px-4 py-10 sm:px-6 lg:py-14">
+    <header class="mb-10 max-w-2xl">
+      <h1 class="text-3xl">{title}</h1>
+      <p class="mt-3 text-body leading-relaxed text-ink-muted">{description}</p>
+      {entries.length > 0 && (
+        <p class="mt-4 inline-flex items-center gap-2 rounded-pill bg-surface-sunken px-3 py-1.5 text-xs text-ink-muted">
+          <Icon name="layers" size={14} />
+          {toPersianDigits(entries.length)} مدخل
+        </p>
+      )}
+    </header>
+
+    {
+      entries.length === 0 ? (
+        /* Real empty state: explain what is missing and how to add it. */
+        <div class="rounded-lg border border-dashed border-line-control bg-surface px-6 py-14 text-center">
+          <Icon name="layers" size={30} class="mx-auto text-ink-faint" />
+          <p class="mt-3 font-display text-lg font-bold text-ink">هنوز مطلبی اینجا نیست</p>
+          <p class="mt-2 text-sm text-ink-muted">
+            این بخش از دوره هنوز تکمیل نشده است. برای افزودن، یک فایل در پوشهٔ محتوا بسازید.
+          </p>
+        </div>
+      ) : grouped ? (
+        <div class="grid gap-12">
+          {sections.map((section) => (
+            <section>
+              <div class="mb-4 flex items-baseline gap-3 border-b border-line pb-2">
+                <h2 class="font-display text-xl font-bold text-ink">{section.title}</h2>
+                <span class="text-xs text-ink-faint">{toPersianDigits(section.items.length)}</span>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                {section.items.map((entry) => (
+                  <EntryCard entry={entry} />
+                ))}
+              </div>
+            </section>
+          ))}
+          {unsectioned.length > 0 && (
+            <section>
+              <div class="mb-4 flex items-baseline gap-3 border-b border-line pb-2">
+                <h2 class="font-display text-xl font-bold text-ink">سایر</h2>
+                <span class="text-xs text-ink-faint">{toPersianDigits(unsectioned.length)}</span>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                {unsectioned.map((entry) => (
+                  <EntryCard entry={entry} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      ) : (
+        <div class="grid gap-4 sm:grid-cols-2">
+          {entries.map((entry) => (
+            <EntryCard entry={entry} />
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

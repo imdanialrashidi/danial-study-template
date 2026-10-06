@@ -1,0 +1,183 @@
+---
+/**
+ * ContentLayout — renders one content entry (lesson, concept, formula, example,
+ * or practice set) with its MDX body, cross-links, and progress controls.
+ *
+ * All content kinds share this shell. Kind-specific frontmatter is read through
+ * the typed accessors in `src/lib/content.ts` rather than casts, so a
+ * mismatched kind cannot quietly render `undefined`.
+ */
+import CourseLayout from '../layouts/CourseLayout.astro';
+import ProgressToggle from '../islands/common/ProgressToggle';
+import Icon from '../components/ui/Icon.astro';
+import type { CourseEntry, CrossLinks, SectionGroup } from '../lib/content';
+import { exampleData, formulaData, lessonData, questionData } from '../lib/content';
+import { toPersianDigits } from '../lib/utils';
+import { renderContent, mdxComponents } from '../lib/render';
+import { withBase } from '../lib/url';
+interface Props {
+  entry: CourseEntry;
+  sections: SectionGroup[];
+  crossLinks: CrossLinks;
+  prev?: CourseEntry;
+  next?: CourseEntry;
+}
+const { entry, sections, crossLinks, prev, next } = Astro.props;
+// Kind-specific frontmatter, resolved once and narrowed by type.
+const lesson = lessonData(entry);
+const formula = formulaData(entry);
+const example = exampleData(entry);
+const question = questionData(entry);
+const { Content } = await renderContent(entry.entry);
+const link = (target: CourseEntry) => withBase(target.path);
+const hasLinks =
+  crossLinks.formulas.length > 0 ||
+  crossLinks.concepts.length > 0 ||
+  crossLinks.prerequisites.length > 0 ||
+  crossLinks.dependents.length > 0;
+---
+<CourseLayout
+  title={entry.title}
+  description={entry.description}
+  entry={entry}
+  sections={sections}
+  prev={prev}
+  next={next}
+>
+  {/* Lesson objective — the "what you will be able to do" line. */}
+  {
+    lesson?.objective && (
+      <div class="mb-8 flex gap-3 rounded-lg border border-accent/30 bg-accent-wash px-5 py-4">
+        <Icon name="target" size={18} class="mt-0.5 shrink-0 text-accent-deep" />
+        <div>
+          <p class="text-2xs font-bold tracking-wide text-accent-deep">هدف این درس</p>
+          <p class="mt-1 text-sm leading-relaxed text-ink/90">{lesson.objective}</p>
+        </div>
+      </div>
+    )
+  }
+  {/* Formula front matter: name, units, and the conditions under which it holds. */}
+  {
+    formula && (
+      <div class="mb-8 rounded-lg border border-line bg-surface px-5 py-4">
+        <div class="flex flex-wrap items-baseline gap-2">
+          <span class="text-2xs font-bold tracking-wide text-ink-faint">نام فرمول</span>
+          <h2 class="font-display text-lg font-bold text-ink">{formula.name}</h2>
+          {formula.units && <span class="text-xs text-ink-muted" dir="ltr">{formula.units}</span>}
+        </div>
+        {formula.conditions && formula.conditions.length > 0 && (
+          <div class="mt-4 border-t border-line pt-4">
+            <p class="mb-2 text-2xs font-bold tracking-wide text-ink-faint">شرایط اعتبار</p>
+            <ul class="grid gap-1.5">
+              {formula.conditions.map((condition) => (
+                <li class="flex gap-2 text-sm leading-relaxed text-ink/90">
+                  <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+                  {condition}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    )
+  }
+  {/* Worked example: the statement is also inside the component on the page
+      body, so it is only shown here when the body does not repeat it. */}
+  {
+    example && (
+      <div class="mb-8 rounded-lg border border-line bg-surface-sunken/50 px-5 py-4">
+        <p class="text-2xs font-bold tracking-wide text-ink-faint">صورت مسئله</p>
+        <p class="mt-1.5 text-body leading-relaxed">{example.problem}</p>
+      </div>
+    )
+  }
+  {
+    question && (question.instructions || question.points) && (
+      <div class="mb-6 rounded-lg border border-line bg-surface-sunken/50 px-5 py-4">
+        {question.instructions && <p class="text-sm leading-relaxed text-ink/90">{question.instructions}</p>}
+        {question.points && (
+          <p class={question.instructions ? 'mt-2 text-xs text-ink-muted' : 'text-sm leading-relaxed text-ink/90'}>
+            امتیاز این تمرین: {toPersianDigits(question.points)}
+          </p>
+        )}
+      </div>
+    )
+  }
+  {/* The authored MDX body, with the global educational components. */}
+  <article class="prose-lesson">
+    <Content components={mdxComponents} />
+  </article>
+  {/* Cross-links between entries. */}
+  {
+    hasLinks && (
+      <section class="mt-14 border-t border-line pt-8" aria-label="پیوندها">
+        <div class="grid gap-6 sm:grid-cols-2">
+          {crossLinks.formulas.length > 0 && (
+            <div>
+              <h2 class="mb-3 text-xs font-bold tracking-wide text-ink-faint">فرمول‌های مرتبط</h2>
+              <ul class="grid gap-1.5">
+                {crossLinks.formulas.map((target) => (
+                  <li>
+                    <a href={link(target)} class="flex items-center gap-2 text-sm font-semibold text-primary-deep hover:underline">
+                      <Icon name="formula" size={15} />
+                      {target.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {crossLinks.concepts.length > 0 && (
+            <div>
+              <h2 class="mb-3 text-xs font-bold tracking-wide text-ink-faint">مفاهیم مرتبط</h2>
+              <ul class="grid gap-1.5">
+                {crossLinks.concepts.map((target) => (
+                  <li>
+                    <a href={link(target)} class="flex items-center gap-2 text-sm font-semibold text-primary-deep hover:underline">
+                      <Icon name="layers" size={15} />
+                      {target.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {crossLinks.prerequisites.length > 0 && (
+            <div>
+              <h2 class="mb-3 text-xs font-bold tracking-wide text-ink-faint">پیش‌نیازها</h2>
+              <ul class="grid gap-1.5">
+                {crossLinks.prerequisites.map((target) => (
+                  <li>
+                    <a href={link(target)} class="text-sm text-ink-muted hover:text-primary-deep hover:underline">
+                      {target.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {crossLinks.dependents.length > 0 && (
+            <div>
+              <h2 class="mb-3 text-xs font-bold tracking-wide text-ink-faint">ادامه در</h2>
+              <ul class="grid gap-1.5">
+                {crossLinks.dependents.map((target) => (
+                  <li>
+                    <a href={link(target)} class="text-sm text-ink-muted hover:text-primary-deep hover:underline">
+                      {target.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+  <div class="no-print mt-12 border-t border-line pt-8">
+    <p class="mb-3 text-sm text-ink-muted">
+      این مطلب را خواندید؟ آن را علامت بزنید تا پیشرفت شما روی همین دستگاه ذخیره شود.
+    </p>
+    <ProgressToggle client:visible id={entry.qualifiedId} label={entry.title} />
+  </div>
+</CourseLayout>

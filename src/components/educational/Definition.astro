@@ -1,0 +1,29 @@
+---
+/**
+ * Definition — a term and its precise meaning, in the textbook style.
+ *
+ * Usage in MDX:
+ *   <Definition term="مشتق" id="derivative">
+ *     حدی از نوع نسبت تغییرات که شیب لحظه‌ای را توصیف می‌کند.
+ *   </Definition>
+ */
+interface Props {
+  term: string;
+  id?: string;
+  /** Optional English or transliterated equivalent shown under the term. */
+  alt?: string;
+}
+
+const { term, id, alt } = Astro.props;
+---
+
+<div id={id} class="definition my-7 scroll-mt-24 border-s-2 border-primary bg-primary-wash/60 px-5 py-4">
+  <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+    <span class="text-xs font-bold tracking-wide text-primary-deep">تعریف</span>
+    <span class="font-display text-lg font-bold text-ink">{term}</span>
+    {alt && <span class="font-mono text-xs text-ink-muted" dir="ltr">{alt}</span>}
+  </div>
+  <div class="mt-2 text-body leading-relaxed [&>*+*]:mt-3 [&>p:first-child]:mt-0">
+    <slot />
+  </div>
+</div>

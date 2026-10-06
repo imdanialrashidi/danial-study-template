@@ -1,0 +1,66 @@
+---
+/**
+ * EntryCard — one content entry in a listing, with a meta line.
+ */
+import type { CourseEntry } from '../../lib/content';
+import { SINGULAR_LABELS } from '../../lib/content';
+import { toPersianDigits, DIFFICULTY_LABELS } from '../../lib/utils';
+import { withBase } from '../../lib/url';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  entry: CourseEntry;
+}
+
+const { entry } = Astro.props;
+
+const iconByKind = {
+  lesson: 'book',
+  concept: 'layers',
+  formula: 'formula',
+  example: 'beaker',
+  question: 'question',
+  glossary: 'glossary',
+} as const;
+
+const number = toPersianDigits(entry.order).padStart(2, '۰');
+---
+
+<a
+  href={withBase(entry.path)}
+  class="group flex flex-col rounded-lg border border-line bg-surface p-5 transition-colors duration-fast hover:border-primary hover:bg-primary-wash/40"
+>
+  <div class="flex items-start justify-between gap-3">
+    <div class="flex items-center gap-2.5">
+      <span
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-sunken text-primary-deep transition-colors group-hover:bg-surface"
+      >
+        <Icon name={iconByKind[entry.kind]} size={18} />
+      </span>
+      <div class="min-w-0">
+        <p class="text-2xs font-bold tracking-wide text-ink-faint">{SINGULAR_LABELS[entry.kind]}</p>
+        <h3 class="line-clamp-2 font-display text-base font-bold leading-snug text-ink">{entry.title}</h3>
+      </div>
+    </div>
+    {entry.order > 0 && (
+      <span class="shrink-0 font-display text-sm font-bold text-ink-faint" aria-hidden="true">
+        {number}
+      </span>
+    )}
+  </div>
+
+  <p class="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-muted">{entry.description}</p>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3 text-2xs text-ink-faint">
+    {entry.difficulty && <span>{DIFFICULTY_LABELS[entry.difficulty]}</span>}
+    {entry.estimatedMinutes && (
+      <span class="inline-flex items-center gap-1">
+        <Icon name="clock" size={12} />
+        {toPersianDigits(entry.estimatedMinutes)} دقیقه
+      </span>
+    )}
+    {entry.tags?.slice(0, 2).map((tag) => (
+      <span class="rounded-pill border border-line px-2 py-0.5">{tag}</span>
+    ))}
+  </div>
+</a>

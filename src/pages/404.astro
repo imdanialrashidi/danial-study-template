@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
+import { withBase } from '../lib/url';
+---
+
+<BaseLayout title="صفحه پیدا نشد" description="این صفحه وجود ندارد." noindex={true}>
+  <div class="mx-auto flex max-w-measure flex-col items-center px-4 py-20 text-center sm:py-28">
+    <span class="flex h-16 w-16 items-center justify-center rounded-lg bg-surface-sunken text-primary-deep">
+      <Icon name="search" size={28} />
+    </span>
+    <p class="mt-6 font-display text-5xl font-extrabold text-ink-faint">۴۰۴</p>
+    <h1 class="mt-2 text-2xl">این صفحه پیدا نشد</h1>
+    <p class="mt-3 text-body leading-relaxed text-ink-muted">
+      شاید نشانی را اشتباه وارد کرده‌اید یا صفحه جابه‌جا شده است. از این مسیرها ادامه دهید:
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-2">
+      <a href={withBase('/')} class="inline-flex min-h-[48px] items-center rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-on transition-colors hover:bg-primary-deep">
+        صفحهٔ اصلی
+      </a>
+      <a href={withBase('/lessons')} class="inline-flex min-h-[48px] items-center rounded-md border border-line-control px-5 py-2.5 text-sm font-bold text-ink transition-colors hover:bg-primary-wash">
+        فهرست درس‌ها
+      </a>
+      <a href={withBase('/search')} class="inline-flex min-h-[48px] items-center rounded-md border border-line-control px-5 py-2.5 text-sm font-bold text-ink transition-colors hover:bg-primary-wash">
+        جست‌وجو
+      </a>
+    </div>
+  </div>
+</BaseLayout>

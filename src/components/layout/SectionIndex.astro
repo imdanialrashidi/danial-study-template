@@ -1,0 +1,81 @@
+---
+/**
+ * SectionIndex — the course table of contents as a sidebar.
+ *
+ * Uses the dot-leader treatment borrowed from book typography: each entry's
+ * title is followed by a flexible run of dots and its order number, the way a
+ * printed index or contents page sets them.
+ */
+import { withBase } from '../../lib/url';
+import type { SectionGroup } from '../../lib/content';
+import { toPersianDigits } from '../../lib/utils';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  sections: SectionGroup[];
+  currentId?: string;
+}
+
+const { sections, currentId } = Astro.props;
+---
+
+<nav aria-label="فهرست بخش‌ها" class="max-h-[calc(100vh-8rem)] overflow-y-auto pe-1">
+  <h2 class="mb-4 text-xs font-bold tracking-wide text-ink-faint">فهرست</h2>
+  <ol class="grid gap-5">
+    {
+      sections
+        .filter((s) => s.entries.length > 0)
+        .map((section, sIndex) => (
+          <li>
+            <p class="mb-2 flex items-baseline gap-2 text-sm font-bold text-ink">
+              <span class="text-2xs text-ink-faint">{toPersianDigits(sIndex + 1)}.</span>
+              {section.title}
+            </p>
+            <ul class="grid gap-1.5 border-s border-line ps-3">
+              {section.entries.map((entry, eIndex) => {
+                const active = entry.id === currentId;
+                return (
+                  <li>
+                    <a
+                      href={withBase(entry.path)}
+                      aria-current={active ? 'page' : undefined}
+                      class={`group flex items-baseline gap-1 text-xs leading-relaxed transition-colors ${
+                        active ? 'font-bold text-primary-deep' : 'text-ink-muted hover:text-ink'
+                      }`}
+                    >
+                      <span class="truncate">{entry.title}</span>
+                      <span class="dot-leader" aria-hidden="true" />
+                      <span class="shrink-0 text-2xs text-ink-faint">{toPersianDigits(eIndex + 1)}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        ))
+    }
+  </ol>
+
+  <div class="mt-6 border-t border-line pt-4">
+    <a href={withBase('/search')} class="inline-flex items-center gap-1.5 text-xs text-ink-muted transition-colors hover:text-primary-deep">
+      <Icon name="search" size={14} />
+      جست‌وجو در دوره
+    </a>
+  </div>
+</nav>
+
+<style>
+  /* The signature dot leader: a flexible run of dots between title and number. */
+  .dot-leader {
+    flex: 1 1 auto;
+    min-width: 0.75rem;
+    height: 1em;
+    align-self: center;
+    /* Dotted baseline rule. Repeating radial gradients avoid a background image. */
+    background-image: radial-gradient(circle, currentColor 0.5px, transparent 0.6px);
+    background-size: 5px 1px;
+    background-repeat: repeat-x;
+    background-position: 0 center;
+    opacity: 0.4;
+  }
+</style>

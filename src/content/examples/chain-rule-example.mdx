@@ -1,0 +1,47 @@
+---
+type: example
+title: مشتق تابع مرکب
+description: "محاسبهٔ گام‌به‌گام مشتق یک تابع مرکب با استفاده از قاعدهٔ زنجیره‌ای."
+section: foundations
+difficulty: intermediate
+order: 1
+estimatedMinutes: 8
+problem: "مشتق تابع y = sin(3x²) را به‌کمک قاعدهٔ زنجیره‌ای پیدا کنید."
+formula: chain-rule
+tags: [مشتق, زنجیره‌ای]
+---
+
+import WorkedExample from '../../components/educational/WorkedExample.astro';
+import Callout from '../../components/educational/Callout.astro';
+
+<WorkedExample
+  id="example-chain-rule"
+  title="مشتق یک تابع مرکب"
+  problem="تابع y = sin(3x²) را در نظر بگیرید. با کمک قاعدهٔ زنجیره‌ای، مشتق آن را پیدا کنید."
+  difficulty="intermediate"
+  steps={[
+    {
+      title: 'گام ۱ — باز کردن تابع مرکب',
+      content: 'تابع دو لایه دارد: یک سینوس بیرونی و یک ضرب درونی. برای هر لایه یک متغیر موقت تعریف می‌کنیم.'
+    },
+    {
+      title: 'گام ۲ — نوشتن رابطه‌ها',
+      content: 'با تعریف u، هر دو لایه جدا و ساده می‌شوند. این کار قاعدهٔ زنجیره‌ای را قابل اجرا می‌کند.',
+      latex: 'u = 3x^2 \\qquad y = \\sin(u)'
+    },
+    {
+      title: 'گام ۳ — مشتق هر لایه',
+      content: 'مشتق لایهٔ بیرونی نسبت به u کسینوس است؛ مشتق لایهٔ درونی نسبت به x برابر ۶x.',
+      latex: "\\frac{dy}{du} = \\cos(u) \\qquad \\frac{du}{dx} = 6x"
+    },
+    {
+      title: 'گام ۴ — اعمال قاعدهٔ زنجیره‌ای',
+      content: 'حاصل‌ضرب این دو، مشتق نسبت به x است. حال جای u را با عبارت اصلی عوض می‌کنیم.',
+      latex: "\\frac{dy}{dx} = \\cos(u) \\cdot 6x = 6x\\cos(3x^2)"
+    },
+  ]}
+/>
+
+<Callout type="tip" title="نکتهٔ بررسی">
+  می‌توانید پاسخ را با قاعدهٔ زنجیره‌ایِ معکوس بررسی کنید: ابتدا ۶x را در پاسخ ضرب کنید و سپس نتیجه را در sin(3x²) ضرب کنید. اگر به ۶x رسیدید، پاسخ درست است.
+</Callout>

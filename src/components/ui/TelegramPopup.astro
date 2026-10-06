@@ -1,0 +1,216 @@
+---
+/**
+ * TelegramDiscoveryPopup — a tasteful invitation to follow the creator's
+ * Telegram for new subjects, study websites, and course updates.
+ *
+ * Behaviour (all configurable in `src/config/site.ts` → `telegramPopup`):
+ * - never shows immediately: waits `delayMs` AND `scrollDepth` of the page;
+ * - shows at most once per `cooldownDays` (localStorage; private-mode failure
+ *   degrades to session-only and never crashes);
+ * - Esc, backdrop click, and «فعلاً نه» dismiss; focus moves into the dialog
+ *   and returns to the invoker on close;
+ * - `prefers-reduced-motion` renders it instantly with no sweep (the global
+ *   reduced-motion rule already zeroes transitions).
+ *
+ * Static-first: the dialog ships as hidden HTML; without JS the page reads
+ * normally and the popup simply never appears.
+ */
+import Icon from '../ui/Icon.astro';
+import { creator, telegramPopup } from '../../config/site';
+---
+
+<div
+  data-telegram-popup
+  hidden
+  class="fixed inset-0 z-50 items-center justify-center p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="telegram-popup-title"
+  aria-describedby="telegram-popup-body"
+>
+  <div
+    data-telegram-backdrop
+    class="absolute inset-0 bg-ink/40"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    data-telegram-panel
+    class="relative w-full max-w-sm rounded-lg border border-line bg-surface p-6 shadow-float"
+  >
+    <div class="flex items-start gap-3">
+      <span
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-wash text-primary-deep"
+        aria-hidden="true"
+      >
+        <Icon name="telegram" size={22} />
+      </span>
+      <div class="min-w-0">
+        <h2 id="telegram-popup-title" class="font-display text-lg font-bold leading-snug text-ink">
+          {telegramPopup.title}
+        </h2>
+        <p class="mt-0.5 text-xs text-ink-faint" dir="ltr">{creator.telegram.replace('https://', '')}</p>
+      </div>
+      <button
+        type="button"
+        data-telegram-dismiss
+        aria-label="بستن"
+        class="ms-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
+      >
+        <Icon name="close" size={18} />
+      </button>
+    </div>
+
+    <p id="telegram-popup-body" class="mt-4 text-sm leading-relaxed text-ink-muted">
+      {telegramPopup.body}
+    </p>
+
+    <div class="mt-5 grid gap-2">
+      <a
+        data-telegram-join
+        href={creator.telegram}
+        rel="me noopener"
+        target="_blank"
+        class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-deep"
+      >
+        <Icon name="telegram" size={18} />
+        {telegramPopup.joinLabel}
+      </a>
+      <button
+        type="button"
+        data-telegram-dismiss
+        class="inline-flex min-h-[44px] items-center justify-center rounded-md px-4 py-2 text-sm text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
+      >
+        {telegramPopup.dismissLabel}
+      </button>
+    </div>
+    <p class="mt-3 text-center text-2xs text-ink-faint">{telegramPopup.note}</p>
+  </div>
+</div>
+
+<script define:vars={{ storageKey: telegramPopup.storageKey, cooldownDays: telegramPopup.cooldownDays, delayMs: telegramPopup.delayMs, scrollDepth: telegramPopup.scrollDepth }}>
+  (function () {
+    var root = document.querySelector('[data-telegram-popup]');
+    if (!root) return;
+    var panel = root.querySelector('[data-telegram-panel]');
+    var previouslyFocused = null;
+
+    function readStamp() {
+      try {
+        var raw = localStorage.getItem(storageKey);
+        return raw ? Number(raw) : 0;
+      } catch {
+        // Storage denied: fall back to a session flag so behaviour stays sane.
+        return sessionStorage.getItem(storageKey + ':session') ? Date.now() : 0;
+      }
+    }
+
+    function writeStamp() {
+      try {
+        localStorage.setItem(storageKey, String(Date.now()));
+      } catch {
+        try {
+          sessionStorage.setItem(storageKey + ':session', '1');
+        } catch {
+          // Private mode without any storage: popup simply shows next visit.
+        }
+      }
+    }
+
+    var recentlyShown = Date.now() - readStamp() < cooldownDays * 24 * 60 * 60 * 1000;
+    if (recentlyShown) return;
+
+    var delayPassed = false;
+    var depthPassed = document.body.scrollHeight <= window.innerHeight * 1.2;
+    var shown = false;
+
+    function depth() {
+      var max = document.body.scrollHeight - window.innerHeight;
+      if (max <= 0) return 1;
+      return window.scrollY / max;
+    }
+
+    function open() {
+      if (shown) return;
+      shown = true;
+      previouslyFocused = document.activeElement;
+      root.hidden = false;
+      root.classList.add('flex');
+      root.classList.remove('hidden');
+      writeStamp();
+      var join = root.querySelector('[data-telegram-join]');
+      if (join) join.focus({ preventScroll: true });
+      document.addEventListener('keydown', onKey);
+    }
+
+    function close() {
+      root.hidden = true;
+      root.classList.remove('flex');
+      document.removeEventListener('keydown', onKey);
+      if (previouslyFocused && previouslyFocused.focus) {
+        try {
+          previouslyFocused.focus({ preventScroll: true });
+        } catch {
+          // Invoker detached: leave focus where the browser put it.
+        }
+      }
+    }
+
+    function onKey(event) {
+      if (event.key === 'Escape') close();
+      // Lightweight focus containment: keep Tab inside the dialog.
+      if (event.key === 'Tab' && panel) {
+        var focusables = panel.querySelectorAll('a[href], button:not([disabled])');
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    function maybeOpen() {
+      if (!shown && delayPassed && (depthPassed || depth() >= scrollDepth)) open();
+    }
+
+    setTimeout(function () {
+      delayPassed = true;
+      maybeOpen();
+    }, delayMs);
+
+    window.addEventListener('scroll', function () {
+      if (depth() >= scrollDepth) {
+        depthPassed = true;
+        maybeOpen();
+      }
+    }, { passive: true });
+
+    root.querySelectorAll('[data-telegram-dismiss]').forEach(function (btn) {
+      btn.addEventListener('click', close);
+    });
+    var backdrop = root.querySelector('[data-telegram-backdrop]');
+    if (backdrop) backdrop.addEventListener('click', close);
+  })();
+</script>
+
+<style>
+  [data-telegram-popup]:not([hidden]) [data-telegram-panel] {
+    animation: telegram-rise 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes telegram-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
