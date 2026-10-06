@@ -12,6 +12,9 @@ everything else is **[proposed]** and may be revised without owner sign-off.
   premium educational publication, not a starter template, SaaS dashboard, or institutional course page.
   Explicitly rejected: university/professor/faculty/student-ID branding, fake course staff, glassmorphism,
   noisy gradients, oversized meaningless cards, template-like AI aesthetics.
+- **Header brand [owner, 2026-10-06]:** no monogram, no creator name as the logo. The header mark is
+  a book SVG; the wordmark is the course title (with «درس‌نامهٔ آزاد» as the quiet second line).
+  Creator identity stays in the footer, homepage creator block, and about page — not in the header lockup.
 - **Exact brand colors and intended roles:** none supplied. Palette below is **[proposed]** and derived
   from the product's own world (Persian scientific manuscripts and illuminated geometry), not from a
   trend reference. A course may override only `--color-primary` / `--color-accent` via course config.
@@ -256,3 +259,5 @@ says so rather than crashing).
 | 2026-10-05 | Self-host Vazirmatn + Estedad via `@fontsource-variable` instead of a font CDN | No required external runtime service; avoids render-blocking third-party request; OFL licensed | Never, unless licensing changes |
 | 2026-10-06 | Homepage desktop/tablet recomposition without a new visual system [proposed] | Inspected 1360/1024/768 captures: `CourseLayout` wide mode still capped the slot at 68ch with no centering, so the whole homepage stuck to the RTL start edge and left a ~500px void on desktop; footer 3-col at 768 squeezes the creator cell into a single-button-per-row tower. Fix: true full-shell hero (7/5), 2-col roadmap previews + contents entries at `lg`, capped centered figure below `lg`, footer 2-col with full-width creator on tablet. No token, palette, or thesis change. | If a real course ships 5+ sections and the 2-col index reads poorly |
 | 2026-10-05 | Separate `--color-border-control` from decorative `--color-border` | Measured: `#D8D0C0` fails 3:1 for controls, `#7D7362` passes at 4.36:1 | If a course overrides borders |
+| 2026-10-06 | Template slice: no new visual system **[owner direction preserved]**; new surfaces reuse existing tokens | Brief requires the illuminated-worksheet identity to stay fixed; palette/thesis/type/motion unchanged | If a real course needs a motif beyond the accent override |
+| 2026-10-06 | Command palette as a quiet floating dialog; TOC as dot-leader-consistent rail + mobile disclosure; formula copy as a ghost button **[proposed]** | Must not introduce glassmorphism, badges, or cards that the brief rejects; appendix surfaces (map, palette) inherit paper/surface/hairline roles | If palette usage shows the dialog needs grouping or sections |

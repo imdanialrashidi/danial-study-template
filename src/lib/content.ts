@@ -220,6 +220,42 @@ export async function getDependents(qualifiedId: string): Promise<CourseEntry[]>
   return (await getAllEntries()).filter((e) => e.prerequisites.includes(qualifiedId));
 }
 
+/**
+ * Related entries derived from metadata — never hard-coded per page.
+ *
+ * Scoring: +3 per shared tag, +2 for the same section, +2 when the candidate
+ * lists this entry as a prerequisite (or vice versa). Explicit cross-links
+ * (formulas/concepts declared in frontmatter) are excluded so the two rails
+ * complement rather than repeat each other. Deterministic ordering: score,
+ * then section order, then Persian title.
+ */
+export async function getRelatedEntries(entry: CourseEntry, limit = 4): Promise<CourseEntry[]> {
+  const all = await getAllEntries();
+  const linked = new Set<string>();
+  try {
+    const cross = await getCrossLinks(entry);
+    for (const e of [...cross.formulas, ...cross.concepts, ...cross.prerequisites, ...cross.dependents]) {
+      linked.add(e.qualifiedId);
+    }
+  } catch {
+    /* unresolved refs are reported by validation; related still works */
+  }
+  const tags = new Set(entry.tags);
+  return all
+    .filter((e) => e.qualifiedId !== entry.qualifiedId && !linked.has(e.qualifiedId) && e.kind !== 'glossary')
+    .map((candidate) => {
+      let score = 0;
+      for (const tag of candidate.tags) if (tags.has(tag)) score += 3;
+      if (candidate.section && candidate.section === entry.section) score += 2;
+      if (candidate.prerequisites.includes(entry.qualifiedId) || entry.prerequisites.includes(candidate.qualifiedId)) score += 2;
+      return { candidate, score };
+    })
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score || a.candidate.title.localeCompare(b.candidate.title, 'fa'))
+    .slice(0, limit)
+    .map((s) => s.candidate);
+}
+
 export async function getEntryById(id: string): Promise<CourseEntry | undefined> {
   return resolveEntry(id);
 }

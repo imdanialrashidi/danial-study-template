@@ -27,9 +27,11 @@ interface Props {
   showSource?: boolean;
   /** Render as running text instead of a display plate. */
   inline?: boolean;
+  /** Where this formula is used — one line shown under the plate. */
+  usage?: string;
 }
 
-const { id, latex, caption, showSource = false, inline = false } = Astro.props;
+const { id, latex, caption, showSource = false, inline = false, usage } = Astro.props;
 
 let rendered: string;
 let error: string | null = null;
@@ -56,12 +58,32 @@ try {
       ) : (
         <>
           {/* A long formula scrolls inside its own plate, never widening the page. */}
+          <div class="formula-head mb-3 flex items-center justify-between gap-2">
+            <span class="text-2xs font-bold tracking-wide text-ink-faint">فرمول</span>
+            <button
+              type="button"
+              data-formula-copy
+              data-latex={latex}
+              class="inline-flex min-h-[36px] items-center gap-1.5 rounded-md border border-line bg-canvas px-2.5 py-1 text-xs font-bold text-ink-muted transition-colors duration-fast hover:border-primary hover:text-primary-deep"
+            >
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="6.5" y="6.5" width="9" height="9" rx="1.5" />
+                <path d="M13.5 6.5v-2a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 4.5v7A1.5 1.5 0 0 0 5 13h1.5" />
+              </svg>
+              <span data-copy-label>کپی TeX</span>
+            </button>
+          </div>
           <div
             class="formula-scroll overflow-x-auto rounded-lg border border-line bg-surface px-4 py-6 text-center"
             dir="ltr"
             set:html={rendered}
           />
           {caption && <figcaption class="mt-2 text-center text-xs text-ink-muted">{caption}</figcaption>}
+          {usage && (
+            <p class="mt-2 border-t border-line pt-2 text-center text-xs leading-relaxed text-ink-faint">
+              <span class="font-bold">کاربرد: </span>{usage}
+            </p>
+          )}
           {showSource && (
             <details class="mt-2">
               <summary class="cursor-pointer text-xs text-ink-faint hover:text-ink-muted">نمایش کد TeX</summary>
@@ -98,3 +120,40 @@ try {
     }
   }
 </style>
+
+<script>
+  // Progressive enhancement: copy the TeX source to the clipboard.
+  // The plate stays fully readable without JS; only the button needs it.
+  async function bindFormulaCopy() {
+    document.querySelectorAll('[data-formula-copy]').forEach((button) => {
+      if (button.hasAttribute('data-bound')) return;
+      button.setAttribute('data-bound', 'true');
+      button.addEventListener('click', async () => {
+        const latex = button.getAttribute('data-latex') ?? '';
+        const label = button.querySelector('[data-copy-label]');
+        const original = label?.textContent ?? 'کپی TeX';
+        try {
+          await navigator.clipboard.writeText(latex);
+          if (label) label.textContent = 'کپی شد ✓';
+        } catch {
+          if (label) label.textContent = 'کپی نشد';
+        }
+        window.setTimeout(() => {
+          if (label) label.textContent = original;
+        }, 1600);
+      });
+    });
+  }
+  const armed = window as unknown as Record<string, unknown>;
+  if (!armed.__formulaCopyArmed) {
+    armed.__formulaCopyArmed = true;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindFormulaCopy);
+    } else {
+      bindFormulaCopy();
+    }
+    document.addEventListener('astro:page-load', bindFormulaCopy);
+  } else {
+    bindFormulaCopy();
+  }
+</script>

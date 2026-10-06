@@ -1,0 +1,127 @@
+---
+/**
+ * TableOfContents — automatic TOC from the page's own headings.
+ *
+ * Headings come from Astro's build-time `render()` (`{ depth, slug, text }`),
+ * so every link works with zero JavaScript. A tiny script only highlights the
+ * section in view on desktop and re-arms after client-side navigation.
+ *
+ * Two presentations from the same data:
+ * - `mobile`: a compact `<details>` disclosure above the article.
+ * - `desktop`: a sticky rail rendered in the layout sidebar.
+ *
+ * No headings → renders nothing, so short pages never show an empty box.
+ */
+
+export interface TocHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: TocHeading[];
+  variant: 'mobile' | 'desktop';
+}
+
+const { headings, variant } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{items.length > 0 && variant === 'mobile' && (
+  <details class="toc-mobile mb-8 rounded-lg border border-line bg-surface lg:hidden">
+    <summary class="flex min-h-[48px] cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-bold text-ink">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 5.5h12M4 10h12M4 14.5h7" />
+      </svg>
+      در این مطلب
+      <span class="ms-auto rounded-pill bg-surface-sunken px-2 py-0.5 text-2xs text-ink-muted">
+        {items.length.toString().replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])}
+      </span>
+    </summary>
+    <nav aria-label="فهرست این مطلب" class="border-t border-line px-2 py-2">
+      <ol class="grid gap-0.5">
+        {items.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              class={`block rounded px-2 py-2 text-[13px] leading-relaxed text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink${h.depth === 3 ? ' ps-5 text-xs' : ''}`}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </details>
+)}
+
+{items.length > 0 && variant === 'desktop' && (
+  <nav aria-label="فهرست این مطلب" class="toc-rail mt-8" data-toc-rail>
+    <p class="mb-2 text-2xs font-bold tracking-wide text-ink-faint">در این مطلب</p>
+    <ol class="grid gap-0.5 border-s-2 border-line ps-3" data-toc-list>
+      {items.map((h) => (
+        <li>
+          <a
+            href={`#${h.slug}`}
+            data-toc-link={h.slug}
+            class={`block rounded px-2 py-1.5 text-[13px] leading-relaxed text-ink-muted transition-colors hover:text-ink${h.depth === 3 ? ' ps-4 text-xs' : ''}`}
+          >
+            {h.text}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<script>
+  // Active-section highlight for the desktop rail. Armed once globally:
+  // client-side navigation re-renders this component without reloading the
+  // document, so re-arming must happen per page-load, not per script run.
+  function armTocHighlight() {
+    const list = document.querySelector('[data-toc-list]');
+    if (!list || 'IntersectionObserver' in window === false) return;
+    const links = Array.from(list.querySelectorAll('[data-toc-link]'));
+    if (links.length === 0) return;
+    const targets: Element[] = [];
+    links.forEach((a) => {
+      const href = a.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      const target = document.getElementById(href.slice(1));
+      if (target) targets.push(target);
+    });
+    if (targets.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          links.forEach((a) =>
+            a.classList.toggle('toc-active', a.getAttribute('href') === `#${entry.target.id}`),
+          );
+        }
+      },
+      { rootMargin: '-20% 0px -65% 0px' },
+    );
+    targets.forEach((t) => observer.observe(t));
+  }
+  const armed = window as unknown as Record<string, unknown>;
+  if (!armed.__tocArmed) {
+    armed.__tocArmed = true;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', armTocHighlight);
+    } else {
+      armTocHighlight();
+    }
+    document.addEventListener('astro:page-load', armTocHighlight);
+  } else {
+    armTocHighlight();
+  }
+</script>
+
+<style>
+  .toc-active {
+    color: rgb(var(--rgb-primary-deep)) !important;
+    font-weight: 700;
+  }
+</style>

@@ -3,6 +3,8 @@ import Quiz from './common/Quiz';
 import SearchIsland from './common/SearchIsland';
 import StepReveal from './common/StepReveal';
 import ProgressToggle from './common/ProgressToggle';
+import CommandPalette from './common/CommandPalette';
+import ParamLab, { Slider, Toggle, Tabs, Reveal, LiveReadout, FunctionPlot } from './common/Controls';
 
 /**
  * React island registry.
@@ -38,6 +40,14 @@ const commonIslands: IslandMeta[] = [
   { name: 'SearchIsland', reason: 'query state over a client index', component: SearchIsland as ComponentType<never> },
   { name: 'StepReveal', reason: 'progressive disclosure state', component: StepReveal as ComponentType<never> },
   { name: 'ProgressToggle', reason: 'localStorage-backed state', component: ProgressToggle as ComponentType<never> },
+  { name: 'CommandPalette', reason: 'global shortcut + query state', component: CommandPalette as ComponentType<never> },
+  { name: 'ParamLab', reason: 'parameter + visualization state', component: ParamLab as ComponentType<never> },
+  { name: 'Slider', reason: 'parameter input state', component: Slider as unknown as ComponentType<never> },
+  { name: 'Toggle', reason: 'switch state', component: Toggle as unknown as ComponentType<never> },
+  { name: 'Tabs', reason: 'tab selection state', component: Tabs as unknown as ComponentType<never> },
+  { name: 'Reveal', reason: 'disclosure state', component: Reveal as unknown as ComponentType<never> },
+  { name: 'LiveReadout', reason: 'announced derived state', component: LiveReadout as unknown as ComponentType<never> },
+  { name: 'FunctionPlot', reason: 'parameter-driven visualization', component: FunctionPlot as unknown as ComponentType<never> },
 ];
 
 // Course-specific islands are appended by the course repository.

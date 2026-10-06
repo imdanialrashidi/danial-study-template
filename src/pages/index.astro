@@ -15,6 +15,7 @@ import { creator, socialLinks, heroCtas } from '../config/site';
 import { getSectionGroups, getAllEntries } from '../lib/content';
 import { toPersianDigits, toPersianNumeral, formatMinutes, DIFFICULTY_LABELS } from '../lib/utils';
 import { withBase } from '../lib/url';
+import { isEnabled } from '../lib/features';
 import CourseProgress from '../islands/common/CourseProgress';
 
 const sections = (await getSectionGroups()).filter((s) => s.entries.length > 0);
@@ -198,9 +199,11 @@ const learnerGains = [
   </section>
 
   <!-- ── Course progress ─────────────────────────────────────────────────── -->
+  {isEnabled('progress') && (
   <section class="no-print border-b border-line py-6" aria-label="پیشرفت شما در دوره">
     <CourseProgress client:load entryIds={entryIds} />
   </section>
+  )}
 
   <!-- ── Roadmap: where to start, where to go next ───────────────────────── -->
   <CourseRoadmap sections={sections} />
@@ -230,7 +233,7 @@ const learnerGains = [
 
             <ul class="mt-4 grid gap-x-10 gap-y-2 lg:grid-cols-2">
               {section.entries.map((entry, eIndex) => (
-                <li>
+                <li class="min-w-0">
                   <a
                     href={withBase(entry.path)}
                     class="group flex min-h-[44px] items-baseline gap-2 py-1.5 text-sm transition-colors hover:text-primary-deep"

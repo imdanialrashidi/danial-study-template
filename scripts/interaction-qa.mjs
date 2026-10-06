@@ -65,18 +65,20 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
   check('quiz: submit disabled before answering', await submit.isDisabled());
 
   // Independent oracle: read from the lesson content, not from the app's own
-  // output. q1=a, q2=b (decreasing), q3=true, q4=b (product rule).
+  // output. q1=a, q2=b (decreasing), q3=true, q4=b (product rule), q5=3.
   const questions = quiz.locator('ol > li');
   const CORRECT_PICKS = ['a', 'b', 'true', 'b'];
   for (let i = 0; i < CORRECT_PICKS.length; i += 1) {
     await questions.nth(i).locator(`label:has(input[value="${CORRECT_PICKS[i]}"])`).click();
   }
+  // Numeric questions take typed input (Persian digits accepted too).
+  await questions.nth(4).locator('input[type="text"]').fill('3');
 
   check('quiz: submit enabled after answering all', await submit.isEnabled());
   await submit.click();
   await page.waitForTimeout(200);
 
-  const status = await quiz.getByRole('status').first().innerText();
+  const status = await quiz.locator('footer').getByRole('status').innerText();
   check('quiz: grades a fully-correct run as ۱۰۰٪', status.includes('۱۰۰٪'), status.trim());
 
   // Retry must clear the verdict.
@@ -89,9 +91,10 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
   for (let i = 0; i < WRONG_PICKS.length; i += 1) {
     await questions.nth(i).locator(`label:has(input[value="${WRONG_PICKS[i]}"])`).click();
   }
+  await questions.nth(4).locator('input[type="text"]').fill('999');
   await submit.click();
   await page.waitForTimeout(200);
-  const wrongStatus = await quiz.getByRole('status').first().innerText();
+  const wrongStatus = await quiz.locator('footer').getByRole('status').innerText();
   check('quiz: grades a fully-wrong run as ۰٪', wrongStatus.includes('۰٪'), wrongStatus.trim());
   const markedWrong = await page.locator('[aria-label="پاسخ نادرست"]').count();
   check('quiz: marks wrong selections (non-color cue)', markedWrong >= 1, `${markedWrong} marked`);

@@ -9,6 +9,7 @@
 import Icon from '../ui/Icon.astro';
 import { creator, socialLinks } from '../../config/site';
 import { withBase } from '../../lib/url';
+import { isEnabled } from '../../lib/features';
 
 const year = new Date().getFullYear();
 
@@ -23,19 +24,20 @@ const columns = [
   {
     title: 'دوره',
     links: [
-      { href: '/lessons', label: 'درس‌ها' },
-      { href: '/concepts', label: 'مفاهیم' },
-      { href: '/formulas', label: 'فرمول‌ها' },
-      { href: '/examples', label: 'مثال‌های حل‌شده' },
-      { href: '/practice', label: 'تمرین‌ها' },
+      { href: '/lessons', label: 'درس‌ها', feature: null },
+      { href: '/concepts', label: 'مفاهیم', feature: null },
+      ...(isEnabled('formulas') ? [{ href: '/formulas', label: 'فرمول‌ها', feature: null }] : []),
+      { href: '/examples', label: 'مثال‌های حل‌شده', feature: null },
+      ...(isEnabled('practice') ? [{ href: '/practice', label: 'تمرین‌ها', feature: null }] : []),
+      ...(isEnabled('courseMap') ? [{ href: '/map', label: 'نقشهٔ دوره', feature: null }] : []),
     ],
   },
   {
     title: 'مرجع',
     links: [
-      { href: '/glossary', label: 'واژه‌نامه' },
-      { href: '/search', label: 'جست‌وجو' },
-      { href: '/about', label: 'دربارهٔ دوره' },
+      ...(isEnabled('glossary') ? [{ href: '/glossary', label: 'واژه‌نامه', feature: null }] : []),
+      ...(isEnabled('search') ? [{ href: '/search', label: 'جست‌وجو', feature: null }] : []),
+      { href: '/about', label: 'دربارهٔ دوره', feature: null },
     ],
   },
 ];

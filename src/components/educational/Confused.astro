@@ -1,0 +1,70 @@
+---
+/**
+ * Confused ("گیج شدم؟") — a rescue box for learners who are stuck.
+ *
+ * No backend: it points back to prerequisites the author names, plus the
+ * search and glossary pages, so a lost learner always has a next step.
+ *
+ * Usage in MDX:
+ *   <Confused prerequisites={["limit"]} retry="دوباره از مثال ۱ شروع کنید">
+ *     اگر نماد حد اذیت‌تان می‌کند، اول تعریف حد را مرور کنید…
+ *   </Confused>
+ */
+import Icon from '../ui/Icon.astro';
+import { withBase } from '../../lib/url';
+
+interface Props {
+  /** Prerequisite entry slugs worth re-reading before continuing. */
+  prerequisites?: string[];
+  /** One concrete retry action, e.g. «از مثال ۱ دوباره شروع کنید». */
+  retry?: string;
+  title?: string;
+}
+
+const { getEntryById } = await import('../../lib/content');
+const { prerequisites = [], retry, title = 'گیج شدید؟ اشکالی ندارد' } = Astro.props;
+
+const resolved = await Promise.all(prerequisites.map((id) => getEntryById(id)));
+const missing = prerequisites.filter((_, i) => !resolved[i]);
+if (missing.length > 0) {
+  throw new Error(
+    `Confused references content that does not exist: ${missing.join(', ')}. ` +
+      'Fix the ids in the MDX or create the referenced entry.',
+  );
+}
+const found = resolved.filter((r): r is NonNullable<typeof r> => Boolean(r));
+---
+
+<aside class="my-7 rounded-lg border border-dashed border-line-control bg-surface px-5 py-5" aria-label={title}>
+  <div class="flex items-center gap-2">
+    <Icon name="bulb" size={18} class="text-accent-deep" />
+    <p class="font-display text-base font-bold text-ink">{title}</p>
+  </div>
+  <div class="mt-2 text-sm leading-relaxed text-ink/90 [&>*+*]:mt-2">
+    <slot />
+  </div>
+  {retry && (
+    <p class="mt-3 flex items-start gap-2 text-sm leading-relaxed text-ink">
+      <Icon name="target" size={15} class="mt-1 shrink-0 text-primary-deep" />
+      <span><span class="font-bold">پیشنهاد: </span>{retry}</span>
+    </p>
+  )}
+  {(found.length > 0) && (
+    <ul class="mt-3 flex flex-wrap gap-2" aria-label="از کجا دوباره شروع کنید">
+      {found.map((entry) => (
+        <li>
+          <a
+            href={withBase(entry.path)}
+            class="inline-flex min-h-[40px] items-center gap-1.5 rounded-md border border-line bg-canvas px-3 py-1.5 text-sm font-semibold text-primary-deep transition-colors duration-fast hover:border-primary"
+          >
+            مرور: {entry.title}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+  <p class="mt-3 text-xs text-ink-faint">
+    یا یک واژه را در <a href={withBase('/search')} class="font-bold text-ink-muted underline decoration-line-control underline-offset-4 hover:text-primary-deep">جست‌وجو</a>
+    و <a href={withBase('/glossary')} class="font-bold text-ink-muted underline decoration-line-control underline-offset-4 hover:text-primary-deep">واژه‌نامه</a> پیدا کنید.
+  </p>
+</aside>

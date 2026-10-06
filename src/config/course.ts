@@ -57,15 +57,33 @@ export const courseConfig: CourseConfig = {
   ],
 
   // --- Course-specific theming ---
+  // `themePreset` selects a shared preset from `src/lib/themes.ts`; inline
+  // `theme.colors` still wins when both are set, so a course can start from a
+  // preset and adjust one role. Never fork `src/styles/theme.css` per course.
+  themePreset: 'calculus',
   theme: {
-    name: 'default',
-    colors: {
-      primary: '#2563eb', // blue-600
-      primaryHover: '#1d4ed8', // blue-700
-      secondary: '#7c3aed', // violet-600
-      accent: '#ea580c', // orange-600
-    },
+    name: 'calculus',
+    // Roles come from the `calculus` preset in src/lib/themes.ts (the
+    // documented paper/teal/ochre palette). Override a single role here only
+    // when the course genuinely needs it — never fork theme.css.
+    colors: {},
     typography: 'traditional',
     motif: 'geometric',
+  },
+
+  // --- Feature flags ---
+  // Every capability defaults to enabled when omitted. Turn a flag off to
+  // hide its UI (nav item, island, section) without editing components.
+  features: {
+    search: true,
+    commandPalette: true,
+    formulas: true,
+    glossary: true,
+    practice: true,
+    progress: true,
+    simulations: true,
+    toc: true,
+    related: true,
+    courseMap: true,
   },
 };

@@ -1,5 +1,10 @@
 # Creating a new course from this template
 
+> **AI agents and authors: read [`AI-CONTENT-PROMPT.md`](AI-CONTENT-PROMPT.md)
+> FIRST** — before creating, editing, reviewing, or validating any course
+> content. It is the canonical entry point for all content work. This file is
+> the full reference it points to; do not follow a parallel workflow.
+
 This is the **content contract** for agents and authors. Everything needed to
 produce a new course site without guessing repository conventions is here.
 
@@ -200,7 +205,7 @@ These names always work without an import:
 
 | Component | Purpose | Key props |
 |---|---|---|
-| `<Formula>` | typeset math | `latex`, `caption`, `id`, `inline`, `showSource` |
+| `<Formula>` | typeset math | `latex`, `caption`, `id`, `inline`, `usage`, `showSource` |
 | `<FormulaBreakdown>` | explain each symbol | `terms: [{term, label, detail}]` |
 | `<Callout>` | note / tip / warning / danger / info | `type`, `title` |
 | `<Definition>` | textbook-style term + meaning | `term`, `id`, `alt` |
@@ -210,6 +215,8 @@ These names always work without an import:
 | `<Prerequisite>` | link to earlier material | `ids: []` |
 | `<GlossaryTerm>` | expandable term | `id`, `href` |
 | `<StepReveal>` | reveal steps on demand | `steps[]`, `mode` |
+| `<ParamLab>` | slope explorer (sliders + live SVG plot) | `initialSlope`, `initialIntercept`, `title` |
+| `<Confused>` | «گیج شدم؟» rescue box with retry path | `prerequisites[]`, `retry` |
 | `<Quiz>` | graded practice | `id`, `title`, `questions[]` |
 
 ### WorkedExample
@@ -254,6 +261,8 @@ a learner can try before seeing the answer.
 - `correctAnswer` is a single option id, or an array for multi-select.
 - `type: 'true-false'` is conventional for two options; grading uses
   `correctAnswer`, so it still works if you omit `type`.
+- `type: 'numeric'` takes `numericAnswer` plus an optional `tolerance` instead
+  of `options` — Persian digits are accepted and normalised before grading.
 - `explanation` is shown when an answer is wrong.
 - Scores persist in the learner's own browser. Nothing is uploaded anywhere.
 

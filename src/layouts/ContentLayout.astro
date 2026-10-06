@@ -9,12 +9,14 @@
  */
 import CourseLayout from '../layouts/CourseLayout.astro';
 import ProgressToggle from '../islands/common/ProgressToggle';
+import TableOfContents from '../components/content/TableOfContents.astro';
 import Icon from '../components/ui/Icon.astro';
 import type { CourseEntry, CrossLinks, SectionGroup } from '../lib/content';
-import { exampleData, formulaData, lessonData, questionData } from '../lib/content';
+import { exampleData, formulaData, lessonData, questionData, getRelatedEntries } from '../lib/content';
 import { toPersianDigits } from '../lib/utils';
 import { renderContent, mdxComponents } from '../lib/render';
 import { withBase } from '../lib/url';
+import { isEnabled } from '../lib/features';
 interface Props {
   entry: CourseEntry;
   sections: SectionGroup[];
@@ -28,7 +30,11 @@ const lesson = lessonData(entry);
 const formula = formulaData(entry);
 const example = exampleData(entry);
 const question = questionData(entry);
-const { Content } = await renderContent(entry.entry);
+const { Content, headings } = await renderContent(entry.entry);
+const showToc = isEnabled('toc');
+const showRelated = isEnabled('related');
+const showProgress = isEnabled('progress');
+const related = showRelated ? await getRelatedEntries(entry) : [];
 const link = (target: CourseEntry) => withBase(target.path);
 const hasLinks =
   crossLinks.formulas.length > 0 ||
@@ -43,6 +49,7 @@ const hasLinks =
   sections={sections}
   prev={prev}
   next={next}
+  tocHeadings={showToc ? headings : []}
 >
   {/* Lesson objective — the "what you will be able to do" line. */}
   {
@@ -103,6 +110,9 @@ const hasLinks =
       </div>
     )
   }
+  {/* Mobile TOC: compact disclosure above the article. Desktop rail lives in
+      the layout sidebar, from the same build-time headings. */}
+  {showToc && <TableOfContents headings={headings} variant="mobile" />}
   {/* The authored MDX body, with the global educational components. */}
   <article class="prose-lesson">
     <Content components={mdxComponents} />
@@ -174,10 +184,30 @@ const hasLinks =
       </section>
     )
   }
+  {/* Related entries, derived from tags/sections/prerequisites — never
+      hard-coded per page. Complements the explicit cross-links above. */}
+  {related.length > 0 && (
+    <section class="mt-10 border-t border-line pt-8" aria-label="مطالب مرتبط">
+      <h2 class="mb-1 font-display text-lg font-bold text-ink">مطالب مرتبط</h2>
+      <p class="mb-4 text-xs text-ink-faint">از همین بخش و با برچسب‌های مشترک</p>
+      <ul class="grid gap-2 sm:grid-cols-2">
+        {related.map((target) => (
+          <li class="min-w-0">
+            <a href={link(target)} class="group flex min-h-[56px] flex-col justify-center rounded-lg border border-line bg-surface px-4 py-2.5 transition-colors duration-fast hover:border-primary hover:bg-primary-wash/40">
+              <span class="line-clamp-1 text-sm font-bold text-ink group-hover:text-primary-deep">{target.title}</span>
+              <span class="mt-0.5 line-clamp-1 text-xs text-ink-faint">{target.description}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  {showProgress && (
   <div class="no-print mt-12 border-t border-line pt-8">
     <p class="mb-3 text-sm text-ink-muted">
       این مطلب را خواندید؟ آن را علامت بزنید تا پیشرفت شما روی همین دستگاه ذخیره شود.
     </p>
     <ProgressToggle client:visible id={entry.qualifiedId} label={entry.title} />
   </div>
+  )}
 </CourseLayout>

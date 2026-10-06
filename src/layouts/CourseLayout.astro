@@ -7,12 +7,14 @@
 import BaseLayout from './BaseLayout.astro';
 import SectionIndex from '../components/layout/SectionIndex.astro';
 import PrevNextNav from '../components/layout/PrevNextNav.astro';
+import TableOfContents, { type TocHeading } from '../components/content/TableOfContents.astro';
 import Icon from '../components/ui/Icon.astro';
 import BookmarkToggle from '../islands/common/BookmarkToggle';
 import type { CourseEntry, SectionGroup } from '../lib/content';
 import { SINGULAR_LABELS } from '../lib/content';
 import { toPersianDigits } from '../lib/utils';
 import { withBase } from '../lib/url';
+import { isEnabled } from '../lib/features';
 
 interface Props {
   title: string;
@@ -24,9 +26,14 @@ interface Props {
   noindex?: boolean;
   /** Hide the sidebar (used by wide single-column pages like search). */
   wide?: boolean;
+  /** Build-time headings for the desktop TOC rail. */
+  tocHeadings?: TocHeading[];
 }
 
-const { title, description, entry, sections = [], prev, next, noindex, wide = false } = Astro.props;
+const { title, description, entry, sections = [], prev, next, noindex, wide = false, tocHeadings = [] } = Astro.props;
+const showToc = isEnabled('toc') && tocHeadings.length > 0;
+const showProgress = isEnabled('progress');
+const sectionTitle = entry?.section ? sections.find((s) => s.id === entry.section)?.title : undefined;
 
 const difficultyLabel = entry?.difficulty
   ? { beginner: 'مقدماتی', intermediate: 'متوسط', advanced: 'پیشرفته' }[entry.difficulty]
@@ -46,6 +53,12 @@ const difficultyLabel = entry?.difficulty
         entry && (
           <>
             <Icon name="chevron-end" size={13} class="text-ink-faint" />
+            {sectionTitle && (
+              <>
+                <span class="text-ink-faint">{sectionTitle}</span>
+                <Icon name="chevron-end" size={13} class="text-ink-faint" />
+              </>
+            )}
             <span class="text-ink-faint">{SINGULAR_LABELS[entry.kind]}</span>
             <Icon name="chevron-end" size={13} class="text-ink-faint" />
             <span class="truncate font-bold text-ink">{entry.title}</span>
@@ -78,9 +91,11 @@ const difficultyLabel = entry?.difficulty
                 )}
                 {/* Bookmark is available immediately while reading; marking the
                     page finished stays at the end, where it belongs. */}
+                {showProgress && (
                 <span class="ms-auto">
                   <BookmarkToggle client:idle id={entry.id} label={entry.title} />
                 </span>
+                )}
               </div>
               <h1 class="mt-3 text-3xl">{title}</h1>
               <p class="mt-3 max-w-measure text-body leading-relaxed text-ink-muted">{description}</p>
@@ -103,11 +118,12 @@ const difficultyLabel = entry?.difficulty
         <slot />
       </div>
 
-      <!-- Sidebar: sticky section index on wide screens -->
-      {!wide && sections.length > 0 && (
+      <!-- Sidebar: sticky section index + TOC rail on wide screens -->
+      {!wide && (sections.length > 0 || showToc) && (
         <aside class="no-print hidden w-60 shrink-0 lg:block">
-          <div class="sticky top-24">
-            <SectionIndex sections={sections} currentId={entry?.id} />
+          <div class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-auto pb-6">
+            {sections.length > 0 && <SectionIndex sections={sections} currentId={entry?.id} />}
+            {showToc && <TableOfContents headings={tocHeadings} variant="desktop" />}
           </div>
         </aside>
       )}

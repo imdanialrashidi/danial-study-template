@@ -77,6 +77,7 @@ const ROUTES = [
   { name: 'practice', path: '/practice/practice-foundations' },
   { name: 'glossary', path: '/glossary' },
   { name: 'search', path: '/search' },
+  { name: 'map', path: '/map' },
   { name: '404', path: '/404' },
 ];
 

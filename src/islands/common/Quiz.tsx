@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { QuizQuestion } from '../../lib/types';
+import { gradeChoice, gradeNumeric, isNumericQuestion } from '../../lib/quiz';
+import { toLatinDigits } from '../../lib/utils';
 import { ProgressBridge } from './ProgressBridge';
 
 const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
@@ -20,23 +22,23 @@ export interface QuizProps {
 type AnswerState = Record<string, string[]>;
 
 function isCorrect(question: QuizQuestion, answer: string[]): boolean {
-  const expected = Array.isArray(question.correctAnswer)
-    ? question.correctAnswer
-    : [question.correctAnswer];
-  if (answer.length !== expected.length) return false;
-  const a = [...answer].sort();
-  const b = [...expected].sort();
-  return a.every((value, index) => value === b[index]);
+  if (isNumericQuestion(question)) return gradeNumeric(question, answer[0] ?? '');
+  return gradeChoice(question, answer);
+}
+
+function isTrueFalse(question: QuizQuestion): boolean {
+  return question.type === 'true-false';
 }
 
 /**
- * Quiz island.
+ * Quiz island — course-agnostic practice with grading in the browser.
  *
- * Grading is derived from the question data rendered into the island, so the
- * static HTML already contains every option and explanation — the island adds
- * interaction, not content. Scores are recorded through ProgressBridge into
- * localStorage; if storage is unavailable (private mode) the quiz still works
- * and simply does not persist.
+ * Supported: multiple-choice (single + multi-select), true/false, and numeric
+ * input (Persian or Latin digits, optional tolerance). Grading is derived from
+ * the question data rendered into the island, so the static HTML already
+ * contains every option and explanation — the island adds interaction, not
+ * content. Scores are recorded through ProgressBridge into localStorage; if
+ * storage is unavailable the quiz still works and simply does not persist.
  */
 export default function Quiz({ id, title, description, questions, allowRetry = true }: QuizProps) {
   const [answers, setAnswers] = useState<AnswerState>({});
@@ -50,7 +52,12 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
   }, []);
 
   const answeredCount = useMemo(
-    () => questions.filter((q) => (answers[q.id] ?? []).length > 0).length,
+    () =>
+      questions.filter((q) => {
+        const a = answers[q.id] ?? [];
+        if (isNumericQuestion(q)) return (a[0] ?? '').trim().length > 0;
+        return a.length > 0;
+      }).length,
     [answers, questions],
   );
 
@@ -73,6 +80,12 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
       };
     });
     // Changing an answer after checking invalidates the previous verdict.
+    setChecked(false);
+  }, []);
+
+  const typeNumeric = useCallback((questionId: string, value: string) => {
+    // Accept Persian digits while typing; grading normalises them back.
+    setAnswers((current) => ({ ...current, [questionId]: [value] }));
     setChecked(false);
   }, []);
 
@@ -125,7 +138,8 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
       <ol className="divide-y divide-line" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {questions.map((question, index) => {
           const selected = answers[question.id] ?? [];
-          const multi = Array.isArray(question.correctAnswer);
+          const numeric = isNumericQuestion(question);
+          const multi = !numeric && Array.isArray(question.correctAnswer);
           const correct = isCorrect(question, selected);
           return (
             <li key={question.id} className="px-5 py-5">
@@ -140,55 +154,90 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                   <span>
                     {question.text}
                     {multi && <span className="ms-1 text-xs text-ink-faint">(چندگزینه‌ای)</span>}
+                    {isTrueFalse(question) && <span className="ms-1 text-xs text-ink-faint">(درست / نادرست)</span>}
+                    {numeric && <span className="ms-1 text-xs text-ink-faint">(پاسخ عددی)</span>}
                   </span>
                 </legend>
 
-                <div className="flex flex-col gap-2 ps-7">
-                  {question.options.map((option) => {
-                    const isSelected = selected.includes(option.id);
-                    const showCorrectOption =
-                      checked &&
-                      (Array.isArray(question.correctAnswer)
-                        ? question.correctAnswer.includes(option.id)
-                        : question.correctAnswer === option.id);
-                    const showWrongSelection = checked && isSelected && !showCorrectOption;
-
-                    return (
-                      <label
-                        key={option.id}
-                        className={`flex min-h-[44px] cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2.5 text-sm leading-relaxed transition-colors duration-fast ${
-                          showCorrectOption
-                            ? 'border-success bg-success-soft text-ink'
-                            : showWrongSelection
-                              ? 'border-danger bg-danger-soft text-ink'
-                              : isSelected
-                                ? 'border-primary bg-primary-wash text-ink'
-                                : 'border-line bg-surface hover:border-line-control hover:bg-surface-sunken/60'
-                        } ${checked ? 'cursor-default' : ''}`}
-                      >
-                        <input
-                          type={multi ? 'checkbox' : 'radio'}
-                          name={`${question.id}`}
-                          value={option.id}
-                          checked={isSelected}
-                          onChange={() => select(question.id, option.id, !multi)}
-                          className="mt-1 h-4 w-4 shrink-0 accent-[rgb(var(--rgb-primary))]"
-                        />
-                        <span className="min-w-0 flex-1">{option.text}</span>
-                        {checked && showCorrectOption && (
-                          <span className="shrink-0 text-success" aria-label="پاسخ درست">
-                            <CheckIcon />
-                          </span>
-                        )}
-                        {checked && showWrongSelection && (
-                          <span className="shrink-0 text-danger" aria-label="پاسخ نادرست">
-                            <CrossIcon />
-                          </span>
-                        )}
+                {numeric ? (
+                  <div className="flex flex-col gap-2 ps-7">
+                    <div className="flex max-w-xs items-center gap-2">
+                      <label htmlFor={`${id}-${question.id}-numeric`} className="sr-only">
+                        پاسخ عددی {question.text}
                       </label>
-                    );
-                  })}
-                </div>
+                      <input
+                        id={`${id}-${question.id}-numeric`}
+                        type="text"
+                        inputMode="decimal"
+                        dir="ltr"
+                        value={selected[0] ?? ''}
+                        onChange={(e) => typeNumeric(question.id, toLatinDigits(e.target.value))}
+                        placeholder="عدد را بنویسید"
+                        autoComplete="off"
+                        className={`h-12 w-full rounded-md border bg-surface px-3 text-left font-mono text-[15px] text-ink placeholder:text-ink-faint ${
+                          checked
+                            ? correct
+                              ? 'border-success bg-success-soft'
+                              : 'border-danger bg-danger-soft'
+                            : 'border-line-control'
+                        }`}
+                      />
+                      {question.unit && <span className="shrink-0 text-xs text-ink-faint">{question.unit}</span>}
+                    </div>
+                    {checked && (
+                      <p className={`text-xs font-bold ${correct ? 'text-success' : 'text-danger'}`} role="status">
+                        {correct ? 'پاسخ درست است.' : `پاسخ درست: ${toPersian(String(question.numericAnswer ?? ''))}`}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 ps-7">
+                    {(question.options ?? []).map((option) => {
+                      const isSelected = selected.includes(option.id);
+                      const showCorrectOption =
+                        checked &&
+                        (Array.isArray(question.correctAnswer)
+                          ? question.correctAnswer.includes(option.id)
+                          : question.correctAnswer === option.id);
+                      const showWrongSelection = checked && isSelected && !showCorrectOption;
+
+                      return (
+                        <label
+                          key={option.id}
+                          className={`flex min-h-[44px] cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2.5 text-sm leading-relaxed transition-colors duration-fast ${
+                            showCorrectOption
+                              ? 'border-success bg-success-soft text-ink'
+                              : showWrongSelection
+                                ? 'border-danger bg-danger-soft text-ink'
+                                : isSelected
+                                  ? 'border-primary bg-primary-wash text-ink'
+                                  : 'border-line bg-surface hover:border-line-control hover:bg-surface-sunken/60'
+                          } ${checked ? 'cursor-default' : ''}`}
+                        >
+                          <input
+                            type={multi ? 'checkbox' : 'radio'}
+                            name={`${question.id}`}
+                            value={option.id}
+                            checked={isSelected}
+                            onChange={() => select(question.id, option.id, !multi)}
+                            className="mt-1 h-4 w-4 shrink-0 accent-[rgb(var(--rgb-primary))]"
+                          />
+                          <span className="min-w-0 flex-1">{option.text}</span>
+                          {checked && showCorrectOption && (
+                            <span className="shrink-0 text-success" aria-label="پاسخ درست">
+                              <CheckIcon />
+                            </span>
+                          )}
+                          {checked && showWrongSelection && (
+                            <span className="shrink-0 text-danger" aria-label="پاسخ نادرست">
+                              <CrossIcon />
+                            </span>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </fieldset>
 
               {checked && !correct && question.explanation && (
@@ -224,14 +273,21 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
             )}
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!allAnswered}
-            className="inline-flex min-h-[44px] items-center rounded-md bg-primary px-5 py-2 text-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-deep disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-primary"
-          >
-            بررسی پاسخ‌ها
-          </button>
+          <div>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={!allAnswered}
+              aria-disabled={!allAnswered}
+              title={allAnswered ? undefined : 'اول به همهٔ پرسش‌ها پاسخ دهید'}
+              className="inline-flex min-h-[44px] items-center rounded-md bg-primary px-5 py-2 text-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-deep disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-primary"
+            >
+              بررسی پاسخ‌ها
+            </button>
+            {!allAnswered && (
+              <p className="mt-2 text-xs text-ink-faint">اول به همهٔ پرسش‌ها پاسخ دهید، بعد بررسی کنید.</p>
+            )}
+          </div>
         )}
       </footer>
     </section>

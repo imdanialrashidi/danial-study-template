@@ -11,6 +11,7 @@
  * is what carries the `client:*` directive.
  */
 import Callout from '../components/educational/Callout.astro';
+import Confused from '../components/educational/Confused.astro';
 import Definition from '../components/educational/Definition.astro';
 import Misconception from '../components/educational/Misconception.astro';
 import Formula from '../components/educational/Formula.astro';
@@ -21,9 +22,11 @@ import Prerequisite from '../components/educational/Prerequisite.astro';
 import GlossaryTerm from '../components/educational/GlossaryTerm.astro';
 import Quiz from '../components/educational/Quiz.astro';
 import StepReveal from '../components/educational/StepReveal.astro';
+import ParamLab from '../components/educational/ParamLab.astro';
 
 export const mdxComponents = {
   Callout,
+  Confused,
   Definition,
   Misconception,
   Formula,
@@ -33,5 +36,6 @@ export const mdxComponents = {
   Prerequisite,
   GlossaryTerm,
   StepReveal,
+  ParamLab,
   Quiz,
 };

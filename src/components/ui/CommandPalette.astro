@@ -1,0 +1,16 @@
+---
+/**
+ * CommandPalette host — mounts the Cmd/Ctrl+K palette island once per page.
+ * Rendered by BaseLayout when the `commandPalette` feature is enabled.
+ */
+import CommandPalette from '../../islands/common/CommandPalette';
+import type { SearchableItem } from '../../lib/types';
+
+interface Props {
+  items: SearchableItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<CommandPalette client:idle items={items} />

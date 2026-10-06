@@ -62,14 +62,39 @@ export interface SectionConfig {
 
 export interface ThemeConfig {
   name: string;
+  /** Per-role overrides. Omitted roles fall back to the `themePreset` preset. */
   colors: {
-    primary: string;
+    primary?: string;
     primaryHover?: string;
     secondary?: string;
     accent?: string;
   };
   typography?: 'traditional' | 'modern';
   motif?: 'geometric' | 'organic' | 'technical' | 'none';
+}
+
+/** Named theme preset. `custom` keeps the inline `theme.colors` override. */
+export type ThemePresetName =
+  | 'default'
+  | 'physics'
+  | 'calculus'
+  | 'programming'
+  | 'statistics'
+  | 'custom';
+
+/** Per-capability switches. Every flag defaults to true; a course turns off
+ *  what it does not need without touching any component. */
+export interface CourseFeatures {
+  search?: boolean;
+  commandPalette?: boolean;
+  formulas?: boolean;
+  glossary?: boolean;
+  practice?: boolean;
+  progress?: boolean;
+  simulations?: boolean;
+  toc?: boolean;
+  related?: boolean;
+  courseMap?: boolean;
 }
 
 export interface CourseConfig {
@@ -87,6 +112,10 @@ export interface CourseConfig {
   category?: string;
   sections: SectionConfig[];
   theme: ThemeConfig;
+  /** Which preset the theme builds on. `custom` = use `theme.colors` as-is. */
+  themePreset?: ThemePresetName;
+  /** Feature flags — capabilities enabled for this course. Omitted = enabled. */
+  features?: CourseFeatures;
 }
 
 // ─── Shared Content Metadata ─────────────────────────────────────────────────
@@ -122,7 +151,7 @@ export interface NavigationItem {
 
 // ─── Quiz / Practice Types ───────────────────────────────────────────────────
 
-export type QuestionType = 'multiple-choice' | 'true-false' | 'short-answer' | 'calculation';
+export type QuestionType = 'multiple-choice' | 'true-false' | 'short-answer' | 'numeric' | 'calculation';
 
 export interface QuizOption {
   id: string;
@@ -134,8 +163,16 @@ export interface QuizQuestion {
   id: string;
   type: QuestionType;
   text: string;
-  options: QuizOption[];
-  correctAnswer: string | string[];
+  /** Choice options. Required for multiple-choice / true-false; omitted for numeric. */
+  options?: QuizOption[];
+  /** Option id (or ids for multi-select) for choice questions. */
+  correctAnswer?: string | string[];
+  /** Expected value for `numeric` questions (Latin or Persian digits). */
+  numericAnswer?: number;
+  /** Accepted absolute error for `numeric` questions. Defaults to 0. */
+  tolerance?: number;
+  /** Accepted unit suffix shown beside the input, e.g. «متر بر ثانیه». */
+  unit?: string;
   explanation?: string;
   difficulty?: Difficulty;
 }

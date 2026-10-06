@@ -1,0 +1,67 @@
+---
+/**
+ * Course map — the full structure generated from the content registry.
+ *
+ * Adding a lesson or concept automatically updates this page, the homepage
+ * index, and the sidebar: all three read `getSectionGroups()`, so there is
+ * exactly one structure to maintain (the content files themselves).
+ */
+import CourseLayout from '../layouts/CourseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
+import { getSectionGroups } from '../lib/content';
+import { toPersianDigits, toPersianNumeral, formatMinutes } from '../lib/utils';
+import { withBase } from '../lib/url';
+
+const sections = (await getSectionGroups()).filter((s) => s.entries.length > 0);
+const totalEntries = sections.reduce((n, s) => n + s.entries.length, 0);
+const totalMinutes = sections.reduce(
+  (n, s) => n + s.entries.reduce((m, e) => m + (e.estimatedMinutes ?? 0), 0),
+  0,
+);
+---
+
+<CourseLayout
+  title="نقشهٔ دوره"
+  description="ساختار کامل دوره: هر بخش، هر مطلب، به‌ترتیب خواندن."
+  sections={sections}
+>
+  <p class="mb-10 max-w-measure text-body leading-relaxed text-ink-muted">
+    {toPersianDigits(sections.length)} بخش · {toPersianDigits(totalEntries)} مطلب
+    {totalMinutes > 0 && <> · حدود {formatMinutes(totalMinutes)} مطالعه</>} — به‌ترتیب خواندن.
+  </p>
+
+  <ol class="grid gap-10">
+    {sections.map((section, sIndex) => (
+      <li class="min-w-0 border-s-2 border-line ps-5 sm:ps-7" aria-labelledby={`map-section-${section.id}`}>
+        <div class="flex flex-wrap items-baseline gap-3">
+          <span class="font-display text-sm font-extrabold text-primary-deep">
+            بخش {toPersianNumeral(sIndex + 1)}
+          </span>
+          <h2 id={`map-section-${section.id}`} class="font-display text-xl font-bold text-ink">{section.title}</h2>
+        </div>
+        {section.description && <p class="mt-1 max-w-measure text-sm text-ink-muted">{section.description}</p>}
+        <ol class="mt-4 grid gap-2">
+          {section.entries.map((entry) => (
+            <li class="min-w-0">
+              <a
+                href={withBase(entry.path)}
+                class="group flex items-center gap-3 rounded-lg border border-line bg-surface px-4 py-3 transition-colors duration-fast hover:border-primary hover:bg-primary-wash/40"
+              >
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-bold text-ink group-hover:text-primary-deep">{entry.title}</span>
+                  <span class="mt-0.5 block truncate text-xs text-ink-faint">{entry.description}</span>
+                </span>
+                {entry.estimatedMinutes && (
+                  <span class="inline-flex shrink-0 items-center gap-1 text-2xs text-ink-faint">
+                    <Icon name="clock" size={12} />
+                    {toPersianDigits(entry.estimatedMinutes)} دقیقه
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </li>
+    ))}
+  </ol>
+</CourseLayout>

@@ -1,0 +1,19 @@
+---
+/**
+ * ParamLab — Astro wrapper that hydrates the ParamLab island.
+ *
+ * Content authors write `<ParamLab />` in MDX and get a working slope
+ * explorer; the settled figure (default slope) is already in the static HTML.
+ */
+import ParamLab from '../../islands/common/Controls';
+
+interface Props {
+  initialSlope?: number;
+  initialIntercept?: number;
+  title?: string;
+}
+
+const { initialSlope = 1, initialIntercept = 0, title } = Astro.props;
+---
+
+<ParamLab client:visible initialSlope={initialSlope} initialIntercept={initialIntercept} title={title} />

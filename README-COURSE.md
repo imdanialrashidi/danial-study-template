@@ -29,6 +29,11 @@ npm run check        # validate + typecheck + test + build + budgets
 
 ## Creating a new course
 
+> **Read [`docs/AI-CONTENT-PROMPT.md`](docs/AI-CONTENT-PROMPT.md) FIRST** —
+> before creating, editing, reviewing, or validating any course content. It is
+> the canonical entry point; [`docs/CONTENT-CONTRACT.md`](docs/CONTENT-CONTRACT.md)
+> is the full reference it points to.
+
 Read **[`docs/CONTENT-CONTRACT.md`](docs/CONTENT-CONTRACT.md)** first. It is the
 complete, exact contract for agents and authors: configuration, content
 schemas, MDX components, cross-references, island registration, and the rules
