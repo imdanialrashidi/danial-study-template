@@ -161,6 +161,13 @@
       "assertions": { "completion": "completed", "changes": { "mode": "none", "maxFiles": 0 } }
     },
     {
+      "id": "docs-deepwiki-workflow",
+      "tags": ["tooling", "docs", "mcp"],
+      "prompt": "/spec Define the accepted docs-lookup contract for a question about a public open-source repository (for example middleware routing in vercel/next.js). Require local source and installed types first, then native DeepWiki MCP via tool_search (mcp__deepwiki__read_wiki_structure followed by mcp__deepwiki__read_wiki_contents or mcp__deepwiki__ask_wiki_question with an owner/repo name) with single-concept questions, no secrets or sensitive paths in the inputs, and no harness_tools docs group. Private repositories stay out of scope. Do not fetch live documentation; specify the contract and proof only.",
+      "rubric": ["requires local source and installed types before remote docs", "uses tool_search with mcp__deepwiki__ structure-then-contents/question instead of a harness_tools docs group", "single-concept questions with no secrets or sensitive paths and public repos only", "does not claim unobserved docs results as proof"],
+      "assertions": { "completion": "completed", "changes": { "mode": "none", "maxFiles": 0 } }
+    },
+    {
       "id": "release-and-incident",
       "tags": ["release", "operations", "risk"],
       "prompt": "/release-plan Define a staged release for a new user-facing product with unknown traffic and no proven rollback. Do not deploy. Include a realistic path for incident learning.",

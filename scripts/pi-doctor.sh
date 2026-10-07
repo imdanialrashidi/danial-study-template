@@ -119,7 +119,7 @@ done
 
 node_version="$(node -p 'process.versions.node' 2>/dev/null || true)"
 if [[ -n "$node_version" ]] && version_at_least "$node_version" "22.19.0"; then
-  pass "Node $node_version satisfies Pi 1.0.0 requirement (>=22.19.0)"
+  pass "Node $node_version satisfies Pi 1.0.4 requirement (>=22.19.0)"
 else
   fail "Node >=22.19.0 is required for the reviewed Pi pin"
 fi
@@ -233,7 +233,6 @@ const required = [
   'npm:pi-sub-agent@0.1.5',
   'npm:@juicesharp/rpiv-todo@2.12.0',
   'npm:pi-lsp-adapter@0.1.3',
-  'npm:@dreki-gg/pi-doc-search@0.3.2',
   'npm:@bytetrue/pi-web-search@0.5.1',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -242,6 +241,9 @@ if (missing.length) {
   process.exit(1);
 }
 for (const removed of [
+  'npm:@dreki-gg/pi-doc-search@0.3.2',
+  'npm:@upstash/context7-mcp@4.1.2',
+  'npm:@upstash/context7-pi@0.1.2',
   'npm:pi-vision-tool@1.3.7',
   'npm:@getpipher/vision@0.5.2',
   'npm:@bytetrue/pi-vision@0.2.0',
@@ -291,9 +293,35 @@ for (const required of ['browser_snapshot', 'browser_find', 'browser_navigate', 
 if (server.args.includes('--allowed-origins')) {
   throw new Error('Autonomous browser mode must not be limited to localhost by MCP config');
 }
+const docs = config.mcpServers?.deepwiki;
+if (!docs) throw new Error('DeepWiki MCP server is missing');
+if (config.mcpServers?.context7) throw new Error('Stale Context7 MCP server must be removed');
+if (docs.url !== 'https://mcp.deepwiki.com/mcp') {
+  throw new Error('DeepWiki MCP must use the official streamable HTTP endpoint');
+}
+if (docs.type !== undefined && !['http', 'streamable-http'].includes(docs.type)) {
+  throw new Error('DeepWiki MCP type must be http or streamable-http when set');
+}
+if (docs.command !== undefined) {
+  throw new Error('DeepWiki MCP is a remote HTTP server and must not declare a stdio command');
+}
+if (docs.env?.CONTEXT7_API_KEY !== undefined) {
+  throw new Error('DeepWiki needs no API key; remove the stale Context7 env mapping');
+}
+if (JSON.stringify(docs).includes('ctx7sk-')) {
+  throw new Error('A Context7 API key must not be hardcoded in MCP config');
+}
+if (docs.exposure !== 'hidden') throw new Error('Unlisted DeepWiki tools must remain hidden');
+if (docs.toolExposure?.['read_wiki_structure'] !== 'deferred' || docs.toolExposure?.['read_wiki_contents'] !== 'deferred' || docs.toolExposure?.['ask_wiki_question'] !== 'deferred') {
+  throw new Error('DeepWiki tools must be exactly deferred read_wiki_structure, read_wiki_contents and ask_wiki_question');
+}
+if (Object.keys(docs.toolExposure || {}).length !== 3) {
+  throw new Error('DeepWiki toolExposure must contain only the three reviewed tools');
+}
 NODE
 then
   pass "Native Playwright MCP is pinned, selectively deferred, and blocks file injection"
+  pass "DeepWiki MCP uses the official endpoint, stays deferred, and needs no API key"
 else
   fail "Playwright MCP policy validation failed"
 fi
@@ -326,8 +354,6 @@ specialist_tools=(
   lsp_references
   lsp_workspace_symbols
   lsp_more
-  doc_search_resolve_library_id
-  doc_search_get_library_docs
   web_search
   web_fetch
 )
@@ -473,13 +499,13 @@ fi
 if command -v pi >/dev/null 2>&1; then
   version="$(pi --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
   if [[ -n "$version" ]]; then
-    if version_at_least "$version" "1.0.0"; then
-      pass "Pi $version satisfies minimum 1.0.0"
-      if [[ "$version" != "1.0.0" ]]; then
-        warn "Pi $version differs from the reviewed template pin 1.0.0; revalidate package/tool compatibility"
+    if version_at_least "$version" "1.0.4"; then
+      pass "Pi $version satisfies minimum 1.0.4"
+      if [[ "$version" != "1.0.4" ]]; then
+        warn "Pi $version differs from the reviewed template pin 1.0.4; revalidate package/tool compatibility"
       fi
     else
-      fail "Pi $version is older than required 1.0.0"
+      fail "Pi $version is older than required 1.0.4"
     fi
   else
     warn "Pi is installed but its version could not be parsed"

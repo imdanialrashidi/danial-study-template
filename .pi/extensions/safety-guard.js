@@ -406,6 +406,40 @@ function ownerGitReason() {
   return "Unscoped Git/GitHub mutation is owner-controlled. Routine verified implementation uses node scripts/ai-pr.mjs on the existing ai-changes branch under docs/GIT_POLICY.md. Other writes require the current user's exact authorization and a bounded PI_GIT_MUTATION=allow session; never use that override for routine PR delivery.";
 }
 
+function docsSecretReason(tool, args) {
+  const name = String(tool ?? "");
+  const isDocs =
+    /(?:^|[_.:/-])(?:read_wiki_structure|read_wiki_contents|ask_wiki_question|ask_question|resolve-library-id|resolve_library_id|query-docs|query_docs)(?:$|[_.:/-])/i.test(name) ||
+    (/deepwiki/i.test(name) && /(?:read_wiki|ask_)/i.test(name)) ||
+    (/context7/i.test(name) && /(?:resolve|query-docs|query_docs)/i.test(name));
+  if (!isDocs) return null;
+  const texts = [];
+  if (args && typeof args === "object") {
+    for (const value of Object.values(args)) {
+      if (typeof value === "string" && value) texts.push(value);
+    }
+  }
+  const joined = texts.join("\n");
+  if (!joined) return null;
+  if (
+    /\b[A-Z][A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL)[A-Z0-9_]*\s*=\s*(?:"[^"]*"|'[^']*'|\S+)/.test(joined) ||
+    /\bBearer\s+\S+/i.test(joined) ||
+    /\bsk-[A-Za-z0-9_-]{12,}\b/.test(joined) ||
+    /-----BEGIN (?:RSA )?PRIVATE KEY-----/.test(joined)
+  ) {
+    return "Docs MCP question contains a possible secret; remove API keys, tokens, passwords, or private-key material before requesting documentation.";
+  }
+  if (
+    /(^|[\s"'=])\.env(?:[\s"'./]|$)/i.test(joined.replaceAll(".env.example", "")) ||
+    /playwright\/\.auth/i.test(joined) ||
+    /storageState.*\.json/i.test(joined) ||
+    /\.(?:pem|key|p12|pfx|jks|keystore)(?:[\s"'|;&]|$)/i.test(joined)
+  ) {
+    return "Docs MCP question references a sensitive file; describe the library question without pasting credential or keystore paths.";
+  }
+  return null;
+}
+
 function mcpCallReason(input, config) {
   if (!input || typeof input !== "object") return null;
   const tool = String(input.tool ?? "");
@@ -443,6 +477,10 @@ function mcpCallReason(input, config) {
       return "Playwright MCP navigation requires a valid HTTP(S) URL.";
     }
   }
+
+  const docsArgs = parseMcpArgs(input);
+  const docsReason = docsSecretReason(tool, docsArgs);
+  if (docsReason) return docsReason;
   return null;
 }
 

@@ -48,6 +48,11 @@ const playwrightSpec = (mcp.mcpServers?.playwright?.args ?? []).find((value) =>
 );
 if (!playwrightSpec) throw new Error("Playwright MCP pin is missing");
 configured.push(`npm:${playwrightSpec}`);
+const deepwikiUrl = mcp.mcpServers?.deepwiki?.url;
+if (deepwikiUrl !== "https://mcp.deepwiki.com/mcp") {
+  throw new Error("DeepWiki MCP URL is missing or unexpected; use the official streamable HTTP endpoint");
+}
+if (mcp.mcpServers?.context7) throw new Error("Stale Context7 MCP server must be removed");
 const docker = fs.readFileSync(path.join(repositoryRoot, "Dockerfile.pi"), "utf8");
 const piVersion = docker.match(/^ARG PI_VERSION=(\d+\.\d+\.\d+)$/m)?.[1];
 if (!piVersion) throw new Error("Dockerfile Pi pin is missing");
@@ -68,7 +73,14 @@ if (online) {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "inherit"],
     });
-    const published = JSON.parse(output);
+    const parsed = JSON.parse(output);
+    // `npm view --json` returns an array when the spec resolves to one
+    // version (observed for every pinned spec here); unwrap it so the
+    // comparison below reads the real record instead of `undefined`.
+    const published = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (!published || typeof published !== "object") {
+      throw new Error(`registry lookup returned no record for ${source}`);
+    }
     if (published["dist.integrity"] !== entry.integrity) {
       throw new Error(
         `registry integrity mismatch for ${source}: reviewed=${entry.integrity} published=${published["dist.integrity"]}`,

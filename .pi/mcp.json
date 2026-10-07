@@ -1,6 +1,17 @@
 {
   "autoEnableCodemode": false,
   "mcpServers": {
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp",
+      "timeout": 60,
+      "description": "Public GitHub repository documentation: list wiki topics, read contents, or ask a grounded question.",
+      "exposure": "hidden",
+      "toolExposure": {
+        "read_wiki_structure": "deferred",
+        "read_wiki_contents": "deferred",
+        "ask_wiki_question": "deferred"
+      }
+    },
     "playwright": {
       "command": "npx",
       "args": [
@@ -9,8 +20,6 @@
         "--headless",
         "--isolated",
         "--block-service-workers",
-        "--executable-path",
-        "/usr/bin/chromium",
         "--image-responses",
         "allow",
         "--output-dir",

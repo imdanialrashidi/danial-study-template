@@ -16,7 +16,7 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - a model-neutral runtime that bounds implicit large-file reads, stops blind identical retries, and preserves a compact continuity capsule across resume/compaction;
 - Pi-native capability-aware tool schemas for the reviewed runtime;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
-- on-demand LSP, maintained Context7-backed documentation search, and web search/fetch;
+- on-demand LSP, DeepWiki MCP documentation search, and web search/fetch;
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
@@ -76,7 +76,7 @@ Use Node.js 22.19.0 or newer, matching the reviewed Pi package requirement.
 Install Pi:
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.0
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.4
 ```
 
 Validate the template:
@@ -93,7 +93,7 @@ Start Pi:
 
 `./p` treats this checked-out repository as trusted with Pi's official `--approve` flag, enables the full writable workspace, and uses `PI_GUARD_MODE=autonomous`, so normal implementation does not stall on approval loops. Use `PI_PROJECT_TRUST=ask ./p` to restore Pi's prompt or `PI_PROJECT_TRUST=never ./p` to ignore project resources for a diagnostic run.
 
-The reviewed Pi `1.0.0` uses native MCP and capability-aware tool schemas. The launcher no longer forces experimental UI/setup features. `PI_SMART_READ=0 ./p` disables the harness's implicit large-file focusing for diagnosis. Pi's new fullscreen TUI is the upstream default; use `./p --tui-mode regular` when terminal scrollback matters.
+The reviewed Pi `1.0.4` uses native MCP and capability-aware tool schemas. The launcher no longer forces experimental UI/setup features. `PI_SMART_READ=0 ./p` disables the harness's implicit large-file focusing for diagnosis. Pi's new fullscreen TUI is the upstream default; use `./p --tui-mode regular` when terminal scrollback matters.
 
 In autonomous mode the agent may inspect, edit, install local dependencies, run tests, research, and perform browser QA within the available operating-system permissions. For user-requested implementation, the agent prepares the fixed `ai-changes` branch—creating it from `main` if absent—and automatically commits/pushes the verified scoped change into a new or updated related PR to `main`. It uses `node scripts/ai-pr.mjs`, not arbitrary pre-approved Git commands. No per-task branches, main writes, or auto-merge. Read-only/local-only work and evals never publish; set `AI_PR_DELIVERY=off` to opt out. The helper requires authenticated `gh` and ordinary Git push credentials; see `docs/GIT_POLICY.md` for setup and recovery.
 
@@ -225,8 +225,14 @@ The template pins:
 pi-sub-agent
 @juicesharp/rpiv-todo
 pi-lsp-adapter
-@dreki-gg/pi-doc-search
 @bytetrue/pi-web-search
+```
+
+Plus native MCP in `.pi/mcp.json`:
+
+```text
+@playwright/mcp (browser QA)
+DeepWiki remote MCP at mcp.deepwiki.com (docs, no key)
 ```
 
 The launcher initially exposes only:
@@ -242,10 +248,11 @@ read, bash, edit, write, grep, find, ls, harness_tools, tool_search
 | `planning` | `todo` |
 | `delegation` | `subagent` |
 | `code_intelligence` | five focused LSP tools |
-| `docs` | Context7 resolve + documentation lookup |
 | `web` | `web_search`, `web_fetch` |
 
-An empty capability list unloads managed specialists and preserves unrelated custom tools. Browser work uses native `tool_search` directly: load only the needed `mcp__playwright__*` tools, then call their returned schemas. No browser capability-loader call or third-party MCP adapter is needed. MCP connects in the background without blocking the first prompt on browser startup; this is not a lazy/idle-stop lifecycle. Native codemode remains an optional operator choice, not another default schema.
+Docs and browser work use native `tool_search` directly: load only the needed `mcp__deepwiki__*` or `mcp__playwright__*` tools, then call their returned schemas.
+
+An empty capability list unloads managed specialists and preserves unrelated custom tools. Browser and docs work uses native `tool_search` directly: load only the needed `mcp__playwright__*` or `mcp__deepwiki__*` tools, then call their returned schemas. No browser/docs capability-loader call or third-party MCP adapter is needed. MCP connects in the background without blocking the first prompt on browser/docs startup; this is not a lazy/idle-stop lifecycle. Native codemode remains an optional operator choice, not another default schema.
 
 Useful checks:
 
@@ -357,7 +364,7 @@ Run 18.4s (running) | 42.7 tok/s | Tools 4.2s | Retry 1 | ~$0.0123
 - **Run:** wall time from agent start until Pi settles, including tools, automatic retries, retry waits, and automatic compaction. The final duration remains visible; the next run resets it. Queued follow-ups/steering processed before settling belong to the same busy run, not separate per-prompt measurements.
 - **Model:** total provider-reported output tokens divided by the summed time from each turn's start to its finalized assistant response. This is an effective response rate including request/context preparation, first-token wait, and reasoning; it excludes intervening tool execution and retry backoff. It is not pure decode speed or a cross-provider benchmark. Provider accounting determines whether reasoning/tool-call tokens are included; input/cache tokens and delegated subagent usage are excluded. If the model changes mid-run, the value aggregates those responses.
 - **Tools:** observed wall time with at least one foreground tool executing. Concurrent tool intervals count once; an in-flight tool counts until settling/cancellation. It excludes tool work not exposed by Pi's lifecycle events.
-- **Retry:** observed new model turns following an assistant error in the same run. Ordinary tool turns, repeated commands, and failed responses with no subsequent attempt are not counted. Pi 1.0.0's extension API does not expose internal HTTP retries; this is not a provider retry count or an inferred count of repair rounds.
+- **Retry:** observed new model turns following an assistant error in the same run. Ordinary tool turns, repeated commands, and failed responses with no subsequent attempt are not counted. Pi 1.0.4's extension API does not expose internal HTTP retries; this is not a provider retry count or an inferred count of repair rounds.
 - **~$:** sum of Pi's positive, internally consistent USD usage-cost estimates for foreground assistant responses, including reported input/output/cache costs. It is based on configured pricing, not an invoice. Missing usage, zero/default prices, or inconsistent costs make the whole run `cost n/a`; a later successful response cannot hide a gap. Known free use and unknown all-zero pricing are intentionally not distinguished. Compaction, delegated agents, optional codemode model/image calls, external tools, subscriptions/credits, taxes, and provider-side charges not present in these messages are outside this estimate. Values below $0.0001 display as a positive amount, not $0.0000.
 - Speed updates on finalized responses, not estimated character counts during streaming. Before usable usage arrives, or if any response lacks a valid positive count/timing, it shows `n/a`. `finished` means Pi is idle, not that verification passed; terminal error/abort responses are labeled separately.
 
@@ -508,12 +515,12 @@ For a material visual change, the product pass proves journey, states, accessibi
 For this release, install the reviewed runtime and restart Pi:
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.0
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.4
 bash scripts/pi-doctor.sh
 ./p
 ```
 
-Bring the workflow over as a coherent set. Replace the former template `.mcp.json` with `.pi/mcp.json`, remove the project `pi-mcp-adapter` package entry, and preserve any custom servers by converting their client-specific options using [Pi's MCP guide](https://github.com/earendil-works/pi/blob/v1.0.0/packages/coding-agent/docs/mcp.md). A user-level adapter also replaces native MCP: remove that installation in `pi config` if present. Do not overwrite product contracts or private provider settings. `/bootstrap` refreshes product context; it does not repair mismatched harness files.
+Bring the workflow over as a coherent set. Replace the former template `.mcp.json` with `.pi/mcp.json`, remove the project `pi-mcp-adapter` package entry, and preserve any custom servers by converting their client-specific options using [Pi's MCP guide](https://github.com/earendil-works/pi/blob/v1.0.4/packages/coding-agent/docs/mcp.md). A user-level adapter also replaces native MCP: remove that installation in `pi config` if present. Do not overwrite product contracts or private provider settings. `/bootstrap` refreshes product context; it does not repair mismatched harness files.
 
 Project package versions are exact pins in `.pi/settings.json`. Updating a pin requires source review and a disposable runtime check; `pi update <source>` does not make a versioned spec float. The reviewed registry integrities live in `.pi/package-integrity.json`:
 

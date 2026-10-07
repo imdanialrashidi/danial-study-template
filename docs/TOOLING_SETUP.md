@@ -9,10 +9,9 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 - `pi-sub-agent@0.1.5`
 - `@juicesharp/rpiv-todo@2.12.0`
 - `pi-lsp-adapter@0.1.3`
-- `@dreki-gg/pi-doc-search@0.3.2`
 - `@bytetrue/pi-web-search@0.5.1`
 
-Pi `1.0.0` loads `.pi/mcp.json` natively. It pins `@playwright/mcp@0.0.83`, exposes only the listed browser tools on demand, and keeps unlisted tools hidden. No MCP adapter is installed.
+Pi `1.0.4` loads `.pi/mcp.json` natively. It pins `@playwright/mcp@0.0.83` and the official DeepWiki remote MCP endpoint, exposes only the listed browser/docs tools on demand, and keeps unlisted tools hidden. No MCP adapter is installed.
 
 The packages remain installed and their commands remain available, but their model-call schemas are deferred. `./p` starts with seven repository tools plus `harness_tools` and native `tool_search`:
 
@@ -21,8 +20,9 @@ The packages remain installed and their commands remain available, but their mod
 | `planning` | `todo` |
 | `delegation` | `subagent` |
 | `code_intelligence` | `lsp_diagnostics`, `lsp_definition`, `lsp_references`, `lsp_workspace_symbols`, `lsp_more` |
-| `docs` | `doc_search_resolve_library_id`, `doc_search_get_library_docs` |
 | `web` | `web_search`, `web_fetch` |
+
+Browser and docs work uses native `tool_search` directly: load only the needed `mcp__playwright__*` or `mcp__deepwiki__*` tools, then call their returned schemas. No docs capability-loader call is needed.
 
 Ask the agent to activate all required groups together. Passing an empty capability list unloads the managed specialist schemas without removing unrelated custom tools. A restored session reactivates the groups in its latest continuity snapshot.
 
@@ -34,7 +34,7 @@ Ask the agent to activate all required groups together. Passing an empty capabil
 
 The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. It grants normal implementation access across the writable workspace, while arbitrary Git/GitHub mutations remain disabled independently. Routine delivery uses the reviewed `scripts/ai-pr.mjs` helper on the persistent `ai-changes` branch; install/authenticate `gh` as the owner and see `docs/GIT_POLICY.md`. Set `AI_PR_DELIVERY=off` for local-only runs. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
 
-For the reviewed Pi `1.0.0` pin, the launcher defaults to:
+For the reviewed Pi `1.0.4` pin, the launcher defaults to:
 
 | Variable | Default | Effect / opt-out |
 |---|---:|---|
@@ -104,7 +104,7 @@ Remove any user-level `pi-mcp-adapter` in `pi config` before starting: it regist
 
 The workflow uses the active model's native image input; it does not install or call a separate image model or add a Vision tool schema. The runtime reports configured image support on image results and refreshes guidance on visual user turns or with loaded browser tools. Model names are never used to infer support. For custom models, confirm accurate `input` metadata in the operator's Pi configuration; do not silently change it.
 
-Playwright now uses `--image-responses allow`: a requested screenshot returns native image content through native MCP as well as a saved artifact. Native MCP bounds direct text results and retains the full text in a temporary file; Pi `1.0.0` normalizes tool-result images. Request only useful viewport/element screenshots and retain Pi's default image resizing. If a permitted response contains only a path, use `read` on that exact file; do not paste base64 or assume the model can see a filename.
+Playwright now uses `--image-responses allow`: a requested screenshot returns native image content through native MCP as well as a saved artifact. Native MCP bounds direct text results and retains the full text in a temporary file; Pi `1.0.4` normalizes tool-result images. Request only useful viewport/element screenshots and retain Pi's default image resizing. If a permitted response contains only a path, use `read` on that exact file; do not paste base64 or assume the model can see a filename.
 
 `harnessVision.imageInput` and `imageBlocks` in tool details mean configured support and blocks returned, not provider acceptance or completed inspection. Pi's `images.blockImages` setting can strip images after the extension hook, and a provider can reject them. Respect that setting and user privacy opt-outs: disabled/filtered/unsupported/unreadable pixels leave appearance-only criteria `UNPROVEN`. TUI image display is separate from model input. After updating `.pi/mcp.json`, run `/reload` and reconnect Playwright with `/mcp` or start a fresh session.
 
@@ -155,15 +155,19 @@ Language-server diagnostics arrive asynchronously. A cold first query can say "N
 
 ## Documentation search
 
-`pi-doc-search` queries Context7 directly and keeps a persistent local cache. It works without a key at lower rate limits. For higher limits, set the key in your shell or user environment, never in the repository:
+DeepWiki runs as a native remote MCP server (see `.pi/mcp.json`): Pi connects over streamable HTTP to `https://mcp.deepwiki.com/mcp`. It covers public GitHub repositories with no API key and no local process. Private repositories need a Devin account and are out of scope for the default workflow — treat private-repo docs as `UNPROVEN` via local source instead.
 
-```bash
-export CONTEXT7_API_KEY="ctx7sk-..."
+The server stays `hidden` with only `read_wiki_structure`, `read_wiki_contents`, and `ask_wiki_question` exposed as `deferred`; load them with native `tool_search`, then call the returned `mcp__deepwiki__*` schemas:
+
+```text
+Use tool_search to load the DeepWiki read_wiki_structure tool. List the documentation topics for vercel/next.js. Do not fetch full contents yet.
 ```
 
-Use `doc_search_resolve_library_id` and `doc_search_get_library_docs` only when local source, installed types, and repository patterns do not answer a version-sensitive framework question. The raw-cache helper remains installed but is intentionally omitted from the default tool surface because the normal documentation result already covers routine use.
+Use `mcp__deepwiki__read_wiki_structure` first to discover topics for a `owner/repo` name, then `mcp__deepwiki__read_wiki_contents` or `mcp__deepwiki__ask_wiki_question` for the focused question — only when local source, installed types, and repository patterns do not answer it. No documentation schema is paid for on an ordinary localized edit. Loaded tools persist on the active branch across resume/reload; Pi branch state owns them, not `harness_tools`.
 
-The model activates the `docs` capability before these calls; no documentation schema is paid for on an ordinary localized edit.
+Reliability: DeepWiki answers come from its generated wiki index, which can lag the repository HEAD — prefer local source for bleeding-edge APIs and confirm version-sensitive claims against installed types. Pi retries transient MCP HTTP failures (408, 429, 5xx) twice; on a rate limit slow down, narrow to one structure call plus one focused question, and resume.
+
+Never paste secrets, credentials, private keys, or proprietary code into `repoName`/`question` — the safety guard blocks obvious secret/sensitive-path inputs. There is no key to manage: do not add credentials to `.pi/mcp.json`; keep any personal Devin/private-repo servers in your user-level `~/.pi/agent/mcp.json`, outside Git.
 
 ## Web search
 
@@ -204,7 +208,7 @@ After setup:
 Then test capabilities with bounded requests:
 
 ```text
-Activate the docs capability, then use doc_search_resolve_library_id to resolve the React documentation library ID. Do not fetch broad documentation yet.
+Use tool_search to load the DeepWiki read_wiki_structure tool. List the documentation topics for the target repository. Do not fetch full contents yet.
 ```
 
 ```text

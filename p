@@ -17,7 +17,7 @@ if ! command -v pi >/dev/null 2>&1; then
 Pi is not installed.
 
 Install the official package:
-  npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.0
+  npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.4
 MSG
   exit 127
 fi
