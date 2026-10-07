@@ -84,9 +84,20 @@ full gate at each phase.
 2. Read the Astro 6→7 and `@astrojs/mdx 4→8` migration notes (official docs,
    version-matched) for breaking config/API changes affecting this repo
    (content collections API, `mdx({ remarkPlugins })` shape, `astro check`).
-3. Upgrade `astro`, `@astrojs/mdx`, `@astrojs/react`, `@astrojs/tailwind`,
-   `@astrojs/sitemap`, `@astrojs/check` together (they move as a set):
-   `npm install astro@7 @astrojs/mdx@8 @astrojs/react@7 @astrojs/tailwind@6 @astrojs/sitemap@latest @astrojs/check@latest` — adjust ONLY per the migration notes.
+3. Upgrade the Astro set together (they move as a set). REVISED 2026-10-07:
+   `@astrojs/tailwind` (even v6.0.2) peers `astro ^3||^4||^5` — verified via
+   `npm view` — so it CANNOT ride along to Astro 7. Drop the integration and
+   adopt the Vite plugin in the SAME step (this merges old Phase C here):
+   `npm install astro@7 @astrojs/mdx@8 @astrojs/react@7 @astrojs/sitemap@latest
+   @astrojs/check@latest @tailwindcss/vite@latest tailwindcss@4`
+   (`@astrojs/sitemap@3.7.4` / `@astrojs/check@0.9.10` were already latest —
+   nothing to do there), then remove the `tailwind()` integration import from
+   `astro.config.mjs`, register `@tailwindcss/vite`, and migrate
+   `tailwind.config.cjs` to CSS-based config per the official v3→v4 guide.
+   Executor-flagged (confirm against version-matched docs during execution):
+   Astro 7's new Markdown pipeline may require `@astrojs/markdown-remark` +
+   `processor: unified()` to keep `markdown.remarkPlugins` and
+   `mdx({ remarkPlugins })` (i.e. `remarkBaseLinks`) working.
 4. Apply the minimal code/config edits the new majors require, nothing more.
 
 **Verify**: `npm run ci` → exit 0. If red, fix only breakage attributable to
@@ -99,18 +110,19 @@ the upgrade (max two attempts per error class, then STOP).
 
 **Verify**: `npm run ci` → exit 0.
 
-### Phase C: Tailwind 4
+### Phase C: Tailwind 4 — MERGED INTO PHASE A (revised 2026-10-07)
 
-Tailwind v4 replaces `tailwind.config.cjs` with CSS-based config — the
-highest-churn phase. Follow the official v3→v4 upgrade guide; the repo's
-design tokens live in `src/styles/theme.css` (canonical) with Tailwind
-exposure in `tailwind.config.cjs`. Preserve every token value (this is a
-migration, not a rebrand).
+The `@astrojs/tailwind` peer conflict forces the Tailwind 4 migration into
+the Astro 7 step — there is no separate Phase C anymore. The v3→v4 config
+migration and the capture-compare verification below happen as part of
+revised Phase A step 3. Token values in `src/styles/theme.css` stay
+byte-identical (migration, not rebrand).
 
-**Verify**: `npm run ci` → exit 0 AND visual budgets unchanged
-(`npm run budgets` met) AND a 390px + 1360px homepage capture compared
-against pre-upgrade captures (take them in Phase A before changing anything
-visual). Pixel-drift beyond anti-aliasing → STOP.
+Capture-compare (still required before leaving Phase A): `npm run ci` → 0
+AND `npm run budgets` met AND 390px + 1360px homepage captures compared
+against the baselines at `/tmp/exec-010/.artifacts/visual/baseline-{390,1360}.png`
+(taken 2026-10-07 from unmodified `dist/` on Astro 5.18.2 — re-take them in
+the fresh executor copy if stale). Pixel drift beyond anti-aliasing → STOP.
 
 ### Phase D: Vitest 5, ESLint 10, remainder
 
@@ -158,6 +170,20 @@ Stop and report back (do not improvise) if:
 - TypeScript 7 introduces ANY new error class — revert TS alone, record deferred, continue the rest.
 - A migration guide step contradicts `docs/DESIGN.md` token ownership (code tokens own values) — doc wins; stop and report the conflict.
 - `npm install` wants to change the Node engine floor — stop; runtime upgrades need owner sign-off.
+
+## Refinement (2026-10-07 — first dispatch STOPPED, plan revised, ready to re-run)
+
+First execution (isolated copy `/tmp/exec-010`) STOPPED correctly at the
+Phase A install: `npm install` of the original pinned set fails ERESOLVE
+(`@astrojs/tailwind@6.0.2` peer `astro ^3||^4||^5` vs `astro@7.3.6`),
+reproduced twice including the exact pinned set; no files were changed.
+Advisor independently confirmed the peer conflict via
+`npm view @astrojs/tailwind@6.0.2 peerDependencies`. Positive byproducts
+preserved in `/tmp/exec-010`: pre-upgrade baselines
+(`.artifacts/visual/baseline-390.png`, `baseline-1360.png`), full unmodified
+`npm run ci` green + budgets met (JS 66.3KB/120KB, CSS 16.3KB/90KB) on Astro
+5.18.2, and the recorded `npm audit` Astro critical set. Re-dispatch uses
+revised Phase A above; all STOP conditions still apply.
 
 ## Maintenance notes
 

@@ -10,6 +10,7 @@ import EntryCard from '../components/content/EntryCard.astro';
 import Icon from '../components/ui/Icon.astro';
 import type { CourseEntry } from '../lib/content';
 import { courseConfig } from '../config/course';
+import { absoluteUrl } from '../config/site';
 import { toPersianDigits } from '../lib/utils';
 
 interface Props {
@@ -30,9 +31,24 @@ const sections = courseConfig.sections
   .filter((s) => s.items.length > 0);
 
 const unsectioned = entries.filter((e) => !e.section);
+
+/** Machine-readable index of everything listed on this page. */
+const listJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: title,
+  description,
+  inLanguage: 'fa',
+  itemListElement: entries.map((entry, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: entry.title,
+    url: absoluteUrl(entry.path),
+  })),
+};
 ---
 
-<BaseLayout title={title} description={description} noindex={noindex}>
+<BaseLayout title={title} description={description} noindex={noindex} jsonLd={[listJsonLd]}>
   <div class="mx-auto max-w-shell px-4 py-10 sm:px-6 lg:py-14">
     <header class="mb-10 max-w-2xl">
       <h1 class="text-3xl">{title}</h1>

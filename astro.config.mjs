@@ -37,7 +37,14 @@ export default defineConfig({
     // MDX goes through the MDX integration's own pipeline, so the base-link
     // plugin must be registered there as well as on `markdown`.
     mdx({ remarkPlugins: [[remarkBaseLinks, { base: basePath }]] }),
-    sitemap(),
+    sitemap({
+      // Suggest only indexable routes: the search page carries
+      // `noindex, follow` and must never appear in the sitemap.
+      filter: (page) => {
+        const pathname = new URL(page).pathname.replace(/\/+$/, '');
+        return pathname !== `${basePath}/search`;
+      },
+    }),
   ],
   vite: {
     resolve: {

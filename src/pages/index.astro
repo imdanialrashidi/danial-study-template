@@ -11,7 +11,7 @@ import CourseLayout from '../layouts/CourseLayout.astro';
 import Icon from '../components/ui/Icon.astro';
 import CourseRoadmap from '../components/home/CourseRoadmap.astro';
 import { courseConfig } from '../config/course';
-import { creator, socialLinks, heroCtas } from '../config/site';
+import { absoluteUrl, creator, socialLinks, heroCtas } from '../config/site';
 import { getSectionGroups, getAllEntries } from '../lib/content';
 import { toPersianDigits, toPersianNumeral, formatMinutes, DIFFICULTY_LABELS } from '../lib/utils';
 import { withBase } from '../lib/url';
@@ -42,6 +42,22 @@ const learnerGains = [
   'هر فرمول با توضیح دقیق و کاربرد',
   'در پایان هر بخش، تمرین با پاسخ تشریحی',
 ];
+
+/** Structured data for the course as a whole. */
+const courseJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: courseConfig.title,
+  description: courseConfig.description,
+  inLanguage: 'fa',
+  url: absoluteUrl('/'),
+  provider: {
+    '@type': 'Person',
+    name: creator.name,
+    url: creator.website,
+    sameAs: [creator.github, creator.instagram, creator.telegram],
+  },
+};
 ---
 
 <CourseLayout
@@ -49,6 +65,7 @@ const learnerGains = [
   description={courseConfig.description}
   sections={sections}
   wide={true}
+  jsonLd={[courseJsonLd]}
 >
   <!-- ── Hero: what this is, what you get, what to do next ────────────────── -->
   <section class="border-b border-line pb-10 pt-2 sm:pb-12 lg:pb-14 lg:pt-8" aria-labelledby="course-title">

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
+import { absoluteUrl } from '../../config/site';
 import { getEntriesByKind, type CourseEntry } from '../../lib/content';
 import { renderContent, mdxComponents } from '../../lib/render';
 import { toPersianDigits } from '../../lib/utils';
@@ -27,11 +28,25 @@ const rendered = await Promise.all(
 
 // First-letter links for the jump bar.
 const jumpTargets = [...groups.entries()].map(([letter, items]) => ({ letter, count: items.length }));
+
+const glossaryJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'واژه‌نامه',
+  inLanguage: 'fa',
+  itemListElement: entries.map((entry, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: entry.title,
+    url: absoluteUrl(entry.path),
+  })),
+};
 ---
 
 <BaseLayout
   title="واژه‌نامه"
-  description="واژه‌های کلیدی دوره با تعریف دقیق و کوتاه، برای مرور سریع هنگام حل مسئله."
+  description="واژه‌نامهٔ حساب دیفرانسیل: تعریف کوتاه و دقیق هر اصطلاح، از تابع مرکب تا نقطهٔ بحرانی، برای مرور سریع هنگام حل مسئله."
+  jsonLd={[glossaryJsonLd]}
 >
   <div class="mx-auto max-w-shell px-4 py-10 sm:px-6 lg:py-14">
     <header class="mb-8 max-w-2xl">

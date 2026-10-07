@@ -15,18 +15,18 @@ Canonical repo gates (do not guess others): `npm run validate`,
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001 | Verification routes for product files | P1 | S | — | TODO |
-| 002 | Real build inputs in `.env.example` | P1 | S | — | TODO |
-| 003 | Validator: YAML block lists | P1 | S | — | TODO |
-| 004 | Base-prefix for images/definitions | P1 | S | — | TODO |
-| 005 | Search-ranking extraction + tests | P1 | S | — | TODO |
-| 006 | Remove dead `collectLinkProblems` | P2 | S | — | TODO |
-| 007 | Quiz best-score reset on changed totals | P2 | S | — | TODO |
-| 008 | Theme config naming + drop `secondary` | P3 | S | — | TODO |
-| 009 | Trim sample to used sections | P3 | S | — | TODO |
-| 010 | Framework major upgrades | P2 | L | 005 | TODO |
-| 011 | [SPIKE] Bookmarks page design | P3 | S | — | TODO |
-| 012 | [SPIKE] Per-course motif mechanism | P3 | S | 008; 010 blocks final answer | TODO |
+| 001 | Verification routes for product files | P1 | S | — | DONE (approved 2026-10-07; isolated copy /tmp/exec-001, awaiting landing decision) |
+| 002 | Real build inputs in `.env.example` | P1 | S | — | DONE (approved 2026-10-07; isolated copy /tmp/exec-002, awaiting landing decision) |
+| 003 | Validator: YAML block lists | P1 | S | — | DONE (approved 2026-10-07; isolated copy /tmp/exec-003, awaiting landing decision) |
+| 004 | Base-prefix for images/definitions | P1 | S | — | DONE (approved 2026-10-07; isolated copy /tmp/exec-004, awaiting landing decision) |
+| 005 | Search-ranking extraction + tests | P1 | S | — | DONE (approved 2026-10-07; isolated copy /tmp/exec-005, awaiting landing decision) |
+| 006 | Remove dead `collectLinkProblems` | P2 | S | — | DONE (approved 2026-10-07 w/ documented resolveSync co-deletion; copy /tmp/exec-006, awaiting landing) |
+| 007 | Quiz best-score reset on changed totals | P2 | S | — | DONE (approved 2026-10-07 after 1 revise round for true red-proof; copy /tmp/exec-007, awaiting landing) |
+| 008 | Theme config naming + drop `secondary` | P3 | S | — | DONE (approved 2026-10-07; copy /tmp/exec-008, awaiting landing) |
+| 009 | Trim sample to used sections | P3 | S | — | DONE (approved 2026-10-07; copy /tmp/exec-009, awaiting landing) |
+| 010 | Framework major upgrades | P2 | L | 005 | DONE (approved 2026-10-07 after 1 STOP+refine round; copy /tmp/exec-010, awaiting landing; TS7 deferred, 360-overflow pre-existing) |
+| 011 | [SPIKE] Bookmarks page design | P3 | S | — | DONE (spike 2026-10-07, verdict: RECOMMEND S-slice /saved; see plan file) |
+| 012 | [SPIKE] Per-course motif mechanism | P3 | S | 008; 010 blocks final answer | DONE (spike 2026-10-07, verdict: Option B, build deferred to trigger; see plan file) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

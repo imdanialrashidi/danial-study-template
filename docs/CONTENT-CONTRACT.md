@@ -122,6 +122,7 @@ source; a fork would break the shared visual identity.
 | `tags` | no | string[] ≤ 12 | shown on cards |
 | `prerequisites` | no | slug[] ≤ 8 | must resolve to real entries |
 | `draft` | no | boolean | `true` hides the entry from the site |
+| `updated` | no | `YYYY-MM-DD` | last substantive update; renders a visible line plus `dateModified` structured data. Set it when you revise an entry — never invent it. |
 
 **Quote any value containing `:`** — YAML would otherwise mis-parse it:
 

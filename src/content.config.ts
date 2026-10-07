@@ -51,6 +51,14 @@ const baseMeta = z.object({
   prerequisites: PREREQUISITES,
   tags: TAGS,
   draft: z.boolean().default(false),
+  /**
+   * Last substantive update (`YYYY-MM-DD`). Optional; when set it renders a
+   * visible "last updated" line plus `dateModified` structured data.
+   */
+  updated: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'updated must be YYYY-MM-DD')
+    .optional(),
 });
 
 /** Reference to a formula entry, optionally with the specific formula id. */
@@ -152,6 +160,11 @@ const glossary = defineCollection({
     group: z.string().min(2).max(40).optional(),
     tags: TAGS,
     draft: z.boolean().default(false),
+    /** Last substantive update (`YYYY-MM-DD`); same rendering as other kinds. */
+    updated: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'updated must be YYYY-MM-DD')
+      .optional(),
   }),
 });
 

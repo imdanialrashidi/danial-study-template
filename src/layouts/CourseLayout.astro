@@ -28,9 +28,15 @@ interface Props {
   wide?: boolean;
   /** Build-time headings for the desktop TOC rail. */
   tocHeadings?: TocHeading[];
+  /** Social/structured-data overrides, forwarded to BaseLayout. */
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  jsonLd?: Array<Record<string, unknown>>;
 }
 
-const { title, description, entry, sections = [], prev, next, noindex, wide = false, tocHeadings = [] } = Astro.props;
+const { title, description, entry, sections = [], prev, next, noindex, wide = false, tocHeadings = [], ogType, ogImage, publishedTime, modifiedTime, jsonLd } = Astro.props;
 const showToc = isEnabled('toc') && tocHeadings.length > 0;
 const showProgress = isEnabled('progress');
 const sectionTitle = entry?.section ? sections.find((s) => s.id === entry.section)?.title : undefined;
@@ -40,7 +46,16 @@ const difficultyLabel = entry?.difficulty
   : undefined;
 ---
 
-<BaseLayout title={title} description={description} noindex={noindex}>
+<BaseLayout
+  title={title}
+  description={description}
+  noindex={noindex}
+  ogType={ogType}
+  ogImage={ogImage}
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+  jsonLd={jsonLd}
+>
   {/* Content pages use a narrower shell so the reading column and the contents
       rail sit together instead of floating at opposite ends of a 1200px band. */}
   <div class={`mx-auto px-4 py-8 sm:px-6 lg:py-10 ${wide ? 'max-w-shell' : 'max-w-5xl'}`}>
@@ -99,6 +114,11 @@ const difficultyLabel = entry?.difficulty
               </div>
               <h1 class="mt-3 text-3xl">{title}</h1>
               <p class="mt-3 max-w-measure text-body leading-relaxed text-ink-muted">{description}</p>
+              {entry && modifiedTime && (
+                <p class="mt-2 text-xs text-ink-faint">
+                  آخرین به‌روزرسانی: {toPersianDigits(modifiedTime)}
+                </p>
+              )}
             </header>
           )
         }

@@ -9,6 +9,7 @@
 import CourseLayout from '../layouts/CourseLayout.astro';
 import Icon from '../components/ui/Icon.astro';
 import { getSectionGroups } from '../lib/content';
+import { absoluteUrl } from '../config/site';
 import { toPersianDigits, toPersianNumeral, formatMinutes } from '../lib/utils';
 import { withBase } from '../lib/url';
 
@@ -18,12 +19,28 @@ const totalMinutes = sections.reduce(
   (n, s) => n + s.entries.reduce((m, e) => m + (e.estimatedMinutes ?? 0), 0),
   0,
 );
+
+const mapJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'نقشهٔ دوره',
+  inLanguage: 'fa',
+  itemListElement: sections
+    .flatMap((s) => s.entries)
+    .map((entry, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: entry.title,
+      url: absoluteUrl(entry.path),
+    })),
+};
 ---
 
 <CourseLayout
   title="نقشهٔ دوره"
-  description="ساختار کامل دوره: هر بخش، هر مطلب، به‌ترتیب خواندن."
+  description="نقشهٔ کامل دورهٔ حساب دیفرانسیل: همهٔ بخش‌ها و مطالب به‌ترتیب خواندن با زمان تقریبی مطالعه. از کجا شروع کنید و بعد چه بخوانید."
   sections={sections}
+  jsonLd={[mapJsonLd]}
 >
   <p class="mb-10 max-w-measure text-body leading-relaxed text-ink-muted">
     {toPersianDigits(sections.length)} بخش · {toPersianDigits(totalEntries)} مطلب

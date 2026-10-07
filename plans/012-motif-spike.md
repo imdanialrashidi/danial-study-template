@@ -132,3 +132,27 @@ Stop and report back (do not improvise) if:
 - Revisit trigger lives in the verdict — do not re-spike without a real
   course request.
 - Reviewers: judge mechanism cost honesty, especially contrast re-measurement.
+
+## Spike outcome (executed 2026-10-07, isolated copy /tmp/exec-012, no tree changes)
+
+**Verdict: RECOMMEND Option B (sanctioned motif slot, constrained geometry);
+build DEFERRED until trigger.**
+
+- **Investigation confirmed:** `motif`/`typography` config has ZERO readers
+  (declarations + scaffold only) — no mechanism half-exists. Tailwind still v3
+  in the investigated tree; plan 008/010 unlanded there, as expected.
+- **Option B:** template owns the frame forever (homepage plate geometry,
+  caption/aria/placeholder, `InteractiveFigure` contract); a course supplies
+  ONLY SVG strokes/labels using existing measured roles (`text-primary` etc.).
+  Contrast story is free (DESIGN.md table stays true by construction, enforced
+  by a token-ownership grep: no hex in course-supplied slots). Maintenance LOW;
+  shelf coherence HIGH.
+- **Rejected:** A (extended role set — every course pays full contrast
+  metrology, HIGH maintenance); C (presets-only — guarantees a worse forced
+  decision later, first Physics course ships generic or forks `theme.css`).
+- **Trigger to build:** (a) first real non-sample course requests disciplinary
+  artwork, AND (b) plan 010 landed, AND (c) plan 008 landed. Do not re-spike
+  without that trigger.
+- **Open questions:** (1) wire dormant `motif` key to the slot or delete it
+  with plan 008? (2) one homepage-plate slot enough, or per-course
+  `InteractiveFigure` defaults too? (3) who authors/approves the first SVG set?

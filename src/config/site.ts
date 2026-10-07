@@ -136,6 +136,14 @@ export function absoluteUrl(path: string): string {
   return `${siteUrl.replace(/\/$/, '')}${basePath}${clean}` || '/';
 }
 
+/**
+ * Default social share image (brand-level PNG in `public/`).
+ *
+ * Individual pages may override it per page; courses that want titled artwork
+ * replace `public/og-image.png` (keep 1200×630) instead of touching code.
+ */
+export const defaultOgImage: string = absoluteUrl('/og-image.png');
+
 export const SEO = {
   defaultTitleSuffix: creator.name,
   locale: 'fa_IR',

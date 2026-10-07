@@ -6,7 +6,7 @@
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import { courseConfig } from '../config/course';
-import { basePath, absoluteUrl, SEO } from '../config/site';
+import { basePath, absoluteUrl, defaultOgImage, SEO } from '../config/site';
 import { withBase } from '../lib/url';
 import { themeStyleAttribute } from '../lib/themes';
 import { isEnabled } from '../lib/features';
@@ -23,9 +23,27 @@ interface Props {
   class?: string;
   /** Set true for pages that should not be indexed (e.g. search). */
   noindex?: boolean;
+  /** `article` for entry pages; defaults to `website`. */
+  ogType?: 'website' | 'article';
+  /** Absolute share-image URL; defaults to the brand og:image. */
+  ogImage?: string;
+  /** ISO-8601 dates for article pages (meta + JSON-LD only when set). */
+  publishedTime?: string;
+  modifiedTime?: string;
+  /** JSON-LD graphs, each rendered as its own inline script. */
+  jsonLd?: Array<Record<string, unknown>>;
 }
 
-const { title, description = courseConfig.description, noindex = false } = Astro.props;
+const {
+  title,
+  description = courseConfig.description,
+  noindex = false,
+  ogType = 'website',
+  ogImage = defaultOgImage,
+  publishedTime,
+  modifiedTime,
+  jsonLd = [],
+} = Astro.props;
 
 const pageTitle = title === courseConfig.title ? `${courseConfig.title} — ${SEO.defaultTitleSuffix}` : `${title} — ${courseConfig.title}`;
 const canonical = absoluteUrl(Astro.url.pathname.replace(basePath, '') || '/');
@@ -47,17 +65,27 @@ const paletteIndex = showPalette ? buildSearchIndex(await getAllEntries()) : [];
     {noindex && <meta name="robots" content="noindex, follow" />}
 
     <!-- Open Graph / Twitter -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={courseConfig.title} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={SEO.locale} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={pageTitle} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content={SEO.twitter} />
     <meta name="twitter:creator" content={SEO.twitter} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    {jsonLd.map((node) => (
+      <script type="application/ld+json" set:html={JSON.stringify(node)} />
+    ))}
 
     <meta name="theme-color" content={SEO.themeColor} media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content={SEO.themeColorDark} media="(prefers-color-scheme: dark)" />

@@ -134,3 +134,32 @@ Stop and report back (do not improvise) if:
 - If approved, the build plan must reuse `CourseProgress`'s filter pattern and
   the dot-leader listing language — note that for its author.
 - Reviewers: judge the verdict, not the prose length.
+
+## Spike outcome (executed 2026-10-07, isolated copy /tmp/exec-011, no tree changes)
+
+**Verdict: RECOMMEND — build the S slice now (qualifiedId migration deferred).**
+
+- **Route:** `/saved` (short ASCII, consistent with `/search`, `/map`; Persian label
+  «نشان‌شده‌ها» lives in UI copy only).
+- **Data flow:** new `SavedList` island ports the `CourseProgress` client-filter
+  pattern (static empty shell + `useEffect` read of `snapshot().bookmarks`,
+  re-read on `dr-progress`/`storage` events); links via `withBase(entry.path)`.
+- **Key caveat found:** `CourseLayout` passes bare `entry.id` (not `qualifiedId`)
+  to `BookmarkToggle`/progress writes, so cross-kind slug collisions are real.
+  Spike costs collision-tolerant matching now (XS) vs qualifiedId migration
+  with bare-slug back-compat later (S) — pin the choice in the build plan.
+- **States:** empty plate with imperative CTA («رفتن به درس‌ها»); unavailable
+  storage gets an honest non-blocking notice (mirrors `persistent=false`);
+  silent stale-id pruning (like `completionRatio`'s known-set rule); focus ring
+  + 44px targets; no entrance animation (reduced-motion safe).
+- **SEO:** `noindex,follow` (precedent: `search.astro`); SSR shell is identical
+  for every crawler/user since content resolves from per-browser localStorage.
+- **Glossary:** INCLUDED in a trailing «واژه‌ها» group (BookmarkToggle renders
+  on glossary pages — excluding them would silently drop real saves).
+- **Nav:** one `Header.astro` `navItems` entry, last, gated on
+  `isEnabled('progress')`.
+- **Effort:** S without migration (page + island + nav line + build-output and
+  unit tests); M with the qualifiedId migration.
+- **Open questions for maintainer:** (1) bare-id collision tolerance vs
+  migration? (2) bookmark glyph present in Icon set or reuse? (3) add
+  «clear all» via existing `clear()` in v1 or per-row un-bookmark only?
