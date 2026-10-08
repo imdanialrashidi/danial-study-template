@@ -22,6 +22,10 @@ export interface CreatorIdentity {
   telegram: string;
   /** Telegram username without @. */
   telegramUsername: string;
+  /** Announcements channel for new projects/study websites, e.g. `https://t.me/danialrashidi_projects`. */
+  telegramChannel: string;
+  /** Channel username without @. */
+  telegramChannelUsername: string;
   /** GitHub profile URL. */
   github: string;
   /** GitHub username without @. */
@@ -97,10 +101,23 @@ export interface CourseFeatures {
   courseMap?: boolean;
 }
 
+/** Per-topic brand mark for a course site built from this template. */
+export interface CourseLogo {
+  /** 1–2 characters rendered in the favicon, e.g. `ح` for حساب. */
+  monogram: string;
+  /** Header mark icon name (see `src/components/ui/icon-names.ts`). */
+  icon: string;
+}
+
 export interface CourseConfig {
   title: string;
   /** One-line promise shown under the hero title (configurable per course). */
   tagline?: string;
+  /** Per-topic brand: change these two values and the header mark +
+   *  favicon follow — no component edits needed when this template powers
+   *  a site on another subject. `icon` must be an IconName from
+   *  `src/components/ui/icon-names.ts`. */
+  logo?: CourseLogo;
   description: string;
   shortDescription?: string;
   locale: ContentLocale;

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { courseConfig } from '../../src/config/course';
 
 /**
  * Deployment base-path regression guard.
@@ -87,6 +88,32 @@ describeIfBuilt('built output', () => {
       expect(html, file).toContain('imdanialrashidi.github.io');
       expect(html, file).toContain('t.me/imdanialrashidi');
     }
+  });
+
+  it('points the Telegram popup and announcements at the projects channel', () => {
+    // Accepted announcements channel for new projects/study websites
+    // (TELEGRAM_CHANNEL_URL in src/config/site.ts). The discovery popup
+    // ships on every page, so the channel URL must be present everywhere
+    // and must be the popup join target — not the personal contact URL
+    // asserted above.
+    const channel = 'https://t.me/danialrashidi_projects';
+    for (const file of htmlFiles) {
+      const html = readFileSync(file, 'utf8');
+      expect(html, `${file} never mentions the projects channel`).toContain(channel);
+      expect(html, `${file} popup join button is missing`).toContain('data-telegram-join');
+      expect(html, `${file} popup join does not target the channel`).toContain(`href="${channel}"`);
+    }
+  });
+
+  it('serves a favicon derived from the course logo', () => {
+    // A new topic reuses this template by changing `logo` in
+    // src/config/course.ts; the served favicon must follow that variable.
+    const monogram = courseConfig.logo?.monogram;
+    expect(monogram, 'course logo monogram is not configured').toBeTruthy();
+    const favicon = path.join(distDir, 'favicon.svg');
+    expect(existsSync(favicon), 'dist/favicon.svg missing').toBe(true);
+    const svg = readFileSync(favicon, 'utf8');
+    expect(svg, 'favicon does not carry the course monogram').toContain(monogram as string);
   });
 
   it('contains no institutional branding', () => {

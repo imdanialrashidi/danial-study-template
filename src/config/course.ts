@@ -21,6 +21,14 @@ export const courseConfig: CourseConfig = {
   locale: 'fa',
   direction: 'rtl',
 
+  // --- Brand (per-topic logo) ---
+  // When this template powers a site on another subject, change these two
+  // values and the header mark + favicon follow — no component edits needed.
+  logo: {
+    monogram: 'ح',
+    icon: 'formula',
+  },
+
   // --- Course metadata ---
   difficulty: 'beginner',
   estimatedDuration: 'خودآموز',

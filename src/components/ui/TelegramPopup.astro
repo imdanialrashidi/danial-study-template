@@ -16,7 +16,7 @@
  * normally and the popup simply never appears.
  */
 import Icon from '../ui/Icon.astro';
-import { creator, telegramPopup } from '../../config/site';
+import { telegramPopup } from '../../config/site';
 ---
 
 <div
@@ -49,7 +49,7 @@ import { creator, telegramPopup } from '../../config/site';
         <h2 id="telegram-popup-title" class="font-display text-lg font-bold leading-snug text-ink">
           {telegramPopup.title}
         </h2>
-        <p class="mt-0.5 text-xs text-ink-faint" dir="ltr">{creator.telegram.replace('https://', '')}</p>
+        <p class="mt-0.5 text-xs text-ink-faint" dir="ltr">{telegramPopup.channelUrl.replace('https://', '')}</p>
       </div>
       <button
         type="button"
@@ -68,7 +68,7 @@ import { creator, telegramPopup } from '../../config/site';
     <div class="mt-5 grid gap-2">
       <a
         data-telegram-join
-        href={creator.telegram}
+        href={telegramPopup.channelUrl}
         rel="me noopener"
         target="_blank"
         class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-deep"

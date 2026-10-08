@@ -21,8 +21,11 @@ import type { CreatorIdentity, SocialLink } from '../lib/types';
 import { courseConfig } from './course';
 
 // ─── EDIT HERE: change identity in one place ────────────────────────────────
-// Change these three usernames + two URLs and the entire site follows. URLs
+// Change these usernames + URLs and the entire site follows. The contact URLs
 // below are derived from the usernames so they cannot drift out of sync.
+// TELEGRAM_CHANNEL_URL is the announcements channel shown in the Telegram
+// popup and wherever new projects/study websites are announced — change it
+// once here and every surface follows.
 
 const GITHUB_USERNAME = 'imdanialrashidi';
 const INSTAGRAM_USERNAME = 'imdanialrashidi';
@@ -30,11 +33,17 @@ const TELEGRAM_USERNAME = 'imdanialrashidi';
 
 const PERSONAL_WEBSITE = 'https://imdanialrashidi.github.io';
 const STUDY_HUB = 'https://study.danialrashidi.ir';
+const TELEGRAM_CHANNEL_URL = 'https://t.me/danialrashidi_projects';
 
 // ─── Derived creator identity (do not edit below) ───────────────────────────
 
 function shortHost(url: string): string {
   return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+/** Channel username derived from the URL so the two cannot drift out of sync. */
+function channelUsername(url: string): string {
+  return url.replace(/\/$/, '').split('/').pop() ?? '';
 }
 
 export const creator: CreatorIdentity = {
@@ -43,6 +52,8 @@ export const creator: CreatorIdentity = {
   website: PERSONAL_WEBSITE,
   telegram: `https://t.me/${TELEGRAM_USERNAME}`,
   telegramUsername: TELEGRAM_USERNAME,
+  telegramChannel: TELEGRAM_CHANNEL_URL,
+  telegramChannelUsername: channelUsername(TELEGRAM_CHANNEL_URL),
   github: `https://github.com/${GITHUB_USERNAME}`,
   githubUsername: GITHUB_USERNAME,
   instagram: `https://www.instagram.com/${INSTAGRAM_USERNAME}`,
@@ -103,10 +114,14 @@ export const heroCtas = {
   roadmapHref: '/#roadmap',
 } as const;
 
-/** Telegram discovery popup copy + behaviour. All tunable in one place. */
+/** Telegram discovery popup copy + behaviour. All tunable in one place.
+ *  `channelUrl` is the announcements channel (new projects/study websites);
+ *  it defaults to the TELEGRAM_CHANNEL_URL identity above and can be
+ *  overridden per course without touching components. */
 export const telegramPopup = {
+  channelUrl: creator.telegramChannel,
   title: 'در تلگرام همراه شوید',
-  body: 'موضوع‌های تازه، وب‌سایت‌های آموزشی تازه و خبرهای دوره را همان‌جا اعلام می‌کنم. اگر دوست دارید گم‌شان نکنید، عضو شوید.',
+  body: 'پروژه‌ها، وب‌سایت‌های آموزشی تازه و خبرهای دوره را در کانال تلگرام اعلام می‌کنم. اگر دوست دارید گم‌شان نکنید، عضو شوید.',
   joinLabel: 'عضویت در تلگرام',
   dismissLabel: 'فعلاً نه',
   note: 'هر ۳۰ روز حداکثر یک‌بار نشان داده می‌شود.',
