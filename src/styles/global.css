@@ -7,6 +7,9 @@
 /*
  * KaTeX is rendered to HTML at build time (src/lib/math.ts), so only its
  * stylesheet and fonts are needed — never its JavaScript runtime.
+ * It stays global on purpose: the MDX component map (src/lib/mdx.ts) pulls
+ * the math components into every page's module graph, so component-level
+ * imports would still ship everywhere — as extra stylesheets instead of one.
  */
 @import 'katex/dist/katex.min.css';
 

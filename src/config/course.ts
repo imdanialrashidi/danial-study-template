@@ -23,7 +23,9 @@ export const courseConfig: CourseConfig = {
 
   // --- Brand (per-topic logo) ---
   // When this template powers a site on another subject, change these two
-  // values and the header mark + favicon follow — no component edits needed.
+  // values and the header mark + SVG favicon follow — no component edits
+  // needed. Then regenerate the raster favicons from the new mark:
+  // npm run build && node scripts/make-favicons.mjs && npm run build
   logo: {
     monogram: 'ح',
     icon: 'formula',

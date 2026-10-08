@@ -81,6 +81,7 @@ const isActive = (href: string) => {
         navItems.map((item) => (
           <a
             href={withBase(item.href)}
+            data-astro-prefetch
             aria-current={isActive(item.href) ? 'page' : undefined}
             class={`inline-flex min-h-[40px] items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors duration-fast ${
               isActive(item.href) ? 'bg-primary-wash font-bold text-primary-deep' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
@@ -145,6 +146,7 @@ const isActive = (href: string) => {
             <li>
               <a
                 href={withBase(item.href)}
+                data-astro-prefetch
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 class={`flex min-h-[48px] items-center gap-3 rounded-md px-3 py-2 text-sm ${
                   isActive(item.href) ? 'bg-primary-wash font-bold text-primary-deep' : 'text-ink hover:bg-surface-sunken'

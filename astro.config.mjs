@@ -20,6 +20,12 @@ export default defineConfig({
   site,
   base: basePath || '/',
   trailingSlash: 'ignore',
+  // Hover/tap prefetch only for links that opt in via `data-astro-prefetch`
+  // (header + prev/next navigation). Everything else stays on-demand.
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: 'hover',
+  },
   build: {
     // Static by default: no adapter is configured anywhere in this template.
     format: 'directory',
@@ -40,6 +46,9 @@ export default defineConfig({
     sitemap({
       // Suggest only indexable routes: the search page carries
       // `noindex, follow` and must never appear in the sitemap.
+      // lastmod stamps every URL with the build time (all pages rebuild
+      // together), so crawlers can skip unchanged URLs efficiently.
+      lastmod: new Date(),
       filter: (page) => {
         const pathname = new URL(page).pathname.replace(/\/+$/, '');
         return pathname !== `${basePath}/search`;

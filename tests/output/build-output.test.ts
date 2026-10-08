@@ -116,6 +116,30 @@ describeIfBuilt('built output', () => {
     expect(svg, 'favicon does not carry the course monogram').toContain(monogram as string);
   });
 
+  it('serves raster favicon fallbacks with valid dimensions', () => {
+    // SVG favicons cover modern browsers; the PNG fallback (legacy agents,
+    // search crawlers) and the Apple touch icon (iOS home screen) are
+    // generated from the live SVG by scripts/make-favicons.mjs.
+    for (const [file, size] of [['favicon-48.png', 48], ['apple-touch-icon.png', 180]] as const) {
+      const full = path.join(distDir, file);
+      expect(existsSync(full), `dist/${file} missing`).toBe(true);
+      const buf = readFileSync(full);
+      expect(buf.subarray(0, 8).toString('hex'), `${file} is not a PNG`).toBe('89504e470d0a1a0a');
+      const width = buf.readUInt32BE(16);
+      const height = buf.readUInt32BE(20);
+      expect([width, height], `${file} must be ${size}x${size}`).toEqual([size, size]);
+    }
+  });
+
+  it('links every favicon variant in the page head', () => {
+    for (const file of htmlFiles) {
+      const html = readFileSync(file, 'utf8');
+      expect(html, `${file} missing SVG icon link`).toMatch(/<link rel="icon"[^>]*type="image\/svg\+xml"/);
+      expect(html, `${file} missing PNG icon link`).toMatch(/<link rel="icon"[^>]*type="image\/png"[^>]*sizes="48x48"/);
+      expect(html, `${file} missing Apple touch icon link`).toMatch(/<link rel="apple-touch-icon"[^>]*>/);
+    }
+  });
+
   it('contains no institutional branding', () => {
     // The template must be usable for any subject and any learner. Rather than
     // banning common Persian words (a legitimate disclaimer mentions "استاد"),
@@ -176,6 +200,61 @@ describeIfBuilt('built output', () => {
         expect(href, `${file} → ${href} is missing the "${base}" base`).toMatch(/^\/(favicon\.svg|sitemap)/);
       }
     }
+  });
+  it('preloads the Arabic body and display font subsets on every page', () => {
+    // First-viewport text (H1 + body) paints in these two subsets; without
+    // preload the browser discovers them only after the stylesheet parses.
+    for (const file of htmlFiles) {
+      const html = readFileSync(file, 'utf8');
+      for (const subset of ['vazirmatn-arabic-wght-normal', 'estedad-arabic-wght-normal']) {
+        const tag = html.match(new RegExp(`<link[^>]*${subset}[^>]*>`))?.[0];
+        expect(tag, `${file} is missing a font preload for ${subset}`).toBeTruthy();
+        expect(tag, `${file} preload for ${subset} must declare as="font"`).toContain('as="font"');
+        expect(tag, `${file} preload for ${subset} must be crossorigin`).toContain('crossorigin');
+        const href = tag?.match(/href="([^"]+)"/)?.[1] ?? '';
+        const diskPath = path.join(distDir, stripBase(href).replace(/^\//, ''));
+        expect(existsSync(diskPath), `${file} preloads ${href}, which is not in dist`).toBe(true);
+      }
+    }
+  });
+
+  it('marks the about page as an AboutPage for the creator entity', () => {
+    const html = readFileSync(path.join(distDir, 'about/index.html'), 'utf8');
+    expect(html).toContain('"@type":"AboutPage"');
+    expect(html).toContain('"@type":"Person"');
+  });
+
+  it('ships KaTeX styling for pages that render math', () => {
+    // Math is pre-rendered HTML; without its stylesheet it paints unstyled.
+    const astroDir = path.join(distDir, '_astro');
+    const cssFiles = readdirSync(astroDir).filter((f) => f.endsWith('.css'));
+    const withKatex = cssFiles.filter((f) => readFileSync(path.join(astroDir, f), 'utf8').includes('.katex'));
+    expect(withKatex.length, 'no built stylesheet contains KaTeX rules').toBeGreaterThan(0);
+    const mathPages = htmlFiles.filter((f) => readFileSync(f, 'utf8').includes('class="katex'));
+    expect(mathPages.length, 'KaTeX CSS ships but no page renders math').toBeGreaterThan(0);
+  });
+  it('stamps sitemap URLs with lastmod for crawl efficiency', () => {
+    const xml = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
+    const urls = (xml.match(/<loc>/g) ?? []).length;
+    const stamps = (xml.match(/<lastmod>\d{4}-\d{2}-\d{2}/g) ?? []).length;
+    expect(urls, 'sitemap has no URLs').toBeGreaterThan(0);
+    expect(stamps, `only ${stamps}/${urls} sitemap URLs carry lastmod`).toBe(urls);
+  });
+
+  it('marks high-intent nav links for prefetch', () => {
+    // `prefetch: { prefetchAll: false }` in astro.config.mjs means only these
+    // links prefetch on hover/tap; everything else stays on-demand.
+    const home = readFileSync(path.join(distDir, 'index.html'), 'utf8');
+    expect(home, 'header nav links lost data-astro-prefetch').toMatch(/data-astro-prefetch/);
+    const lesson = readFileSync(path.join(distDir, 'lessons/01-intro-to-calculus/index.html'), 'utf8');
+    expect(lesson.match(/data-astro-prefetch/g)?.length ?? 0, 'lesson page should prefetch header + prev/next links').toBeGreaterThan(10);
+  });
+
+  it('ships repeat-visit cache headers for hashed assets', () => {
+    const headers = path.join(distDir, '_headers');
+    expect(existsSync(headers), 'dist/_headers missing (Cloudflare Pages caching)').toBe(true);
+    const body = readFileSync(headers, 'utf8');
+    expect(body, '_headers must pin /_astro/* immutable').toMatch(/\/_astro\/\*[\s\S]*immutable/);
   });
 });
 
