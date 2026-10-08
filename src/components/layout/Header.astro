@@ -183,45 +183,78 @@ const isActive = (href: string) => {
 </header>
 
 <script>
-  // Progressive enhancement only: the header is fully usable as static HTML.
-  // Arriving from the header's search button should land on a focused field.
-  if (new URLSearchParams(location.search).get('focus') === 'search') {
-    const url = new URL(location.href);
-    url.searchParams.delete('focus');
-    history.replaceState({}, '', url);
-    requestAnimationFrame(() => document.getElementById('search-input')?.focus());
+  // Header controls are progressive enhancement: the header is fully usable
+  // as static HTML. BaseLayout uses Astro's ClientRouter, so client-side
+  // navigation swaps the header DOM without reloading the document — a
+  // one-shot querySelector + addEventListener would leave the freshly
+  // swapped menu and theme buttons dead after the first navigation. All
+  // wiring therefore lives in initHeader(), which runs on initial load and
+  // on every `astro:page-load` (same pattern as TableOfContents/Formula).
+  function syncThemeIcon() {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    document.querySelector('[data-icon-sun]')?.classList.toggle('hidden', isDark);
+    document.querySelector('[data-icon-moon]')?.classList.toggle('hidden', !isDark);
   }
-  const menuButton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
 
-  menuButton?.addEventListener('click', () => {
-    const open = mobileNav?.hasAttribute('hidden') === false;
-    mobileNav?.toggleAttribute('hidden', open);
-    menuButton.setAttribute('aria-expanded', String(!open));
-    menuButton.setAttribute('aria-label', open ? 'باز کردن منو' : 'بستن منو');
-  });
-
-  const themeButton = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
-  const sun = document.querySelector('[data-icon-sun]');
-  const moon = document.querySelector('[data-icon-moon]');
-
-  const syncThemeIcon = () => {
-    const isDark = document.documentElement.dataset.theme === 'dark';
-    sun?.classList.toggle('hidden', isDark);
-    moon?.classList.toggle('hidden', !isDark);
-  };
-
-  themeButton?.addEventListener('click', () => {
-    const isDark = document.documentElement.dataset.theme === 'dark';
-    const next = isDark ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem('dr-theme', next);
-    } catch {
-      /* storage unavailable: theme still applies for this page view */
+  function initHeader() {
+    // Arriving from the header's search button should land on a focused field.
+    if (new URLSearchParams(location.search).get('focus') === 'search') {
+      const url = new URL(location.href);
+      url.searchParams.delete('focus');
+      history.replaceState({}, '', url);
+      requestAnimationFrame(() => document.getElementById('search-input')?.focus());
     }
-    syncThemeIcon();
-  });
 
-  syncThemeIcon();
+    const menuButton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
+
+    // Guarded per element: the script re-runs after each client-side swap and
+    // must bind the fresh nodes exactly once — a double-bound toggle would
+    // open-then-close in a single click and look dead.
+    if (menuButton && mobileNav && !menuButton.hasAttribute('data-header-bound')) {
+      menuButton.setAttribute('data-header-bound', '');
+      menuButton.addEventListener('click', () => {
+        const open = mobileNav.hasAttribute('hidden') === false;
+        mobileNav.toggleAttribute('hidden', open);
+        menuButton.setAttribute('aria-expanded', String(!open));
+        menuButton.setAttribute('aria-label', open ? 'باز کردن منو' : 'بستن منو');
+      });
+    }
+
+    const themeButton = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+    if (themeButton && !themeButton.hasAttribute('data-header-bound')) {
+      themeButton.setAttribute('data-header-bound', '');
+      themeButton.addEventListener('click', () => {
+        const isDark = document.documentElement.dataset.theme === 'dark';
+        const next = isDark ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try {
+          localStorage.setItem('dr-theme', next);
+        } catch {
+          /* storage unavailable: theme still applies for this page view */
+        }
+        syncThemeIcon();
+      });
+    }
+
+    // Every swap renders a fresh header; reset to a known-good closed menu
+    // and the correct icon so stale state can never leak across pages.
+    mobileNav?.toggleAttribute('hidden', true);
+    menuButton?.setAttribute('aria-expanded', 'false');
+    menuButton?.setAttribute('aria-label', 'باز کردن منو');
+    syncThemeIcon();
+  }
+
+  const armed = window as unknown as Record<string, unknown>;
+  if (!armed.__headerArmed) {
+    armed.__headerArmed = true;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHeader);
+    } else {
+      initHeader();
+    }
+    document.addEventListener('astro:page-load', initHeader);
+  } else {
+    initHeader();
+  }
 </script>
