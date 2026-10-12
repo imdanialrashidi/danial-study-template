@@ -16,10 +16,9 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - a model-neutral runtime that bounds implicit large-file reads, stops blind identical retries, and preserves a compact continuity capsule across resume/compaction;
 - Pi-native capability-aware tool schemas for the reviewed runtime;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
-- on-demand LSP, DeepWiki MCP documentation search, and web search/fetch;
+- on-demand web search/fetch;
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
-- a visible todo panel for genuinely multi-step work;
 - a tested full-workspace guard that blocks secrets, destructive host actions, publication/deployment, browser file exfiltration, and arbitrary Git/GitHub mutation while permitting the reviewed fixed-branch PR helper;
 - a low-ceremony `/skill:quick-fix` path plus specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
@@ -223,8 +222,6 @@ The template pins:
 
 ```text
 pi-sub-agent
-@juicesharp/rpiv-todo
-pi-lsp-adapter
 @bytetrue/pi-web-search
 ```
 
@@ -232,7 +229,6 @@ Plus native MCP in `.pi/mcp.json`:
 
 ```text
 @playwright/mcp (browser QA)
-DeepWiki remote MCP at mcp.deepwiki.com (docs, no key)
 ```
 
 The launcher initially exposes only:
@@ -245,25 +241,21 @@ read, bash, edit, write, grep, find, ls, harness_tools, tool_search
 
 | Capability | Deferred tools |
 |---|---|
-| `planning` | `todo` |
 | `delegation` | `subagent` |
-| `code_intelligence` | five focused LSP tools |
 | `web` | `web_search`, `web_fetch` |
 
-Docs and browser work use native `tool_search` directly: load only the needed `mcp__deepwiki__*` or `mcp__playwright__*` tools, then call their returned schemas.
+Browser work uses native `tool_search` directly: load only the needed `mcp__playwright__*` tools, then call their returned schemas.
 
-An empty capability list unloads managed specialists and preserves unrelated custom tools. Browser and docs work uses native `tool_search` directly: load only the needed `mcp__playwright__*` or `mcp__deepwiki__*` tools, then call their returned schemas. No browser/docs capability-loader call or third-party MCP adapter is needed. MCP connects in the background without blocking the first prompt on browser/docs startup; this is not a lazy/idle-stop lifecycle. Native codemode remains an optional operator choice, not another default schema.
+An empty capability list unloads managed specialists and preserves unrelated custom tools. Browser work uses native `tool_search` directly: load only the needed `mcp__playwright__*` tools, then call their returned schemas. No browser capability-loader call or third-party MCP adapter is needed. MCP connects in the background without blocking the first prompt on browser startup; this is not a lazy/idle-stop lifecycle. Native codemode remains an optional operator choice, not another default schema.
 
 Useful checks:
 
 ```text
-/todos
-/lsp status
 /mcp
 /web --show
 ```
 
-See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation search, web search, and Playwright setup.
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for web search and Playwright setup.
 
 ## Context and long-running work
 

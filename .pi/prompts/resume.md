@@ -16,7 +16,7 @@ $ARGUMENTS
    - current verified state;
    - smallest next action;
    - material risk/blocker.
-5. Recreate/align todo state only when the remaining work has multiple meaningful steps.
+5. Update the execution plan's next actions only when the remaining work has multiple meaningful steps.
 6. Continue from the smallest next action. Do not redo completed discovery or verification unless evidence is stale or the code changed.
 7. Keep the execution plan updated with decisions, evidence, and next steps as the work progresses.
 8. Finish using the normal evaluator and verification rules. Move/mark the plan complete only when all required acceptance criteria are proven.

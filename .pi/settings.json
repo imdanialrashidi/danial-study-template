@@ -2,8 +2,6 @@
   "enableInstallTelemetry": false,
   "packages": [
     "npm:pi-sub-agent@0.1.5",
-    "npm:@juicesharp/rpiv-todo@2.12.0",
-    "npm:pi-lsp-adapter@0.1.3",
     "npm:@bytetrue/pi-web-search@0.5.1"
   ],
   "theme": "slate",

@@ -15,18 +15,6 @@
       "repository": "https://github.com/HamdiMaz/pi-sub-agent"
     },
     {
-      "source": "npm:@juicesharp/rpiv-todo@2.12.0",
-      "integrity": "sha512-bTILerGqMGrWMUkahHzXTuYa4iPkRX/LTl12HPppcCdPg7pGwrC1K7/ZtPfp7Xi4cXzqEoyZpeUM6IA8y5gtEQ==",
-      "license": "MIT",
-      "repository": "https://github.com/juicesharp/rpiv-mono"
-    },
-    {
-      "source": "npm:pi-lsp-adapter@0.1.3",
-      "integrity": "sha512-YX7eXXrQMCsGo7Q9q3GoPQc2HppWz5hzyB4pp6nEN7pIRsj9iiRM4oZDOX7u44f+ZQP4nmEYKdUDPolIMSYFRA==",
-      "license": "MIT",
-      "repository": "https://github.com/nikmmd/pi-lsp-adapter"
-    },
-    {
       "source": "npm:@bytetrue/pi-web-search@0.5.1",
       "integrity": "sha512-UYgw5Yw0goW29k5kYtWc44E27SNyxW6eLmuBB8iadoLy9D4L2+Tpr+CW9I6w0LKEo4unQvQtXx6JLvvlZ483/g==",
       "license": "MIT",

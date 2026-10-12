@@ -48,7 +48,7 @@ Additional rules:
 - Security/data: include rejection/tampering/idempotency/ownership evidence where relevant.
 - Do not accept placeholder buttons, stub handlers, fake persistence, TODO implementations, or display-only controls as satisfying functional criteria.
 
-Ordinary contracts may live in the todo state. Complex or multi-session contracts belong in an execution plan.
+Keep ordinary contracts compact and in context. Complex or multi-session contracts belong in an execution plan.
 
 The agent derives the contract from available evidence. It asks a question only when no safe reversible interpretation exists; ordinary product, implementation, naming, tooling, and test choices are agent-owned.
 
@@ -56,7 +56,7 @@ The agent derives the contract from available evidence. It asks a question only 
 
 Start from identifiers, not bulk context.
 
-The initial runtime surface is `read`, `bash`, `edit`, `write`, `grep`, `find`, `ls`, `harness_tools`, and native `tool_search`. Stay on that core for localized work. When the task needs planning, delegation, LSP, or current web evidence, call `harness_tools` once with every required capability instead of activating specialists one by one. For MCP/browser/docs work, use `tool_search` directly and call only the returned schemas; no browser/docs loader group is required.
+The initial runtime surface is `read`, `bash`, `edit`, `write`, `grep`, `find`, `ls`, `harness_tools`, and native `tool_search`. Stay on that core for localized work. When the task needs planning, delegation, or current web evidence, call `harness_tools` once with every required capability instead of activating specialists one by one. For MCP/browser/docs work, use `tool_search` directly and call only the returned schemas; no browser/docs loader group is required.
 
 An implicit read of a regular text file at or above 96 KiB is bounded to 400 lines and returns the next offset. An explicit `offset` or `limit` is always preserved. Prefer exact search/symbol lookup and focused ranges over walking the rest of a large file linearly.
 
@@ -65,10 +65,8 @@ Preferred order:
 1. repository map and relevant project docs;
 2. exact search/symbol lookup;
 3. focused source ranges and affected tests;
-4. LSP definitions/references/diagnostics;
-5. installed types and local dependency source;
-6. `mcp__deepwiki__*` via `tool_search` for public-repo documentation;
-7. web search for current upstream issues, advisories, regressions, or release notes.
+4. installed types and local dependency source;
+5. web search for current upstream issues, advisories, regressions, or release notes.
 
 If subagents are available, use `scout` only when the relevant surface or cross-module flow is genuinely unclear. Otherwise investigate directly. Do not delegate the same discovery twice.
 
@@ -148,7 +146,7 @@ Use a persistent execution plan when any of these is true:
 - several modules or services must change in sequence;
 - migrations, rollout, recovery, or high-risk state transitions require staged work;
 - investigation has produced decisions that would be expensive to rediscover;
-- the todo state alone is not enough to resume safely.
+- a brief recap alone is not enough to resume safely.
 
 Store active plans under `docs/exec-plans/active/` and completed historical plans under `docs/exec-plans/completed/` when the project benefits from retaining them.
 

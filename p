@@ -44,7 +44,6 @@ export PI_PROJECT_ROOT="$ROOT_DIR"
 case "${1:-}" in
   install|update)
     pi "$@"
-    node "$ROOT_DIR/scripts/pi-extension-compat.mjs"
     exit 0
     ;;
   mcp|auth|remove|uninstall|list|config)
@@ -79,18 +78,5 @@ fi
 if [[ -n "${PI_ENABLED_MODELS:-}" ]]; then
   args+=(--models "$PI_ENABLED_MODELS")
 fi
-
-# Repair the reviewed package before Pi collects extension diagnostics. Fresh
-# trusted sessions install this configured package once using Pi's own installer.
-compat_args=()
-if [[ "${PI_PROJECT_TRUST:-always}" == "always" ]]; then
-  compat_args+=(--install-missing)
-fi
-for arg in "$@"; do
-  case "$arg" in
-    --help|-h|--version|-v|--no-approve|-na|--no-extensions|-ne) compat_args=() ;;
-  esac
-done
-node "$ROOT_DIR/scripts/pi-extension-compat.mjs" "${compat_args[@]}"
 
 exec pi "${args[@]}" "$@"
