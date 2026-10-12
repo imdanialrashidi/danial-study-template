@@ -48,9 +48,8 @@ const playwrightSpec = (mcp.mcpServers?.playwright?.args ?? []).find((value) =>
 );
 if (!playwrightSpec) throw new Error("Playwright MCP pin is missing");
 configured.push(`npm:${playwrightSpec}`);
-const deepwikiUrl = mcp.mcpServers?.deepwiki?.url;
-if (deepwikiUrl !== "https://mcp.deepwiki.com/mcp") {
-  throw new Error("DeepWiki MCP URL is missing or unexpected; use the official streamable HTTP endpoint");
+if (mcp.mcpServers?.deepwiki) {
+  throw new Error("DeepWiki MCP server must be removed; use local source, installed types, and web search instead");
 }
 if (mcp.mcpServers?.context7) throw new Error("Stale Context7 MCP server must be removed");
 const docker = fs.readFileSync(path.join(repositoryRoot, "Dockerfile.pi"), "utf8");

@@ -11,16 +11,10 @@ function runLauncher(overrides = {}, extraArgs = []) {
   fs.mkdirSync(artifactsRoot, { recursive: true });
   const temporaryDirectory = fs.mkdtempSync(path.join(artifactsRoot, "launcher-test-"));
   fs.mkdirSync(path.join(temporaryDirectory, "scripts"));
-  fs.mkdirSync(path.join(temporaryDirectory, ".pi/npm/node_modules/pi-lsp-adapter"), { recursive: true });
-  for (const file of ["p", "scripts/pi-extension-compat.mjs", "scripts/pi-provider.mjs", ".pi/settings.json", ".pi/models.env"]) {
+  fs.mkdirSync(path.join(temporaryDirectory, ".pi"), { recursive: true });
+  for (const file of ["p", "scripts/pi-provider.mjs", ".pi/settings.json", ".pi/models.env"]) {
     fs.copyFileSync(path.join(repositoryRoot, file), path.join(temporaryDirectory, file));
   }
-  // Argument/environment tests start with an installed adapter. Actual missing-
-  // package installation is exercised by the separate native CLI smoke check.
-  fs.writeFileSync(path.join(temporaryDirectory, ".pi/npm/node_modules/pi-lsp-adapter/package.json"), JSON.stringify({
-    name: "pi-lsp-adapter", version: "0.1.3", dependencies: {},
-    peerDependencies: { "@earendil-works/pi-tui": "*", typebox: "*" },
-  }));
   const fakePi = path.join(temporaryDirectory, "pi");
   fs.writeFileSync(
     fakePi,
@@ -172,7 +166,7 @@ test("native MCP subcommands are commands rather than accidental model prompts",
 });
 
 test("native package installation and updates preserve command arguments", () => {
-  for (const args of [["install", "--local", "npm:pi-lsp-adapter@0.1.3"], ["update", "--help"]]) {
+  for (const args of [["install", "--local", "npm:pi-sub-agent@0.1.5"], ["update", "--help"]]) {
     assert.deepEqual(parsed(runLauncher({}, args)).args, args);
   }
 });

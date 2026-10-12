@@ -17,15 +17,7 @@ export const CORE_TOOLS = Object.freeze([
 ]);
 
 export const CAPABILITY_TOOL_GROUPS = Object.freeze({
-  planning: Object.freeze(["todo"]),
   delegation: Object.freeze(["subagent"]),
-  code_intelligence: Object.freeze([
-    "lsp_diagnostics",
-    "lsp_definition",
-    "lsp_references",
-    "lsp_workspace_symbols",
-    "lsp_more",
-  ]),
   web: Object.freeze(["web_search", "web_fetch"]),
 });
 
@@ -38,7 +30,6 @@ const MANAGED_SPECIALIST_TOOLS = new Set([
   // These package helpers otherwise become active despite project defaultTools.
   // Legacy doc-search helpers are also cleared so a pre-migration session
   // cannot leave stale docs schemas active after resume.
-  "lsp_hover", "lsp_document_symbols",
   "doc_search_resolve_library_id", "doc_search_get_library_docs", "doc_search_get_cached_doc_raw",
 ]);
 const DEFAULT_SMART_READ_BYTES = 96 * 1024;
@@ -257,7 +248,7 @@ export function formatContinuityCapsule(value) {
 }
 
 function isDiscriminatingSuccess(toolName) {
-  return !["harness_tools", "todo"].includes(toolName);
+  return toolName !== "harness_tools";
 }
 
 function imageInput(model) {
@@ -369,8 +360,7 @@ export default function harnessRuntime(pi) {
       activeCapabilities.clear();
     } else {
       for (const capability of requested) {
-        // Unknown groups (e.g. legacy `docs`, now served by native
-        // DeepWiki MCP via tool_search) are ignored so a stale caller
+        // Unknown groups (e.g. legacy `docs`) are ignored so a stale caller
         // cannot crash the loader or pollute continuity state. Pi's
         // schema enum rejects them before execute in live sessions.
         if (!CAPABILITY_TOOL_GROUPS[capability]) continue;
@@ -396,7 +386,7 @@ export default function harnessRuntime(pi) {
     name: "harness_tools",
     label: "Harness Tools",
     description: "Activate specialist tool groups only when core repository tools are insufficient. Use native tool_search for MCP/browser/docs tools. Request all needed groups together; pass an empty list to unload managed specialists.",
-    promptSnippet: "Activate specialist planning, delegation, code-intelligence, or web tools on demand",
+    promptSnippet: "Activate specialist delegation or web tools on demand",
     promptGuidelines: [
       "Use harness_tools once with every needed specialist group when core tools are insufficient; keep localized work on the core surface.",
     ],

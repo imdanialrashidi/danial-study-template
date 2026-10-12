@@ -46,7 +46,6 @@ required=(
   .github/dependabot.yml
   .github/pull_request_template.md
   p
-  scripts/pi-extension-compat.mjs
   .pi/mcp.json
   .pi/settings.json
   .pi/package-integrity.json
@@ -144,12 +143,6 @@ else
   fail "custom provider setup script has a JavaScript syntax error"
 fi
 
-if node --check scripts/pi-extension-compat.mjs && node scripts/pi-extension-compat.mjs --check; then
-  pass "extension compatibility helper parses; any installed LSP manifest is compatible"
-else
-  fail "extension compatibility check failed; start ./p to repair the reviewed LSP package"
-fi
-
 if [[ "$static_mode" -eq 1 ]]; then
   pass "workflow behavior tests omitted in explicit static-only mode"
 elif node --test tests/*.test.mjs; then
@@ -231,8 +224,6 @@ const installed = new Set((settings.packages || []).map((entry) =>
 ));
 const required = [
   'npm:pi-sub-agent@0.1.5',
-  'npm:@juicesharp/rpiv-todo@2.12.0',
-  'npm:pi-lsp-adapter@0.1.3',
   'npm:@bytetrue/pi-web-search@0.5.1',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -294,34 +285,11 @@ if (server.args.includes('--allowed-origins')) {
   throw new Error('Autonomous browser mode must not be limited to localhost by MCP config');
 }
 const docs = config.mcpServers?.deepwiki;
-if (!docs) throw new Error('DeepWiki MCP server is missing');
+if (docs) throw new Error('DeepWiki MCP server must be removed; use local source, installed types, and web search instead');
 if (config.mcpServers?.context7) throw new Error('Stale Context7 MCP server must be removed');
-if (docs.url !== 'https://mcp.deepwiki.com/mcp') {
-  throw new Error('DeepWiki MCP must use the official streamable HTTP endpoint');
-}
-if (docs.type !== undefined && !['http', 'streamable-http'].includes(docs.type)) {
-  throw new Error('DeepWiki MCP type must be http or streamable-http when set');
-}
-if (docs.command !== undefined) {
-  throw new Error('DeepWiki MCP is a remote HTTP server and must not declare a stdio command');
-}
-if (docs.env?.CONTEXT7_API_KEY !== undefined) {
-  throw new Error('DeepWiki needs no API key; remove the stale Context7 env mapping');
-}
-if (JSON.stringify(docs).includes('ctx7sk-')) {
-  throw new Error('A Context7 API key must not be hardcoded in MCP config');
-}
-if (docs.exposure !== 'hidden') throw new Error('Unlisted DeepWiki tools must remain hidden');
-if (docs.toolExposure?.['read_wiki_structure'] !== 'deferred' || docs.toolExposure?.['read_wiki_contents'] !== 'deferred' || docs.toolExposure?.['ask_wiki_question'] !== 'deferred') {
-  throw new Error('DeepWiki tools must be exactly deferred read_wiki_structure, read_wiki_contents and ask_wiki_question');
-}
-if (Object.keys(docs.toolExposure || {}).length !== 3) {
-  throw new Error('DeepWiki toolExposure must contain only the three reviewed tools');
-}
 NODE
 then
   pass "Native Playwright MCP is pinned, selectively deferred, and blocks file injection"
-  pass "DeepWiki MCP uses the official endpoint, stays deferred, and needs no API key"
 else
   fail "Playwright MCP policy validation failed"
 fi
@@ -348,12 +316,6 @@ done
 
 specialist_tools=(
   subagent
-  todo
-  lsp_diagnostics
-  lsp_definition
-  lsp_references
-  lsp_workspace_symbols
-  lsp_more
   web_search
   web_fetch
 )

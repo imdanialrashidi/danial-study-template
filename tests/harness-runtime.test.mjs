@@ -96,21 +96,21 @@ test("specialist capability groups load additively and reset without dropping un
     tool.parameters.properties.capabilities.items.enum,
     Object.keys(CAPABILITY_TOOL_GROUPS),
   );
-  assert.deepEqual(tool.prepareArguments({ capabilities: '["planning","web"]' }), {
-    capabilities: ["planning", "web"],
+  assert.deepEqual(tool.prepareArguments({ capabilities: '["web"]' }), {
+    capabilities: ["web"],
   });
 
-  const first = await tool.execute("loader-1", { capabilities: ["planning", "web"] });
-  assert.deepEqual(first.details.added, ["todo", "web_search", "web_fetch"]);
+  const first = await tool.execute("loader-1", { capabilities: ["web"] });
+  assert.deepEqual(first.details.added, ["web_search", "web_fetch"]);
   assert.ok(runtime.activeTools().includes("web_search"));
   assert.ok(runtime.activeTools().includes("local_custom"));
 
-  const second = await tool.execute("loader-2", { capabilities: ["planning", "web"] });
+  const second = await tool.execute("loader-2", { capabilities: ["web"] });
   assert.deepEqual(second.details.added, []);
   assert.equal(new Set(runtime.activeTools()).size, runtime.activeTools().length);
 
   const reset = await tool.execute("loader-3", { capabilities: [] });
-  assert.deepEqual(new Set(reset.details.removed), new Set(["todo", "web_search", "web_fetch"]));
+  assert.deepEqual(new Set(reset.details.removed), new Set(["web_search", "web_fetch"]));
   assert.ok(runtime.activeTools().includes("local_custom"));
   assert.equal(runtime.activeTools().some((name) => specialistTools.includes(name)), false);
 });
@@ -310,14 +310,13 @@ test("signatures and capsules never expose raw secret inputs", () => {
 });
 
 test("a fresh session drops managed specialists left active by the previous session", async () => {
-  const runtime = createRuntime({ extraTools: ["doc_search_get_library_docs", "lsp_hover", "lsp_document_symbols", "doc_search_get_cached_doc_raw", "mcp__playwright__browser_snapshot", "mcp__deepwiki__ask_wiki_question", "local_custom"] });
+  const runtime = createRuntime({ extraTools: ["doc_search_get_library_docs", "doc_search_get_cached_doc_raw", "mcp__playwright__browser_snapshot", "local_custom"] });
   assert.ok(runtime.activeTools().includes("doc_search_get_library_docs"));
   await runtime.handlers.get("session_start")({ type: "session_start", reason: "new" }, runtime.ctx);
   assert.equal(runtime.activeTools().includes("doc_search_get_library_docs"), false);
   assert.ok(runtime.activeTools().includes("local_custom"));
   assert.ok(runtime.activeTools().includes("mcp__playwright__browser_snapshot"), "native MCP branch state belongs to Pi");
-  assert.ok(runtime.activeTools().includes("mcp__deepwiki__ask_wiki_question"), "native DeepWiki MCP branch state belongs to Pi");
-  for (const name of ["lsp_hover", "lsp_document_symbols", "doc_search_get_cached_doc_raw", "doc_search_resolve_library_id", "doc_search_get_library_docs"]) assert.equal(runtime.activeTools().includes(name), false);
+  for (const name of ["doc_search_get_cached_doc_raw", "doc_search_resolve_library_id", "doc_search_get_library_docs"]) assert.equal(runtime.activeTools().includes(name), false);
   assert.deepEqual(runtime.appended, []);
 });
 
