@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { siteUrl, basePath } from '../config/site';
+import { absoluteUrl } from '../config/site';
 
 export const prerender = true;
 
@@ -11,7 +11,7 @@ export const prerender = true;
  * `astro.config.mjs`, not here.
  */
 export const GET: APIRoute = () => {
-  const body = `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl.replace(/\/$/, '')}${basePath}/sitemap-index.xml\n`;
+  const body = `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl('/sitemap-index.xml')}\n`;
   return new Response(body, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });

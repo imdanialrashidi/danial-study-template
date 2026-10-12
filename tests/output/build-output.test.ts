@@ -233,6 +233,25 @@ describeIfBuilt('built output', () => {
     const mathPages = htmlFiles.filter((f) => readFileSync(f, 'utf8').includes('class="katex'));
     expect(mathPages.length, 'KaTeX CSS ships but no page renders math').toBeGreaterThan(0);
   });
+  it('never doubles the deployment base in absolute URLs', () => {
+    // SITE_URL was once defaulted to https://<owner>.github.io/<repo> while
+    // BASE_PATH also carried /<repo>, doubling every absolute URL
+    // (canonical, og:url, robots sitemap) to /<repo>/<repo>/... .
+    const base = BASE;
+    if (!base) return;
+    const doubled = `${base}${base}/`;
+    for (const file of htmlFiles) {
+      const html = readFileSync(file, 'utf8');
+      const canonical = html.match(/<link rel="canonical"[^>]*>/)?.[0] ?? '';
+      expect(canonical, `${file} doubles the base in canonical`).not.toContain(doubled);
+      const ogUrl = html.match(/<meta property="og:url"[^>]*>/)?.[0] ?? '';
+      expect(ogUrl, `${file} doubles the base in og:url`).not.toContain(doubled);
+    }
+    const robots = readFileSync(path.join(distDir, 'robots.txt'), 'utf8');
+    expect(robots, 'robots.txt doubles the base in the sitemap URL').not.toContain(doubled);
+    const sitemap = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
+    expect(sitemap, 'sitemap doubles the base').not.toContain(doubled);
+  });
   it('stamps sitemap URLs with lastmod for crawl efficiency', () => {
     const xml = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
     const urls = (xml.match(/<loc>/g) ?? []).length;
