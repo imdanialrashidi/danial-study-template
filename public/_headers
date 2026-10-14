@@ -13,3 +13,12 @@
   Cache-Control: public, max-age=86400
 /og-image.png
   Cache-Control: public, max-age=86400
+
+# Defense-in-depth hardening (honored by Cloudflare Pages; GitHub Pages
+# ignores _headers entirely, so the JSON-LD escaper is the portable fix).
+# CSP is deliberately deferred: inline theme-bootstrap scripts in
+# BaseLayout.astro need hashes first.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
