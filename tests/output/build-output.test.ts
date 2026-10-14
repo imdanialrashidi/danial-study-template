@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { courseConfig } from '../../src/config/course';
+import { stripBaseWith } from '../../src/lib/url.ts';
 
 /**
  * Deployment base-path regression guard.
@@ -27,12 +28,13 @@ const describeIfBuilt = existsSync(path.join(distDir, 'index.html')) ? describe 
  */
 const BASE = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 
-/** Strip the deployment base from a built href so it can be resolved on disk. */
-function stripBase(href: string): string {
-  if (!BASE) return href;
-  if (href === BASE) return '/';
-  return href.startsWith(`${BASE}/`) ? href.slice(BASE.length) : href;
-}
+/**
+ * Strip the deployment base from a built href so it can be resolved on disk.
+ * Shared with the lib helper: the base comes from the build environment
+ * (`process.env.BASE_PATH`), never from a bare lib import (which reads the
+ * runner's own base under vitest).
+ */
+const stripBase = (href: string): string => stripBaseWith(BASE, href);
 
 function collectHtml(dir: string): string[] {
   const out: string[] = [];
@@ -258,6 +260,15 @@ describeIfBuilt('built output', () => {
     const stamps = (xml.match(/<lastmod>\d{4}-\d{2}-\d{2}/g) ?? []).length;
     expect(urls, 'sitemap has no URLs').toBeGreaterThan(0);
     expect(stamps, `only ${stamps}/${urls} sitemap URLs carry lastmod`).toBe(urls);
+  });
+
+  it('stripBase delegates to the shared lib helper', () => {
+    // Dedup guard: the local wrapper must stay a thin alias of
+    // `stripBaseWith(BASE, …)` so output assertions and nav highlighting
+    // can never drift apart again.
+    expect(stripBase('/physics2/lessons/x')).toBe(stripBaseWith(BASE, '/physics2/lessons/x'));
+    expect(stripBaseWith('/physics2', '/physics2')).toBe('/');
+    expect(stripBaseWith('', '/lessons')).toBe('/lessons');
   });
 
   it('marks high-intent nav links for prefetch', () => {
