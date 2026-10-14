@@ -32,6 +32,7 @@ const navItems = [
   ...(isEnabled('formulas') ? [{ href: '/formulas', label: 'فرمول‌ها', icon: 'formula' }] : []),
   ...(isEnabled('practice') ? [{ href: '/practice', label: 'تمرین', icon: 'beaker' }] : []),
   ...(isEnabled('glossary') ? [{ href: '/glossary', label: 'واژه‌نامه', icon: 'glossary' }] : []),
+  ...(isEnabled('progress') ? [{ href: '/saved', label: 'نشان‌شده‌ها', icon: 'bookmark' }] : []),
 ];
 
 const isActive = (href: string) => {

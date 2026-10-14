@@ -23,6 +23,7 @@ interface Props {
   headings: TocHeading[];
   variant: 'mobile' | 'desktop';
 }
+import { toPersianDigits } from '../../lib/utils';
 
 const { headings, variant } = Astro.props;
 const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
@@ -36,7 +37,7 @@ const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
       </svg>
       در این مطلب
       <span class="ms-auto rounded-pill bg-surface-sunken px-2 py-0.5 text-2xs text-ink-muted">
-        {items.length.toString().replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])}
+        {toPersianDigits(items.length)}
       </span>
     </summary>
     <nav aria-label="فهرست این مطلب" class="border-t border-line px-2 py-2">

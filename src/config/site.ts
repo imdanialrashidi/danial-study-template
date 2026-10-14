@@ -145,10 +145,19 @@ export const siteUrl: string = process.env.SITE_URL ?? PERSONAL_WEBSITE;
  */
 export const basePath: string = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 
-/** Canonical absolute URL for a site-relative path. */
+/** Canonical absolute URL for a site-relative path.
+ *
+ * `SITE_URL` is documented as the canonical origin (no trailing path), but
+ * the GitHub Pages workflow historically defaulted it to
+ * `https://<owner>.github.io/<repo>`. To survive either setting, a `SITE_URL`
+ * that already ends with the deployment base is treated as already prefixed
+ * instead of gaining the base a second time.
+ */
 export function absoluteUrl(path: string): string {
   const clean = path.startsWith('/') ? path : `/${path}`;
-  return `${siteUrl.replace(/\/$/, '')}${basePath}${clean}` || '/';
+  const siteRoot = siteUrl.replace(/\/$/, '');
+  const root = basePath && siteRoot.endsWith(basePath) ? siteRoot.slice(0, -basePath.length) : siteRoot;
+  return `${root}${basePath}${clean}` || '/';
 }
 
 /**

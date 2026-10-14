@@ -1,8 +1,8 @@
 # Execution Plans
 
-Execution plans are durable handoff artifacts for Complex or multi-session work. They are not required for localized edits or ordinary short features.
+Durable handoff artifacts for Complex or multi-session work. Not required for quick edits or ordinary short features.
 
-Use `docs/exec-plans/active/<short-slug>.md` while work is active. Move the final plan to `docs/exec-plans/completed/` only when retaining the decision/evidence history is useful to the project.
+Use `docs/exec-plans/active/<short-slug>.md` while work is active. Move the finished plan to `docs/exec-plans/completed/` only when retaining the decision/evidence history is useful to the project.
 
 Keep plans compact and factual. They should make a fresh agent productive without replaying the old chat.
 

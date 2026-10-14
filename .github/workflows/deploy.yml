@@ -43,9 +43,10 @@ jobs:
       - name: Build static site
         env:
           # A repo named "physics2" is served from /physics2/, so every asset
-          # and link Astro emits has to carry that prefix.
+          # and link Astro emits has to carry that prefix. SITE_URL stays the
+          # bare origin: absolute URLs gain BASE_PATH exactly once in code.
           BASE_PATH: ${{ vars.DEPLOY_BASE || format('/{0}', github.event.repository.name) }}
-          SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+          SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io', github.repository_owner) }}
         run: npm run build
 
       - name: Validate built output

@@ -4,7 +4,7 @@
  */
 import type { CourseEntry } from '../../lib/content';
 import { SINGULAR_LABELS } from '../../lib/content';
-import { toPersianDigits, DIFFICULTY_LABELS } from '../../lib/utils';
+import { toPersianDigits, toPersianNumeral, DIFFICULTY_LABELS } from '../../lib/utils';
 import { withBase } from '../../lib/url';
 import Icon from '../ui/Icon.astro';
 
@@ -23,7 +23,7 @@ const iconByKind = {
   glossary: 'glossary',
 } as const;
 
-const number = toPersianDigits(entry.order).padStart(2, '۰');
+const number = toPersianNumeral(entry.order);
 ---
 
 <a

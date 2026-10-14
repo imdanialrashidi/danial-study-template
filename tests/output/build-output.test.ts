@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { courseConfig } from '../../src/config/course';
+import { stripBaseWith } from '../../src/lib/url.ts';
 
 /**
  * Deployment base-path regression guard.
@@ -27,12 +28,13 @@ const describeIfBuilt = existsSync(path.join(distDir, 'index.html')) ? describe 
  */
 const BASE = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 
-/** Strip the deployment base from a built href so it can be resolved on disk. */
-function stripBase(href: string): string {
-  if (!BASE) return href;
-  if (href === BASE) return '/';
-  return href.startsWith(`${BASE}/`) ? href.slice(BASE.length) : href;
-}
+/**
+ * Strip the deployment base from a built href so it can be resolved on disk.
+ * Shared with the lib helper: the base comes from the build environment
+ * (`process.env.BASE_PATH`), never from a bare lib import (which reads the
+ * runner's own base under vitest).
+ */
+const stripBase = (href: string): string => stripBaseWith(BASE, href);
 
 function collectHtml(dir: string): string[] {
   const out: string[] = [];
@@ -233,12 +235,41 @@ describeIfBuilt('built output', () => {
     const mathPages = htmlFiles.filter((f) => readFileSync(f, 'utf8').includes('class="katex'));
     expect(mathPages.length, 'KaTeX CSS ships but no page renders math').toBeGreaterThan(0);
   });
-  it('stamps sitemap URLs with lastmod for crawl efficiency', () => {
+  it('never doubles the deployment base in absolute URLs', () => {
+    // SITE_URL was once defaulted to https://<owner>.github.io/<repo> while
+    // BASE_PATH also carried /<repo>, doubling every absolute URL
+    // (canonical, og:url, robots sitemap) to /<repo>/<repo>/... .
+    const base = BASE;
+    if (!base) return;
+    const doubled = `${base}${base}/`;
+    for (const file of htmlFiles) {
+      const html = readFileSync(file, 'utf8');
+      const canonical = html.match(/<link rel="canonical"[^>]*>/)?.[0] ?? '';
+      expect(canonical, `${file} doubles the base in canonical`).not.toContain(doubled);
+      const ogUrl = html.match(/<meta property="og:url"[^>]*>/)?.[0] ?? '';
+      expect(ogUrl, `${file} doubles the base in og:url`).not.toContain(doubled);
+    }
+    const robots = readFileSync(path.join(distDir, 'robots.txt'), 'utf8');
+    expect(robots, 'robots.txt doubles the base in the sitemap URL').not.toContain(doubled);
+    const sitemap = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
+    expect(sitemap, 'sitemap doubles the base').not.toContain(doubled);
+  });
+  it('omits build-time lastmod so deploys do not mark every URL changed', () => {
+    // A `lastmod: new Date()` stamp marks all URLs changed on every build,
+    // wasting crawl budget. No lastmod until per-page modification evidence.
     const xml = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
     const urls = (xml.match(/<loc>/g) ?? []).length;
-    const stamps = (xml.match(/<lastmod>\d{4}-\d{2}-\d{2}/g) ?? []).length;
     expect(urls, 'sitemap has no URLs').toBeGreaterThan(0);
-    expect(stamps, `only ${stamps}/${urls} sitemap URLs carry lastmod`).toBe(urls);
+    expect(xml, 'sitemap must not carry build-time lastmod stamps').not.toContain('<lastmod>');
+  });
+
+  it('stripBase delegates to the shared lib helper', () => {
+    // Dedup guard: the local wrapper must stay a thin alias of
+    // `stripBaseWith(BASE, …)` so output assertions and nav highlighting
+    // can never drift apart again.
+    expect(stripBase('/physics2/lessons/x')).toBe(stripBaseWith(BASE, '/physics2/lessons/x'));
+    expect(stripBaseWith('/physics2', '/physics2')).toBe('/');
+    expect(stripBaseWith('', '/lessons')).toBe('/lessons');
   });
 
   it('marks high-intent nav links for prefetch', () => {
@@ -250,6 +281,21 @@ describeIfBuilt('built output', () => {
     expect(lesson.match(/data-astro-prefetch/g)?.length ?? 0, 'lesson page should prefetch header + prev/next links').toBeGreaterThan(10);
   });
 
+  it('serves the saved page with one h1, RTL, noindex, and an empty-plate CTA', () => {
+    // The /saved shell must be meaningful without JS: a signed-in-state-free
+    // static plate (covered by the global RTL/h1 invariants) plus an
+    // imperative CTA into the course.
+    const html = readFileSync(path.join(distDir, 'saved/index.html'), 'utf8');
+    expect(html).toMatch(/<html[^>]*dir="rtl"/);
+    expect(html).toMatch(/<html[^>]*lang="fa"/);
+    expect(html.match(/<h1[\s>]/g) ?? []).toHaveLength(1);
+    expect(html).toContain('<h1');
+    expect(html).toContain('نشان‌شده‌ها');
+    expect(html).toMatch(/<meta name="robots" content="noindex, follow"/);
+    expect(html).toContain('هنوز چیزی را نشان نکرده‌اید');
+    expect(html).toContain('رفتن به فهرست درس‌ها');
+  });
+
   it('ships repeat-visit cache headers for hashed assets', () => {
     const headers = path.join(distDir, '_headers');
     expect(existsSync(headers), 'dist/_headers missing (Cloudflare Pages caching)').toBe(true);
@@ -257,8 +303,3 @@ describeIfBuilt('built output', () => {
     expect(body, '_headers must pin /_astro/* immutable').toMatch(/\/_astro\/\*[\s\S]*immutable/);
   });
 });
-
-/** Files Astro serves from the site root rather than under the course base. */
-function knownAssetPrefixes(base: string): string[] {
-  return [`${base}/_astro/`, `${base}/favicon.svg`, `${base}/sitemap-index.xml`];
-}

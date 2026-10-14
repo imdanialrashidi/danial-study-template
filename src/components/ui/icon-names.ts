@@ -10,6 +10,7 @@ export type IconName =
   | 'formula'
   | 'beaker'
   | 'question'
+  | 'help'
   | 'glossary'
   | 'menu'
   | 'close'
@@ -31,4 +32,5 @@ export type IconName =
   | 'sun'
   | 'moon'
   | 'bookmark'
+  | 'circle'
   | 'external';

@@ -1,7 +1,11 @@
 import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
-import type { SearchableItem, ContentType } from '../../lib/types';
+import type { SearchableItem } from '../../lib/types';
+import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
+import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
 import { useHydrated } from './useHydrated';
+import { readSiteSearchIndex } from './searchIndex';
+import IslandIcon from './IslandIcon';
 
 /**
  * Search island.
@@ -16,56 +20,34 @@ import { useHydrated } from './useHydrated';
  */
 
 export interface SearchIslandProps {
-  items: SearchableItem[];
+  /**
+   * Server-render fallback only. The client reads the single shared
+   * `#site-search-index` payload the layout serializes once per page, so the
+   * index is never serialized as island props. Passing items here is only
+   * useful for pre-rendering `?q=` results; omit it (as `search.astro` does)
+   * and hydration fills results from the shared payload on mount.
+   */
+  items?: SearchableItem[];
   /** Optional pre-filled query (from the URL). */
   initialQuery?: string;
 }
-
-const TYPE_LABELS: Record<ContentType, string> = {
-  lesson: 'درس',
-  concept: 'مفهوم',
-  formula: 'فرمول',
-  example: 'مثال',
-  question: 'تمرین',
-  glossary: 'واژه',
-};
 
 interface Scored {
   item: SearchableItem;
   score: number;
 }
 
-/**
- * Score one item against the query terms.
- * Exact title prefix > title substring > tag/exact word > body substring.
- */
-function score(item: SearchableItem, normalized: SearchableItem & { _norm?: string }, terms: string[]): number {
-  const title = normalizePersian(item.title);
-  const haystack = normalized._norm ?? normalizePersian(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`);
-  let total = 0;
-
-  for (const term of terms) {
-    if (title.startsWith(term)) total += 12;
-    else if (title.includes(term)) total += 8;
-
-    if ((item.tags ?? []).some((tag) => normalizePersian(tag).includes(term))) total += 5;
-
-    const wordStart = haystack.includes(` ${term}`);
-    if (haystack.includes(term)) total += wordStart ? 4 : 2;
-    else return 0; // every term must match somewhere
-  }
-
-  return total;
-}
-
-export default function SearchIsland({ items, initialQuery = '' }: SearchIslandProps) {
+export default function SearchIsland({ items: ssrItems = [], initialQuery = '' }: SearchIslandProps) {
+  // Client source of truth: the shared payload. The prop only feeds SSR.
+  const sharedItems = useMemo(() => readSiteSearchIndex(ssrItems), [ssrItems]);
+  const items = typeof document === 'undefined' ? ssrItems : sharedItems;
   const [query, setQuery] = useState(initialQuery);
   const deferredQuery = useDeferredValue(query);
   const inputRef = useRef<HTMLInputElement>(null);
   const hydrated = useHydrated('search');
 
   const normalizedItems = useMemo(
-    () => items.map((item) => ({ ...item, _norm: normalizePersian(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`) })),
+    () => items.map((item) => ({ ...item, _norm: normalizeIndexEntry(item) })),
     [items],
   );
 
@@ -77,7 +59,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
     if (terms.length === 0) return [];
 
     return normalizedItems
-      .map((item) => ({ item, score: score(item, item, terms) }))
+      .map((item) => ({ item, score: scoreSearchItem(item, item, terms) }))
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fa'))
       .slice(0, 40);
@@ -101,10 +83,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
           جست‌وجو در دوره
         </label>
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-ink-faint">
-          <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <circle cx="9" cy="9" r="5.5" />
-            <path d="m13.5 13.5 3.5 3.5" />
-          </svg>
+          <IslandIcon name="search" size={19} />
         </div>
         <input
           id="search-input"
@@ -126,9 +105,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
             aria-label="پاک کردن جست‌وجو"
             className="absolute inset-y-0 end-0 flex items-center px-4 text-ink-faint transition-colors hover:text-ink"
           >
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="m5.5 5.5 9 9M14.5 5.5l-9 9" />
-            </svg>
+            <IslandIcon name="close" size={18} />
           </button>
         )}
       </div>
@@ -166,20 +143,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
       {/* Empty state: explain what to try, not just "no results". */}
       {hasQuery && results.length === 0 && (
         <div className="mt-4 rounded-lg border border-dashed border-line-control bg-surface px-6 py-10 text-center">
-          <svg
-            width="30"
-            height="30"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            className="mx-auto text-ink-faint"
-            aria-hidden="true"
-          >
-            <circle cx="9" cy="9" r="5.5" />
-            <path d="m13.5 13.5 3.5 3.5" />
-          </svg>
+          <IslandIcon name="search" size={30} className="mx-auto text-ink-faint" />
           <p className="mt-3 font-display text-base font-bold text-ink">نتیجه‌ای برای «{deferredQuery.trim()}» پیدا نشد</p>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
             املای واژه را بررسی کنید یا با نام یک مفهوم، فرمول یا بخش دوره جست‌وجو کنید.

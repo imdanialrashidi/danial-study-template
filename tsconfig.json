@@ -7,8 +7,9 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    // Source and tests import siblings with explicit `.ts` extensions
+    // (resolvable by Vite/vitest); allow them under typechecking.
+    "allowImportingTsExtensions": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true,
@@ -20,6 +21,6 @@
     "libReplacement": false,
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.astro", ".astro/**/*.ts", ".vercel_build_output/functions/entry.js"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.astro", ".astro/**/*.ts", "tests/**/*.ts", ".vercel_build_output/functions/entry.js"],
   "exclude": ["node_modules", ".cache", "dist"]
 }

@@ -1,14 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { QuizQuestion } from '../../lib/types';
 import { gradeChoice, gradeNumeric, isNumericQuestion } from '../../lib/quiz';
-import { toLatinDigits } from '../../lib/utils';
+import { toLatinDigits, toPersianDigits } from '../../lib/utils';
 import { ProgressBridge } from './ProgressBridge';
-
-const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-
-export function toPersian(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
-}
+import IslandIcon from './IslandIcon';
 
 export interface QuizProps {
   /** Stable id used to store the best score in the learner's progress. */
@@ -107,22 +102,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
     <section className="my-8 rounded-lg border border-line bg-surface" aria-labelledby={`${id}-title`}>
       <header className="border-b border-line px-5 py-4">
         <div className="flex items-center gap-2">
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-primary-deep"
-            aria-hidden="true"
-          >
-            <circle cx="10" cy="10" r="7.5" />
-            <path d="M7 8.2a3 3 0 1 1 3.2 2.8c-.8.4-1.2.9-1.2 1.7" />
-            <path d="M10 15.4h.01" />
-          </svg>
+          <IslandIcon name="help" size={17} className="text-primary-deep" />
           <h3 id={`${id}-title`} className="font-display text-base font-bold text-ink">
             {title}
           </h3>
@@ -130,8 +110,8 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
         {description && <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{description}</p>}
         <p className="mt-2 text-xs text-ink-faint" aria-live="polite">
           {checked
-            ? `نتیجه: ${toPersian(score)} از ${toPersian(questions.length)} پاسخ درست`
-            : `${toPersian(answeredCount)} از ${toPersian(questions.length)} پاسخ داده شده`}
+            ? `نتیجه: ${toPersianDigits(score)} از ${toPersianDigits(questions.length)} پاسخ درست`
+            : `${toPersianDigits(answeredCount)} از ${toPersianDigits(questions.length)} پاسخ داده شده`}
         </p>
       </header>
 
@@ -149,7 +129,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                     className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-2xs font-bold text-ink-muted"
                     aria-hidden="true"
                   >
-                    {toPersian(index + 1)}
+                    {toPersianDigits(index + 1)}
                   </span>
                   <span>
                     {question.text}
@@ -186,7 +166,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                     </div>
                     {checked && (
                       <p className={`text-xs font-bold ${correct ? 'text-success' : 'text-danger'}`} role="status">
-                        {correct ? 'پاسخ درست است.' : `پاسخ درست: ${toPersian(String(question.numericAnswer ?? ''))}`}
+                        {correct ? 'پاسخ درست است.' : `پاسخ درست: ${toPersianDigits(String(question.numericAnswer ?? ''))}`}
                       </p>
                     )}
                   </div>
@@ -216,7 +196,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                         >
                           <input
                             type={multi ? 'checkbox' : 'radio'}
-                            name={`${question.id}`}
+                            name={`${id}-${question.id}`}
                             value={option.id}
                             checked={isSelected}
                             onChange={() => select(question.id, option.id, !multi)}
@@ -225,12 +205,12 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                           <span className="min-w-0 flex-1">{option.text}</span>
                           {checked && showCorrectOption && (
                             <span className="shrink-0 text-success" aria-label="پاسخ درست">
-                              <CheckIcon />
+                              <IslandIcon name="check" />
                             </span>
                           )}
                           {checked && showWrongSelection && (
                             <span className="shrink-0 text-danger" aria-label="پاسخ نادرست">
-                              <CrossIcon />
+                              <IslandIcon name="cross" />
                             </span>
                           )}
                         </label>
@@ -259,8 +239,8 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
               role="status"
             >
               {percentage >= 60
-                ? `آفرین! ${toPersian(percentage)}٪ پاسخ درست.`
-                : `${toPersian(percentage)}٪ پاسخ درست — پاسخ‌های نادرست را مرور کنید.`}
+                ? `آفرین! ${toPersianDigits(percentage)}٪ پاسخ درست.`
+                : `${toPersianDigits(percentage)}٪ پاسخ درست — پاسخ‌های نادرست را مرور کنید.`}
             </p>
             {allowRetry && (
               <button
@@ -294,18 +274,3 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
   );
 }
 
-function CheckIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m4 10.5 4 4 8-9" />
-    </svg>
-  );
-}
-
-function CrossIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
-      <path d="m5.5 5.5 9 9M14.5 5.5l-9 9" />
-    </svg>
-  );
-}

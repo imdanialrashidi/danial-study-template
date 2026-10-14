@@ -5,10 +5,9 @@ Contributions should improve representative task outcomes, reduce risk/cost, or 
 ## Setup
 
 1. Use Node.js 22.19.0 or newer.
-2. Install the reviewed Pi pin from `README.md`.
-3. Review project-local packages/extensions before trusting the repository.
+2. Install omp from https://omp.sh (nothing else to install for the workflow).
+3. Review project configuration under `.omp/` before trusting the repository.
 4. Run `bash scripts/verify.sh` before and after a workflow change.
-5. Use the direct autonomous launcher for trusted work. For an untrusted repository or meaningful credential/private-data exposure, use `bash scripts/pi-sandbox.sh` or another boundary described in `SECURITY.md`.
 
 ## Change contract
 
@@ -30,11 +29,9 @@ Run:
 
 ```bash
 bash scripts/verify.sh
-node scripts/verify-package-integrity.mjs --online  # when package pins change
-node scripts/run-workflow-evals.mjs --dry-run       # when evals/runner change
 ```
 
-For a material harness change, compare baseline/candidate on representative cases as described in `docs/EVALUATION.md`. Do not publish model-eval artifacts containing repository content or credentials.
+Do not publish workflow artifacts containing repository content or credentials.
 
 ## Frontend contributions
 

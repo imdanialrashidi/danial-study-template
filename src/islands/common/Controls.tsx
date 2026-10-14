@@ -1,5 +1,7 @@
 import { useId, useState, type ReactNode } from 'react';
 import { prefersReducedMotion } from '../../lib/a11y';
+import { toPersianDigits } from '../../lib/utils';
+import IslandIcon from './IslandIcon';
 
 /**
  * Generic interactive primitives — the course-agnostic building blocks for
@@ -19,9 +21,7 @@ import { prefersReducedMotion } from '../../lib/a11y';
  * the Astro wrapper, so no-JS readers still see the settled values.
  */
 
-const FA = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-const fa = (v: number | string): string => String(v).replace(/\d/g, (d) => FA[Number(d)]);
-const fmt = (v: number, digits = 2): string => fa(v.toFixed(digits));
+const fmt = (v: number, digits = 2): string => toPersianDigits(v.toFixed(digits));
 
 /* ── Slider ─────────────────────────────────────────────────────────────── */
 
@@ -171,9 +171,7 @@ export function Reveal({ title, children }: { title: string; children: ReactNode
         onClick={() => setOpen((v) => !v)}
         className="flex min-h-[44px] w-full items-center gap-2 px-3 py-2 text-sm font-bold text-ink"
       >
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <path d="m5 7.5 5 5 5-5" />
-        </svg>
+        <IslandIcon name="chevron-down" size={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
         {title}
       </button>
       {open && <div className="border-t border-line px-3 py-3 text-sm leading-relaxed text-ink/90">{children}</div>}

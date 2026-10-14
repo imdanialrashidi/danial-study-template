@@ -53,12 +53,32 @@ describe('gradeChoice', () => {
     expect(gradeChoice(mcq, ['b'])).toBe(false);
     expect(gradeChoice(mcq, [])).toBe(false);
   });
-
   it('requires the full set for multi-select', () => {
     expect(gradeChoice(multi, ['a', 'c'])).toBe(true);
     expect(gradeChoice(multi, ['a'])).toBe(false);
     expect(gradeChoice(multi, ['a', 'b', 'c'])).toBe(false);
   });
+
+  it('scores a keyless question as incorrect, including blanks', () => {
+    const keyless: QuizQuestion = { ...mcq, correctAnswer: undefined };
+    expect(gradeChoice(keyless, [])).toBe(false);
+    expect(gradeChoice(keyless, ['a'])).toBe(false);
+  });
+
+  it('grades a mixed numericAnswer+options shape via the choice path', () => {
+    const mixed: QuizQuestion = { ...mcq, numericAnswer: 42 };
+    expect(isNumericQuestion(mixed)).toBe(false);
+    expect(gradeChoice(mixed, ['a'])).toBe(true);
+    expect(gradeChoice(mixed, ['b'])).toBe(false);
+  });
+
+  it('scores type numeric without numericAnswer as incorrect via both entry points', () => {
+    const noKey: QuizQuestion = { id: 'qn-nokey', type: 'numeric', text: 'حاصل؟' };
+    expect(isNumericQuestion(noKey)).toBe(true);
+    expect(gradeNumeric(noKey, '42')).toBe(false);
+    expect(gradeChoice(noKey, ['42'])).toBe(false);
+  });
+
 });
 
 describe('gradeNumeric', () => {

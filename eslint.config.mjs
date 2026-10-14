@@ -1,6 +1,6 @@
 // ESLint flat config for the educational site template.
 //
-// Scope: product source only. The Pi harness files and their `node --test`
+// Scope: product source only. The Omp workflow files and their `node --test`
 // suites are a different toolchain and are excluded deliberately.
 
 import js from '@eslint/js';
@@ -18,25 +18,16 @@ export default [
       '.astro/**',
       'node_modules/**',
       '.artifacts/**',
-      '.pi/**',
-      'tests/**',
       // Content is MDX prose with JSX components. ESLint's flat config has no
       // MDX parser wired up, and the content is already validated far more
       // strictly by `astro check` (type-aware) and scripts/validate-content.mjs.
       'src/content/**',
-      // The Pi harness and its eval fixtures are a different toolchain.
-      'evals/**',
-      'scripts/ai-pr.mjs',
-      'scripts/run-workflow-evals.mjs',
-      'scripts/verify-affected.mjs',
-      'scripts/verify-package-integrity.mjs',
-      'scripts/pi-provider.mjs',
-      'scripts/pi-extension-compat.mjs',
-      'scripts/lib/**',
+      // Unit/output tests under `tests/**` ARE linted: they are plain
+      // TypeScript with real regression value, not content prose.
+      '.omp/**',
+      'scripts/omp-pr.mjs',
       'scripts/verify.sh',
-      'scripts/pi-doctor.sh',
       'scripts/ci-install.sh',
-      'scripts/pi-sandbox.sh',
     ],
   },
 

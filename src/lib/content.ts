@@ -2,7 +2,9 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { courseConfig } from '../config/course';
 import type { ContentType, Difficulty, SearchableItem } from './types';
 import { normalizePersian } from './utils';
+import { withBase } from './url';
 import { renderContent } from './render';
+import { dependentsInList, prereqMatches, resolveInList } from './resolve';
 
 /**
  * A single, uniform view over every content collection.
@@ -65,25 +67,13 @@ const URL_BY_KIND: Record<EntryKind, (id: string) => string> = {
   glossary: (id) => `/glossary/${id}`,
 };
 
-const SINGULAR_LABELS: Record<EntryKind, string> = {
-  lesson: 'درس',
-  concept: 'مفهوم',
-  formula: 'فرمول',
-  example: 'مثال',
-  question: 'تمرین',
-  glossary: 'واژه',
-};
+// Canonical kind labels live in `./types` (client-safe): the search islands
+// import them from there because this module value-imports server-only
+// `astro:content`. Re-exported here so Astro-side importers are untouched.
+// If `ContentType`/`EntryKind` ever diverge, revisit this alias.
+export { SINGULAR_LABELS, PLURAL_LABELS } from './types';
 
-const PLURAL_LABELS: Record<EntryKind, string> = {
-  lesson: 'درس‌ها',
-  concept: 'مفاهیم',
-  formula: 'فرمول‌ها',
-  example: 'مثال‌ها',
-  question: 'تمرین‌ها',
-  glossary: 'واژه‌ها',
-};
-
-export { SINGULAR_LABELS, PLURAL_LABELS, URL_BY_KIND };
+export { URL_BY_KIND };
 
 /**
  * Glossary entries carry a `term` instead of a `title`, and have no section or
@@ -201,23 +191,12 @@ export async function resolveEntry(
   reference: string,
   preferKind?: EntryKind,
 ): Promise<CourseEntry | undefined> {
-  const all = await getAllEntries();
-  const [maybeKind, maybeId] = reference.includes('/') ? reference.split('/') : [undefined, reference];
-
-  if (maybeKind && maybeId) {
-    return all.find((e) => e.kind === maybeKind && e.id === maybeId);
-  }
-
-  const sameKind = preferKind ? all.filter((e) => e.kind === preferKind && e.id === maybeId) : [];
-  if (sameKind.length === 1) return sameKind[0];
-
-  const matches = all.filter((e) => e.id === maybeId);
-  return matches.length === 1 ? matches[0] : undefined;
+  return resolveInList(await getAllEntries(), reference, preferKind);
 }
 
 /** Entries that declare `id` as a prerequisite. */
 export async function getDependents(qualifiedId: string): Promise<CourseEntry[]> {
-  return (await getAllEntries()).filter((e) => e.prerequisites.includes(qualifiedId));
+  return dependentsInList(await getAllEntries(), qualifiedId);
 }
 
 /**
@@ -247,7 +226,7 @@ export async function getRelatedEntries(entry: CourseEntry, limit = 4): Promise<
       let score = 0;
       for (const tag of candidate.tags) if (tags.has(tag)) score += 3;
       if (candidate.section && candidate.section === entry.section) score += 2;
-      if (candidate.prerequisites.includes(entry.qualifiedId) || entry.prerequisites.includes(candidate.qualifiedId)) score += 2;
+      if (prereqMatches(candidate.prerequisites, entry) || prereqMatches(entry.prerequisites, candidate)) score += 2;
       return { candidate, score };
     })
     .filter((s) => s.score > 0)
@@ -323,9 +302,14 @@ export async function getCrossLinks(entry: CourseEntry): Promise<CrossLinks> {
  * in at module load, because this module is also imported by tests.
  */
 export function buildSearchIndex(entries: CourseEntry[]): SearchableItem[] {
-  const base = ((import.meta.env?.BASE_URL ?? '/') as string).replace(/\/$/, '');
-  const href = (path: string) => (base && path.startsWith('/') ? `${base}${path}` : path);
-
+  // URL-layer ownership for search hrefs (three layers, no more):
+  // 1. `withBase` (lib/url.ts) owns runtime template/route prefixing — used
+  //    here so index links survive a project-site base (e.g. `/physics2`).
+  // 2. `absoluteUrl` (config/site.ts) owns absolute canonicals for SEO feeds
+  //    (sitemap, OG tags) — never for in-site navigation.
+  // 3. The remark plugin (`remark-base-links.mjs`) owns author-written links
+  //    inside Markdown bodies. Add no further prefixing layers without
+  //    updating this comment.
   return entries.map((e) => ({
     id: e.id,
     title: e.title,
@@ -334,7 +318,7 @@ export function buildSearchIndex(entries: CourseEntry[]): SearchableItem[] {
     section: e.section,
     excerpt: e.description.slice(0, 180),
     tags: e.tags,
-    href: href(e.path),
+    href: withBase(e.path),
   }));
 }
 
@@ -435,12 +419,5 @@ export async function collectLinkProblems(entries: CourseEntry[]): Promise<LinkP
 
 /** Synchronous resolution helper mirroring `resolveEntry`, for validation. */
 function resolveSync(entries: CourseEntry[], reference: string, preferKind?: EntryKind): CourseEntry | undefined {
-  if (reference.includes('/')) {
-    const [kind, id] = reference.split('/');
-    return entries.find((e) => e.kind === kind && e.id === id);
-  }
-  const sameKind = entries.filter((e) => e.kind === preferKind && e.id === reference);
-  if (sameKind.length === 1) return sameKind[0];
-  const matches = entries.filter((e) => e.id === reference);
-  return matches.length === 1 ? matches[0] : undefined;
+  return resolveInList(entries, reference, preferKind);
 }

@@ -46,24 +46,13 @@ export default defineConfig({
     sitemap({
       // Suggest only indexable routes: the search page carries
       // `noindex, follow` and must never appear in the sitemap.
-      // lastmod stamps every URL with the build time (all pages rebuild
-      // together), so crawlers can skip unchanged URLs efficiently.
-      lastmod: new Date(),
+      // No `lastmod`: every page rebuilds on each deploy, so a build-time
+      // stamp would mark all URLs changed on every build and waste crawl
+      // budget. Omit it until per-page modification evidence exists.
       filter: (page) => {
         const pathname = new URL(page).pathname.replace(/\/+$/, '');
         return pathname !== `${basePath}/search`;
       },
     }),
-  ],
-  vite: {
-    resolve: {
-      alias: {
-        '@lib': '/src/lib',
-        '@components': '/src/components',
-        '@layouts': '/src/layouts',
-        '@config': '/src/config',
-        '@islands': '/src/islands',
-      },
-    },
-  },
+  ]
 });

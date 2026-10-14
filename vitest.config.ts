@@ -12,8 +12,6 @@ import { defineConfig } from 'vitest/config';
  * absent `dist/` reports failures that say nothing about the code — the exact
  * confusion that briefly made a correct build look broken.
  *
- * The repository also contains the Pi harness's own `node --test` suites and
- * eval fixtures. They use a different runner and must not be swept in.
  */
 export default defineConfig({
   test: {

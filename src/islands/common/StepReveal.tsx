@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useId, useState } from 'react';
+import { toPersianDigits } from '../../lib/utils';
+import IslandIcon from './IslandIcon';
 
 /**
  * A single revealable step.
@@ -21,12 +23,6 @@ export interface StepRevealProps {
   title?: string;
   /** 'manual' reveals one step per click; 'all' reveals everything at once. */
   mode?: 'manual' | 'all';
-}
-
-const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-
-function toPersian(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
 }
 
 export default function StepReveal({ steps, title, mode = 'manual' }: StepRevealProps) {
@@ -54,20 +50,7 @@ export default function StepReveal({ steps, title, mode = 'manual' }: StepReveal
     <section className="overflow-hidden" aria-label={title ?? 'گام‌های حل'}>
       {title && (
         <header className="flex items-center gap-2 border-b border-line px-5 py-3">
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-primary-deep"
-            aria-hidden="true"
-          >
-            <path d="m4 10.5 4 4 8-9" />
-          </svg>
+          <IslandIcon name="check" size={17} className="text-primary-deep" />
           <h3 className="text-xs font-bold tracking-wide text-ink-muted">{title}</h3>
         </header>
       )}
@@ -83,7 +66,7 @@ export default function StepReveal({ steps, title, mode = 'manual' }: StepReveal
               className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-wash text-xs font-bold text-primary-deep"
               aria-hidden="true"
             >
-              {toPersian(index + 1)}
+              {toPersianDigits(index + 1)}
             </span>
             <div className="min-w-0 flex-1">
               {step.title && <p className="mb-1 font-display text-sm font-bold text-ink">{step.title}</p>}
@@ -108,9 +91,7 @@ export default function StepReveal({ steps, title, mode = 'manual' }: StepReveal
             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-deep"
           >
             گام بعدی را ببینید
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m12 4-6 6 6 6" />
-            </svg>
+            <IslandIcon name="chevron-start" size={16} />
           </button>
           {mode === 'manual' && remaining > 1 && (
             <button
@@ -122,7 +103,7 @@ export default function StepReveal({ steps, title, mode = 'manual' }: StepReveal
             </button>
           )}
           <span className="self-center text-xs text-ink-faint" aria-live="polite">
-            {toPersian(remaining)} گام باقی مانده
+            {toPersianDigits(remaining)} گام باقی مانده
           </span>
         </div>
       ) : (

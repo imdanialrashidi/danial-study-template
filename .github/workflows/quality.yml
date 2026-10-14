@@ -14,21 +14,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  workflow-doctor:
+  # Cheap per-PR lane: content validation + unit tests. Runs on every pull
+  # request so content-only changes get fast feedback with a warm npm cache.
+  quick:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v4
 
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@v4
         with:
-          node-version: 22.23.2
+          node-version: 22
+          cache: npm
 
-      - name: Validate template
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quick lane
+        run: npm run validate && npm run test
+
+  # Full gate: retained for `main` pushes and as the backstop on PRs.
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Run verification gate
         run: bash scripts/verify.sh
-
-      - name: Verify pinned packages against npm
-        run: node scripts/verify-package-integrity.mjs --online

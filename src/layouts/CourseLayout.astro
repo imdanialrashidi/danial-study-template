@@ -12,7 +12,7 @@ import Icon from '../components/ui/Icon.astro';
 import BookmarkToggle from '../islands/common/BookmarkToggle';
 import type { CourseEntry, SectionGroup } from '../lib/content';
 import { SINGULAR_LABELS } from '../lib/content';
-import { toPersianDigits } from '../lib/utils';
+import { toPersianDigits, DIFFICULTY_LABELS } from '../lib/utils';
 import { withBase } from '../lib/url';
 import { isEnabled } from '../lib/features';
 
@@ -41,9 +41,7 @@ const showToc = isEnabled('toc') && tocHeadings.length > 0;
 const showProgress = isEnabled('progress');
 const sectionTitle = entry?.section ? sections.find((s) => s.id === entry.section)?.title : undefined;
 
-const difficultyLabel = entry?.difficulty
-  ? { beginner: 'مقدماتی', intermediate: 'متوسط', advanced: 'پیشرفته' }[entry.difficulty]
-  : undefined;
+const difficultyLabel = entry?.difficulty ? DIFFICULTY_LABELS[entry.difficulty] : undefined;
 ---
 
 <BaseLayout

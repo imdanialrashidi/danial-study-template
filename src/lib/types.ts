@@ -156,6 +156,32 @@ export interface ContentMeta {
 
 export type ContentType = 'lesson' | 'concept' | 'formula' | 'example' | 'question' | 'glossary';
 
+/**
+ * Canonical Persian kind labels — the single label map for content kinds.
+ *
+ * Lives here (not in `lib/content.ts`) because the search islands are client
+ * bundles: `content.ts` value-imports server-only `astro:content`, which the
+ * client bundler rejects. `content.ts` re-exports these names, so Astro-side
+ * importers keep working unchanged.
+ */
+export const SINGULAR_LABELS: Record<ContentType, string> = {
+  lesson: 'درس',
+  concept: 'مفهوم',
+  formula: 'فرمول',
+  example: 'مثال',
+  question: 'تمرین',
+  glossary: 'واژه',
+};
+
+export const PLURAL_LABELS: Record<ContentType, string> = {
+  lesson: 'درس‌ها',
+  concept: 'مفاهیم',
+  formula: 'فرمول‌ها',
+  example: 'مثال‌ها',
+  question: 'تمرین‌ها',
+  glossary: 'واژه‌ها',
+};
+
 export interface NavigationItem {
   id: string;
   title: string;
@@ -194,24 +220,7 @@ export interface QuizQuestion {
   difficulty?: Difficulty;
 }
 
-export interface QuizConfig {
-  id: string;
-  title: string;
-  description?: string;
-  questions: QuizQuestion[];
-  allowRetry?: boolean;
-  showCorrectOnFail?: boolean;
-  timeLimit?: number; // seconds
-}
 
-// ─── Progress / Bookmarks ────────────────────────────────────────────────────
-
-export interface ProgressState {
-  completedSlugs: string[];
-  bookmarkedSlugs: string[];
-  quizScores: Record<string, { score: number; total: number; completedAt: string }>;
-  lastVisit: Record<string, string>;
-}
 
 // ─── Search ──────────────────────────────────────────────────────────────────
 

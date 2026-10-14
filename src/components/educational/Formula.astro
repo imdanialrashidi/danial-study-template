@@ -46,7 +46,13 @@ try {
 
 {
   inline ? (
-    <span id={id} class="formula-inline" dir="ltr" set:html={rendered} />
+    error ? (
+      <span id={id} class="formula-inline-error text-danger" role="alert" title={error}>
+        فرمول قابل رندر نبود: <span class="font-mono" dir="ltr">{latex}</span>
+      </span>
+    ) : (
+      <span id={id} class="formula-inline" dir="ltr" set:html={rendered} />
+    )
   ) : (
     <figure id={id} class="formula-plate my-7 scroll-mt-24">
       {error ? (
@@ -113,6 +119,14 @@ try {
     display: inline-block;
     vertical-align: -0.15em;
     padding-inline: 0.12em;
+  }
+  /* Inline failure: danger text that stays inside the line-box. */
+  .formula-inline-error {
+    display: inline-block;
+    vertical-align: -0.15em;
+    padding-inline: 0.12em;
+    font-size: 0.85em;
+    font-weight: 700;
   }
   @media (min-width: 1024px) {
     .formula-plate :global(.katex) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ProgressBridge } from './ProgressBridge';
 import { toPersianDigits } from '../../lib/utils';
 import { useHydrated } from './useHydrated';
+import IslandIcon from './IslandIcon';
 
 export interface CourseProgressProps {
   /** Every trackable content id in the course. */
@@ -27,12 +28,18 @@ export default function CourseProgress({ entryIds }: CourseProgressProps) {
     read();
 
     // Re-read when another island on the page (e.g. a lesson toggle) writes.
-    const onStorage = () => read();
+    // `storage` fires cross-tab: refresh the singleton from storage first,
+    // since same-tab writes already mutate it before dispatching.
+    const onStorage = () => {
+      ProgressBridge.refresh();
+      read();
+    };
+    const onProgress = () => read();
     window.addEventListener('storage', onStorage);
-    window.addEventListener('dr-progress', onStorage);
+    window.addEventListener('dr-progress', onProgress);
     return () => {
       window.removeEventListener('storage', onStorage);
-      window.removeEventListener('dr-progress', onStorage);
+      window.removeEventListener('dr-progress', onProgress);
     };
   }, [entryIds]);
 
@@ -45,9 +52,7 @@ export default function CourseProgress({ entryIds }: CourseProgressProps) {
     >
       <div className="flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-wash text-primary-deep" aria-hidden="true">
-          <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m4 10.5 4 4 8-9" />
-          </svg>
+          <IslandIcon name="check" size={19} />
         </span>
         <div>
           <p className="text-sm font-bold text-ink">
