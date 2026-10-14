@@ -24,7 +24,6 @@ export default [
       // strictly by `astro check` (type-aware) and scripts/validate-content.mjs.
       'src/content/**',
       // Omp workflow files and legacy eval fixtures are a different toolchain.
-      'evals/**',
       '.omp/**',
       'scripts/omp-pr.mjs',
       'scripts/verify.sh',

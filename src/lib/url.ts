@@ -34,10 +34,6 @@ export function withBase(path: string): string {
   return `${basePath}${normalized}`;
 }
 
-/** Join a base path with a route for non-root deployments. */
-export function route(path: string): string {
-  return withBase(path);
-}
 /**
  * Remove a deployment base from an incoming pathname.
  *

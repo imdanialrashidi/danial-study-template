@@ -194,24 +194,7 @@ export interface QuizQuestion {
   difficulty?: Difficulty;
 }
 
-export interface QuizConfig {
-  id: string;
-  title: string;
-  description?: string;
-  questions: QuizQuestion[];
-  allowRetry?: boolean;
-  showCorrectOnFail?: boolean;
-  timeLimit?: number; // seconds
-}
 
-// ─── Progress / Bookmarks ────────────────────────────────────────────────────
-
-export interface ProgressState {
-  completedSlugs: string[];
-  bookmarkedSlugs: string[];
-  quizScores: Record<string, { score: number; total: number; completedAt: string }>;
-  lastVisit: Record<string, string>;
-}
 
 // ─── Search ──────────────────────────────────────────────────────────────────
 

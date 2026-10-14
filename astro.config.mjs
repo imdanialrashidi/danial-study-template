@@ -54,16 +54,5 @@ export default defineConfig({
         return pathname !== `${basePath}/search`;
       },
     }),
-  ],
-  vite: {
-    resolve: {
-      alias: {
-        '@lib': '/src/lib',
-        '@components': '/src/components',
-        '@layouts': '/src/layouts',
-        '@config': '/src/config',
-        '@islands': '/src/islands',
-      },
-    },
-  },
+  ]
 });
