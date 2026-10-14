@@ -39,15 +39,24 @@ export function route(path: string): string {
   return withBase(path);
 }
 /**
+ * Remove a deployment base from an incoming pathname.
+ *
+ * Pure in `base`: production callers keep using the default (runtime base),
+ * tests pass it explicitly so they never depend on the runner's base.
+ */
+export function stripBaseWith(base: string, pathname: string): string {
+  if (!base) return pathname;
+  if (pathname === base) return '/';
+  if (pathname.startsWith(`${base}/`)) return pathname.slice(base.length);
+  return pathname;
+}
+/**
  * Remove the deployment base from an incoming pathname.
  *
  * Used for "is this nav item active?" checks: `/physics2/lessons/x` must still
  * match the `/lessons` route, otherwise every nav item loses its active state
  * on a project-site deployment.
  */
-export function stripBase(pathname: string): string {
-  if (!basePath) return pathname;
-  if (pathname === basePath) return '/';
-  if (pathname.startsWith(`${basePath}/`)) return pathname.slice(basePath.length);
-  return pathname;
+export function stripBase(pathname: string, base: string = basePath): string {
+  return stripBaseWith(base, pathname);
 }
