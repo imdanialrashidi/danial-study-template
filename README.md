@@ -1,4 +1,6 @@
-# Pi Production Workflow Template
+# Pi Production Workflow Template (legacy Pi workflow — migrated to omp)
+
+> Migrated to [oh-my-pi (omp)](https://omp.sh). Current workflow docs: `AGENTS.md`, `.omp/`, `docs/HARNESS.md`, and `docs/GIT_POLICY.md`. Pi-specific sections below are historical.
 
 A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality implementation, model-neutral routing, bounded independent evaluation, low-resource verification, distinctive production-grade frontend design, and scoped automatic PR delivery.
 

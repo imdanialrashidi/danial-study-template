@@ -13,17 +13,7 @@
 docs/private/**
 !docs/private/.gitkeep
 
-# Pi local runtime and installed project packages
-.pi/npm/
-.pi/git/
-.pi/sessions/
-.pi/cache/
-.pi/auth.json
-.pi/models.json
-.pi/trust.json
-.pi/mcp-auth.json
-.pi/mcp-oauth/
-.pi/mcp-traces/
+# Omp local state is user-global or stored under .artifacts/; project config in .omp/ is committed.
 
 # Dependencies and environments
 node_modules/
