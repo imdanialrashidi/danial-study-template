@@ -3,6 +3,7 @@ import { courseConfig } from '../config/course';
 import type { ContentType, Difficulty, SearchableItem } from './types';
 import { normalizePersian } from './utils';
 import { renderContent } from './render';
+import { dependentsInList, prereqMatches, resolveInList } from './resolve';
 
 /**
  * A single, uniform view over every content collection.
@@ -201,32 +202,12 @@ export async function resolveEntry(
   reference: string,
   preferKind?: EntryKind,
 ): Promise<CourseEntry | undefined> {
-  const all = await getAllEntries();
-  const parts = reference.split('/');
-  if (parts.length > 2 || (reference.includes('/') && parts.some((p) => !p))) return undefined;
-  const [maybeKind, maybeId] = parts.length === 2 ? parts : [undefined, parts[0]];
-  if (maybeKind && maybeId) {
-    return all.find((e) => e.kind === maybeKind && e.id === maybeId);
-  }
-
-  const sameKind = preferKind ? all.filter((e) => e.kind === preferKind && e.id === maybeId) : [];
-  if (sameKind.length === 1) return sameKind[0];
-
-  const matches = all.filter((e) => e.id === maybeId);
-  return matches.length === 1 ? matches[0] : undefined;
-}
-
-function prereqMatches(list: string[], entry: CourseEntry): boolean {
-  return list.includes(entry.qualifiedId) || list.includes(entry.id);
+  return resolveInList(await getAllEntries(), reference, preferKind);
 }
 
 /** Entries that declare `id` as a prerequisite. */
 export async function getDependents(qualifiedId: string): Promise<CourseEntry[]> {
-  const all = await getAllEntries();
-  const target = all.find((e) => e.qualifiedId === qualifiedId);
-  const id = target?.id ?? qualifiedId.split('/').pop() ?? qualifiedId;
-  const probe = { qualifiedId, id } as CourseEntry;
-  return all.filter((e) => prereqMatches(e.prerequisites, probe));
+  return dependentsInList(await getAllEntries(), qualifiedId);
 }
 
 /**
@@ -444,14 +425,5 @@ export async function collectLinkProblems(entries: CourseEntry[]): Promise<LinkP
 
 /** Synchronous resolution helper mirroring `resolveEntry`, for validation. */
 function resolveSync(entries: CourseEntry[], reference: string, preferKind?: EntryKind): CourseEntry | undefined {
-  const parts = reference.split('/');
-  if (parts.length > 2 || (reference.includes('/') && parts.some((p) => !p))) return undefined;
-  if (parts.length === 2) {
-    const [kind, id] = parts;
-    return entries.find((e) => e.kind === kind && e.id === id);
-  }
-  const sameKind = entries.filter((e) => e.kind === preferKind && e.id === reference);
-  if (sameKind.length === 1) return sameKind[0];
-  const matches = entries.filter((e) => e.id === reference);
-  return matches.length === 1 ? matches[0] : undefined;
+  return resolveInList(entries, reference, preferKind);
 }

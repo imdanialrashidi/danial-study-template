@@ -1,20 +1,17 @@
 import { describe, it, expect } from 'vitest';
+import { dependentsInList, parseReference, prereqMatches, resolveInList } from '../../src/lib/resolve.ts';
 import type { CourseEntry } from '../../src/lib/content.ts';
 
 /**
  * Resolution-branch contract for the link-resolution engine (plan 013's
- * post-013 behavior), pinned at the cheapest faithful layer.
+ * post-013 behavior), asserted against the REAL pure helpers in
+ * `src/lib/resolve.ts` — the same functions `content.ts` delegates to for
+ * `resolveEntry`, `getDependents`, `getRelatedEntries` scoring, and the
+ * validation-time `resolveSync`.
  *
- * The engine's pure resolution branches (`resolveEntry`'s bare-prefer-same-kind
- * / unique-fallback / ambiguous-undefined, the strict multi-slash rejection,
- * the bare-slug prerequisite matcher shared by `getDependents` and
- * `getRelatedEntries`) all live in `src/lib/content.ts` — which imports
- * `astro:content` for the collection layer. That import cannot resolve under
- * vitest (verified: `Failed to load url astro:content`), and mocking the
- * authority is forbidden by `docs/QUALITY.md`. So these tests exercise the
- * contract through executable reimplementations of the branch logic, kept
- * line-for-line faithful to `content.ts:200-230,446-457`, against fabricated
- * `CourseEntry` fixtures:
+ * `resolve.ts` is importable under vitest (type-only dependency on
+ * `content.ts`); `content.ts` itself is not (`astro:content` value import).
+ * Cases use fabricated `CourseEntry` fixtures, never the Astro content layer:
  *
  * - bare slug prefers the same kind, then a globally unique match
  * - ambiguous bare slug resolves to nothing (build error, never a wrong link)
@@ -22,10 +19,6 @@ import type { CourseEntry } from '../../src/lib/content.ts';
  * - `a/b/c` (multi-slash, empty segments) is rejected
  * - bare-slug prerequisites match (plan 013's `prereqMatches` fix)
  * - related-entries scoring excludes explicitly cross-linked entries
- *
- * Each case re-derives the expected value from the fixture list, never from
- * the implementation's own helpers; if the implementation regresses, the
- * reimplementation disagrees and the test fails.
  */
 
 type Minimal = Pick<CourseEntry, 'id' | 'kind' | 'qualifiedId' | 'prerequisites' | 'tags' | 'section' | 'title'>;
@@ -55,79 +48,69 @@ const entries: Minimal[] = [
   entry('lesson', 'dependent', { prerequisites: ['shared'], tags: ['t1'] }),
 ];
 
-// Faithful to resolveEntry (content.ts:200-216) + resolveSync (:446-457).
-function resolveRef(list: Minimal[], reference: string, preferKind?: Minimal['kind']): Minimal | undefined {
-  const parts = reference.split('/');
-  if (parts.length > 2 || (reference.includes('/') && parts.some((p) => !p))) return undefined;
-  const [maybeKind, maybeId] = parts.length === 2 ? parts : [undefined, parts[0]];
-  if (maybeKind && maybeId) {
-    return list.find((e) => e.kind === maybeKind && e.id === maybeId);
-  }
-  const sameKind = preferKind ? list.filter((e) => e.kind === preferKind && e.id === maybeId) : [];
-  if (sameKind.length === 1) return sameKind[0];
-  const matches = list.filter((e) => e.id === maybeId);
-  return matches.length === 1 ? matches[0] : undefined;
-}
+const asEntries = (list: Minimal[]): CourseEntry[] => list as CourseEntry[];
 
-// Faithful to prereqMatches (content.ts:219-221).
-function prereqMatches(list: string[], target: Pick<Minimal, 'id' | 'qualifiedId'>): boolean {
-  return list.includes(target.qualifiedId) || list.includes(target.id);
-}
-
-// Faithful to getDependents (content.ts:224-230).
-function dependentsOf(list: Minimal[], qualifiedId: string): Minimal[] {
-  const target = list.find((e) => e.qualifiedId === qualifiedId);
-  const id = target?.id ?? qualifiedId.split('/').pop() ?? qualifiedId;
-  const probe = { qualifiedId, id };
-  return list.filter((e) => prereqMatches(e.prerequisites, probe));
-}
-
-describe('resolveEntry branches (post-013 contract)', () => {
+describe('resolveInList branches (post-013 contract)', () => {
   it('bare slug prefers the same kind', () => {
-    expect(resolveRef(entries, 'shared', 'lesson')?.qualifiedId).toBe('lesson/shared');
-    expect(resolveRef(entries, 'shared', 'concept')?.qualifiedId).toBe('concept/shared');
+    expect(resolveInList(asEntries(entries), 'shared', 'lesson')?.qualifiedId).toBe('lesson/shared');
+    expect(resolveInList(asEntries(entries), 'shared', 'concept')?.qualifiedId).toBe('concept/shared');
   });
 
   it('bare slug falls back to a globally unique match', () => {
-    expect(resolveRef(entries, 'unique', 'lesson')?.qualifiedId).toBe('formula/unique');
-    expect(resolveRef(entries, 'unique')?.qualifiedId).toBe('formula/unique');
+    expect(resolveInList(asEntries(entries), 'unique', 'lesson')?.qualifiedId).toBe('formula/unique');
+    expect(resolveInList(asEntries(entries), 'unique')?.qualifiedId).toBe('formula/unique');
   });
 
   it('ambiguous bare slug resolves to nothing', () => {
-    expect(resolveRef(entries, 'shared')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), 'shared')).toBeUndefined();
   });
 
   it('qualified miss resolves to nothing', () => {
-    expect(resolveRef(entries, 'lesson/only-concept')).toBeUndefined();
-    expect(resolveRef(entries, 'formula/nope')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), 'lesson/only-concept')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), 'formula/nope')).toBeUndefined();
   });
 
   it('multi-slash references are rejected', () => {
-    expect(resolveRef(entries, 'a/b/c')).toBeUndefined();
-    expect(resolveRef(entries, 'lesson/')).toBeUndefined();
-    expect(resolveRef(entries, '/shared')).toBeUndefined();
-    expect(resolveRef(entries, 'lesson//x')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), 'a/b/c')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), 'lesson/')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), '/shared')).toBeUndefined();
+    expect(resolveInList(asEntries(entries), 'lesson//x')).toBeUndefined();
   });
 
   it('qualified hit resolves', () => {
-    expect(resolveRef(entries, 'concept/only-concept')?.qualifiedId).toBe('concept/only-concept');
+    expect(resolveInList(asEntries(entries), 'concept/only-concept')?.qualifiedId).toBe(
+      'concept/only-concept',
+    );
   });
 });
 
-describe('getDependents (bare-slug prerequisites match)', () => {
+describe('parseReference (strict reference parser)', () => {
+  it('parses bare and qualified references', () => {
+    expect(parseReference('shared')).toEqual([undefined, 'shared']);
+    expect(parseReference('lesson/shared')).toEqual(['lesson', 'shared']);
+  });
+
+  it('rejects multi-slash and empty segments', () => {
+    expect(parseReference('a/b/c')).toBeUndefined();
+    expect(parseReference('lesson/')).toBeUndefined();
+    expect(parseReference('/shared')).toBeUndefined();
+  });
+});
+
+describe('dependentsInList (bare-slug prerequisites match)', () => {
   it('finds entries declaring the target as a bare-slug prerequisite', () => {
-    const found = dependentsOf(entries, 'lesson/shared');
+    const found = dependentsInList(asEntries(entries), 'lesson/shared');
     expect(found.map((e) => e.qualifiedId)).toContain('lesson/dependent');
   });
 
   it('finds entries declaring the qualified prerequisite too', () => {
     const list = [...entries, entry('example', 'dep2', { prerequisites: ['concept/shared'] })];
-    const found = dependentsOf(list, 'concept/shared');
+    const found = dependentsInList(asEntries(list), 'concept/shared');
     expect(found.map((e) => e.qualifiedId)).toContain('example/dep2');
   });
 });
 
-describe('getRelatedEntries (excludes explicit cross-links)', () => {
+describe('prereqMatches + related exclusion (excludes explicit cross-links)', () => {
   it('related scoring excludes already-linked entries', () => {
     const target = entries.find((e) => e.qualifiedId === 'lesson/shared')!;
     // Candidates sharing tag t1: concept/shared, formula/unique, lesson/dependent.
