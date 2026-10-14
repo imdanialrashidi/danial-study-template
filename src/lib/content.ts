@@ -202,8 +202,9 @@ export async function resolveEntry(
   preferKind?: EntryKind,
 ): Promise<CourseEntry | undefined> {
   const all = await getAllEntries();
-  const [maybeKind, maybeId] = reference.includes('/') ? reference.split('/') : [undefined, reference];
-
+  const parts = reference.split('/');
+  if (parts.length > 2 || (reference.includes('/') && parts.some((p) => !p))) return undefined;
+  const [maybeKind, maybeId] = parts.length === 2 ? parts : [undefined, parts[0]];
   if (maybeKind && maybeId) {
     return all.find((e) => e.kind === maybeKind && e.id === maybeId);
   }
@@ -443,8 +444,10 @@ export async function collectLinkProblems(entries: CourseEntry[]): Promise<LinkP
 
 /** Synchronous resolution helper mirroring `resolveEntry`, for validation. */
 function resolveSync(entries: CourseEntry[], reference: string, preferKind?: EntryKind): CourseEntry | undefined {
-  if (reference.includes('/')) {
-    const [kind, id] = reference.split('/');
+  const parts = reference.split('/');
+  if (parts.length > 2 || (reference.includes('/') && parts.some((p) => !p))) return undefined;
+  if (parts.length === 2) {
+    const [kind, id] = parts;
     return entries.find((e) => e.kind === kind && e.id === id);
   }
   const sameKind = entries.filter((e) => e.kind === preferKind && e.id === reference);

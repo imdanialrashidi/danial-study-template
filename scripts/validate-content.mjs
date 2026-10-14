@@ -166,8 +166,10 @@ for (const entry of entries) {
       A bare slug matches an entry in the same collection first, then a
       globally unique one — mirroring resolveEntry() in src/lib/content.ts. */
 const matchesRef = (ref, preferKind) => {
-  if (ref.includes('/')) {
-    const [kind, id] = ref.split('/');
+  const parts = String(ref).split('/');
+  if (parts.length > 2 || (String(ref).includes('/') && parts.some((p) => !p))) return undefined;
+  if (parts.length === 2) {
+    const [kind, id] = parts;
     return entries.find((e) => e.dir.replace(/s$/, '') === kind && e.id === id);
   }
   const preferDir = `${preferKind}s`;
