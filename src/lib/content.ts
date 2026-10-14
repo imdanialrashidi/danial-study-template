@@ -215,9 +215,17 @@ export async function resolveEntry(
   return matches.length === 1 ? matches[0] : undefined;
 }
 
+function prereqMatches(list: string[], entry: CourseEntry): boolean {
+  return list.includes(entry.qualifiedId) || list.includes(entry.id);
+}
+
 /** Entries that declare `id` as a prerequisite. */
 export async function getDependents(qualifiedId: string): Promise<CourseEntry[]> {
-  return (await getAllEntries()).filter((e) => e.prerequisites.includes(qualifiedId));
+  const all = await getAllEntries();
+  const target = all.find((e) => e.qualifiedId === qualifiedId);
+  const id = target?.id ?? qualifiedId.split('/').pop() ?? qualifiedId;
+  const probe = { qualifiedId, id } as CourseEntry;
+  return all.filter((e) => prereqMatches(e.prerequisites, probe));
 }
 
 /**
@@ -247,7 +255,7 @@ export async function getRelatedEntries(entry: CourseEntry, limit = 4): Promise<
       let score = 0;
       for (const tag of candidate.tags) if (tags.has(tag)) score += 3;
       if (candidate.section && candidate.section === entry.section) score += 2;
-      if (candidate.prerequisites.includes(entry.qualifiedId) || entry.prerequisites.includes(candidate.qualifiedId)) score += 2;
+      if (prereqMatches(candidate.prerequisites, entry) || prereqMatches(entry.prerequisites, candidate)) score += 2;
       return { candidate, score };
     })
     .filter((s) => s.score > 0)
