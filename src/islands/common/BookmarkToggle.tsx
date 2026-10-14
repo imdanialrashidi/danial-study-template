@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ProgressBridge } from './ProgressBridge';
 import { useHydrated } from './useHydrated';
+import IslandIcon from './IslandIcon';
 
 export interface BookmarkToggleProps {
   /** Content id, e.g. the lesson slug. */
@@ -48,18 +49,7 @@ export default function BookmarkToggle({ id, label = 'این صفحه' }: Bookma
           : 'border-line bg-surface text-ink-muted hover:border-line-control hover:text-ink'
       }`}
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 20 20"
-        fill={saved ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5.5 3.5h9a1 1 0 0 1 1 1v12l-5.5-3.5-5.5 3.5v-12a1 1 0 0 1 1-1z" />
-      </svg>
+      <IslandIcon name="bookmark" size={16} fill={saved ? 'currentColor' : 'none'} />
     </button>
   );
 }

@@ -3,6 +3,7 @@ import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
 import { focusFirst, trapFocus } from '../../lib/a11y';
+import IslandIcon from './IslandIcon';
 
 /**
  * Command palette — `Cmd/Ctrl + K` fast navigation over the same build-time
@@ -111,10 +112,7 @@ export default function CommandPalette({ items }: CommandPaletteProps) {
       <div className="absolute inset-0 bg-ink/30" onClick={close} aria-hidden="true" />
       <div className="relative mx-auto mt-[12vh] w-[min(92vw,36rem)] overflow-hidden rounded-lg border border-line bg-surface shadow-float">
         <div className="flex items-center gap-2 border-b border-line px-4">
-          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="shrink-0 text-ink-faint" aria-hidden="true">
-            <circle cx="9" cy="9" r="5.5" />
-            <path d="m13.5 13.5 3.5 3.5" />
-          </svg>
+          <IslandIcon name="search" size={17} className="shrink-0 text-ink-faint" />
           <label htmlFor="palette-input" className="sr-only">جست‌وجوی سریع در دوره</label>
           <input
             id="palette-input"

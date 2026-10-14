@@ -3,6 +3,7 @@ import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
 import { useHydrated } from './useHydrated';
+import IslandIcon from './IslandIcon';
 
 /**
  * Search island.
@@ -93,10 +94,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
           جست‌وجو در دوره
         </label>
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-ink-faint">
-          <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <circle cx="9" cy="9" r="5.5" />
-            <path d="m13.5 13.5 3.5 3.5" />
-          </svg>
+          <IslandIcon name="search" size={19} />
         </div>
         <input
           id="search-input"
@@ -118,9 +116,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
             aria-label="پاک کردن جست‌وجو"
             className="absolute inset-y-0 end-0 flex items-center px-4 text-ink-faint transition-colors hover:text-ink"
           >
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="m5.5 5.5 9 9M14.5 5.5l-9 9" />
-            </svg>
+            <IslandIcon name="close" size={18} />
           </button>
         )}
       </div>
@@ -158,20 +154,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
       {/* Empty state: explain what to try, not just "no results". */}
       {hasQuery && results.length === 0 && (
         <div className="mt-4 rounded-lg border border-dashed border-line-control bg-surface px-6 py-10 text-center">
-          <svg
-            width="30"
-            height="30"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            className="mx-auto text-ink-faint"
-            aria-hidden="true"
-          >
-            <circle cx="9" cy="9" r="5.5" />
-            <path d="m13.5 13.5 3.5 3.5" />
-          </svg>
+          <IslandIcon name="search" size={30} className="mx-auto text-ink-faint" />
           <p className="mt-3 font-display text-base font-bold text-ink">نتیجه‌ای برای «{deferredQuery.trim()}» پیدا نشد</p>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
             املای واژه را بررسی کنید یا با نام یک مفهوم، فرمول یا بخش دوره جست‌وجو کنید.

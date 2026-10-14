@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ProgressBridge } from './ProgressBridge';
 import { useHydrated } from './useHydrated';
+import IslandIcon from './IslandIcon';
 
 export interface ProgressToggleProps {
   /** Content id, e.g. the lesson slug. */
@@ -71,7 +72,7 @@ export default function ProgressToggle({
             : 'border border-line-control bg-surface text-ink hover:bg-surface-sunken'
         }`}
       >
-        {done ? <CheckIcon /> : <CircleIcon />}
+        {done ? <IslandIcon name="check" size={17} /> : <IslandIcon name="circle" size={17} />}
         {done ? doneLabel : undoneLabel}
       </button>
 
@@ -84,18 +85,3 @@ export default function ProgressToggle({
   );
 }
 
-function CheckIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m4 10.5 4 4 8-9" />
-    </svg>
-  );
-}
-
-function CircleIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="10" cy="10" r="7.5" />
-    </svg>
-  );
-}
