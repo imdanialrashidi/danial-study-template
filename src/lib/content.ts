@@ -2,6 +2,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { courseConfig } from '../config/course';
 import type { ContentType, Difficulty, SearchableItem } from './types';
 import { normalizePersian } from './utils';
+import { withBase } from './url';
 import { renderContent } from './render';
 import { dependentsInList, prereqMatches, resolveInList } from './resolve';
 
@@ -301,9 +302,14 @@ export async function getCrossLinks(entry: CourseEntry): Promise<CrossLinks> {
  * in at module load, because this module is also imported by tests.
  */
 export function buildSearchIndex(entries: CourseEntry[]): SearchableItem[] {
-  const base = ((import.meta.env?.BASE_URL ?? '/') as string).replace(/\/$/, '');
-  const href = (path: string) => (base && path.startsWith('/') ? `${base}${path}` : path);
-
+  // URL-layer ownership for search hrefs (three layers, no more):
+  // 1. `withBase` (lib/url.ts) owns runtime template/route prefixing — used
+  //    here so index links survive a project-site base (e.g. `/physics2`).
+  // 2. `absoluteUrl` (config/site.ts) owns absolute canonicals for SEO feeds
+  //    (sitemap, OG tags) — never for in-site navigation.
+  // 3. The remark plugin (`remark-base-links.mjs`) owns author-written links
+  //    inside Markdown bodies. Add no further prefixing layers without
+  //    updating this comment.
   return entries.map((e) => ({
     id: e.id,
     title: e.title,
@@ -312,7 +318,7 @@ export function buildSearchIndex(entries: CourseEntry[]): SearchableItem[] {
     section: e.section,
     excerpt: e.description.slice(0, 180),
     tags: e.tags,
-    href: href(e.path),
+    href: withBase(e.path),
   }));
 }
 
