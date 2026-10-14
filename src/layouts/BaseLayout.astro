@@ -7,6 +7,7 @@ import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import { courseConfig } from '../config/course';
 import { basePath, absoluteUrl, defaultOgImage, SEO } from '../config/site';
+import { jsonForScript } from '../lib/utils';
 import { withBase } from '../lib/url';
 import { themeStyleAttribute } from '../lib/themes';
 import { isEnabled } from '../lib/features';
@@ -91,9 +92,8 @@ const paletteIndex = showPalette ? buildSearchIndex(await getAllEntries()) : [];
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     {jsonLd.map((node) => (
-      <script type="application/ld+json" set:html={JSON.stringify(node)} />
+      <script type="application/ld+json" set:html={jsonForScript(node)} />
     ))}
-
     <meta name="theme-color" content={SEO.themeColor} media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content={SEO.themeColorDark} media="(prefers-color-scheme: dark)" />
 
