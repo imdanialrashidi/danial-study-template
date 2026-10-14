@@ -7,13 +7,19 @@ import { toLatinDigits } from './utils';
  * regression fails `npm run test` instead of silently mis-scoring learners.
  */
 
+/** True when the question expects a typed number rather than an option. */
+export function isNumericQuestion(question: QuizQuestion): boolean {
+  return question.type === 'numeric' || (question.numericAnswer !== undefined && (question.options ?? []).length === 0);
+}
+
 export function gradeChoice(question: QuizQuestion, answer: string[]): boolean {
-  if (question.numericAnswer !== undefined) return gradeNumeric(question, answer[0] ?? '');
+  if (isNumericQuestion(question)) return gradeNumeric(question, answer[0] ?? '');
   const expected = Array.isArray(question.correctAnswer)
     ? question.correctAnswer
     : question.correctAnswer !== undefined
       ? [question.correctAnswer]
       : [];
+  if (expected.length === 0) return false;
   if (answer.length !== expected.length) return false;
   const a = [...answer].sort();
   const b = [...expected].sort();
@@ -29,11 +35,6 @@ export function gradeNumeric(question: QuizQuestion, raw: string): boolean {
   if (!Number.isFinite(value)) return false;
   const tolerance = question.tolerance ?? 0;
   return Math.abs(value - question.numericAnswer) <= tolerance + Number.EPSILON;
-}
-
-/** True when the question expects a typed number rather than an option. */
-export function isNumericQuestion(question: QuizQuestion): boolean {
-  return question.type === 'numeric' || (question.numericAnswer !== undefined && (question.options ?? []).length === 0);
 }
 
 export function gradeQuiz(questions: QuizQuestion[], answers: Record<string, string[]>): number {
