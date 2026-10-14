@@ -2,6 +2,7 @@ import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react'
 import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
+import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
 import { useHydrated } from './useHydrated';
 import IslandIcon from './IslandIcon';
 
@@ -28,29 +29,6 @@ interface Scored {
   score: number;
 }
 
-/**
- * Score one item against the query terms.
- * Exact title prefix > title substring > tag/exact word > body substring.
- */
-function score(item: SearchableItem, normalized: SearchableItem & { _norm?: string }, terms: string[]): number {
-  const title = normalizePersian(item.title);
-  const haystack = normalized._norm ?? normalizePersian(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`);
-  let total = 0;
-
-  for (const term of terms) {
-    if (title.startsWith(term)) total += 12;
-    else if (title.includes(term)) total += 8;
-
-    if ((item.tags ?? []).some((tag) => normalizePersian(tag).includes(term))) total += 5;
-
-    const wordStart = haystack.includes(` ${term}`);
-    if (haystack.includes(term)) total += wordStart ? 4 : 2;
-    else return 0; // every term must match somewhere
-  }
-
-  return total;
-}
-
 export default function SearchIsland({ items, initialQuery = '' }: SearchIslandProps) {
   const [query, setQuery] = useState(initialQuery);
   const deferredQuery = useDeferredValue(query);
@@ -58,7 +36,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
   const hydrated = useHydrated('search');
 
   const normalizedItems = useMemo(
-    () => items.map((item) => ({ ...item, _norm: normalizePersian(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`) })),
+    () => items.map((item) => ({ ...item, _norm: normalizeIndexEntry(item) })),
     [items],
   );
 
@@ -70,7 +48,7 @@ export default function SearchIsland({ items, initialQuery = '' }: SearchIslandP
     if (terms.length === 0) return [];
 
     return normalizedItems
-      .map((item) => ({ item, score: score(item, item, terms) }))
+      .map((item) => ({ item, score: scoreSearchItem(item, item, terms) }))
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fa'))
       .slice(0, 40);

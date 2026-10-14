@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
+import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
 import { focusFirst, trapFocus } from '../../lib/a11y';
 import IslandIcon from './IslandIcon';
 
@@ -36,26 +37,23 @@ export default function CommandPalette({ items }: CommandPaletteProps) {
     }
   }, []);
 
+  const normalizedItems = useMemo(
+    () => items.map((item) => ({ ...item, _norm: normalizeIndexEntry(item) })),
+    [items],
+  );
+
   const results = useMemo(() => {
     const terms = normalizePersian(query).split(/\s+/).filter(Boolean);
-    const pool = terms.length === 0 ? items.slice(0, 8) : items;
+    const pool = terms.length === 0 ? normalizedItems.slice(0, 8) : normalizedItems;
     const scored = pool
       .map((item) => {
         if (terms.length === 0) return { item, score: 1 };
-        const hay = normalizePersian(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`);
-        let score = 0;
-        for (const term of terms) {
-          if (normalizePersian(item.title).startsWith(term)) score += 10;
-          else if (normalizePersian(item.title).includes(term)) score += 6;
-          else if (hay.includes(term)) score += 2;
-          else return { item, score: 0 };
-        }
-        return { item, score };
+        return { item, score: scoreSearchItem(item, item, terms) };
       })
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fa'));
     return scored.slice(0, 8).map((r) => r.item);
-  }, [items, query]);
+  }, [normalizedItems, query]);
 
   useEffect(() => {
     setActive(0);
