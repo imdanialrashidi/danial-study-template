@@ -293,11 +293,10 @@ If it does not, the build fails with the exact fragment name.
 
 ## 8. Add an interactive island
 
-The core layout never imports an island directly. To add one:
+To add one:
 
 1. Create `src/islands/course/<Name>.tsx` — a React component.
-2. Register it in `src/islands/registry.ts`.
-3. Create a thin Astro wrapper in `src/components/educational/` that carries the
+2. Create a thin Astro wrapper in `src/components/educational/` that carries the
    `client:*` directive, and add it to `src/lib/mdx.ts`.
 
 **Step 3 is not optional.** MDX renders a bare React component to static HTML
