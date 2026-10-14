@@ -254,12 +254,13 @@ describeIfBuilt('built output', () => {
     const sitemap = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
     expect(sitemap, 'sitemap doubles the base').not.toContain(doubled);
   });
-  it('stamps sitemap URLs with lastmod for crawl efficiency', () => {
+  it('omits build-time lastmod so deploys do not mark every URL changed', () => {
+    // A `lastmod: new Date()` stamp marks all URLs changed on every build,
+    // wasting crawl budget. No lastmod until per-page modification evidence.
     const xml = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
     const urls = (xml.match(/<loc>/g) ?? []).length;
-    const stamps = (xml.match(/<lastmod>\d{4}-\d{2}-\d{2}/g) ?? []).length;
     expect(urls, 'sitemap has no URLs').toBeGreaterThan(0);
-    expect(stamps, `only ${stamps}/${urls} sitemap URLs carry lastmod`).toBe(urls);
+    expect(xml, 'sitemap must not carry build-time lastmod stamps').not.toContain('<lastmod>');
   });
 
   it('stripBase delegates to the shared lib helper', () => {
