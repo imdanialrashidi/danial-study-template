@@ -8,6 +8,7 @@ import {
   slugify,
   formatMinutes,
   percent,
+  jsonForScript,
 } from '../../src/lib/utils.ts';
 
 /**
@@ -135,5 +136,15 @@ describe('percent', () => {
 
   it('returns 0 rather than NaN for an empty course', () => {
     expect(percent(0, 0)).toBe(0);
+  });
+});
+
+describe('jsonForScript', () => {
+  it('neutralizes script breakouts and round-trips JSON-LD', () => {
+    const node = { headline: 'x</script><script>alert(1)' };
+    const serialized = jsonForScript(node);
+    expect(serialized).not.toContain('</script>');
+    expect(serialized).not.toContain('<!--');
+    expect(JSON.parse(serialized)).toEqual(node);
   });
 });
