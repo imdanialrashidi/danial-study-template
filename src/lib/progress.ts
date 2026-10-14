@@ -44,13 +44,18 @@ function sanitize(raw: unknown): ProgressData {
   if (!raw || typeof raw !== 'object') return emptyData();
   const input = raw as Partial<ProgressData>;
   return {
-    completed: isStringArray(input.completed) ? input.completed : [],
-    bookmarks: isStringArray(input.bookmarks) ? input.bookmarks : [],
+    completed: isStringArray(input.completed) ? [...new Set(input.completed)] : [],
+    bookmarks: isStringArray(input.bookmarks) ? [...new Set(input.bookmarks)] : [],
     quizzes:
       input.quizzes && typeof input.quizzes === 'object'
         ? Object.fromEntries(
             Object.entries(input.quizzes).filter(
-              ([, v]) => !!v && typeof v === 'object' && typeof (v as QuizScore).score === 'number',
+              ([, v]) =>
+                !!v &&
+                typeof v === 'object' &&
+                Number.isFinite((v as QuizScore).score) &&
+                Number.isFinite((v as QuizScore).total) &&
+                (v as QuizScore).total > 0,
             ),
           )
         : {},
@@ -182,9 +187,10 @@ export class ProgressStore {
   /** Progress over a known list of ids, so unknown/stale ids never skew it. */
   completionRatio(ids: string[]): { done: number; total: number; percent: number } {
     const known = new Set(ids);
-    const done = this.data.completed.filter((id) => known.has(id)).length;
+    const done = new Set(this.data.completed.filter((id) => known.has(id))).size;
     const total = ids.length;
-    return { done, total, percent: total ? Math.round((done / total) * 100) : 0 };
+    const percent = total ? Math.round((done / total) * 100) : 0;
+    return { done, total, percent: Math.min(100, Math.max(0, percent)) };
   }
 
   clear(): void {
