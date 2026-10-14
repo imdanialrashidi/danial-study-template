@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { QuizQuestion } from '../../lib/types';
 import { gradeChoice, gradeNumeric, isNumericQuestion } from '../../lib/quiz';
-import { toLatinDigits } from '../../lib/utils';
+import { toLatinDigits, toPersianDigits } from '../../lib/utils';
 import { ProgressBridge } from './ProgressBridge';
-
-const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-
-export function toPersian(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
-}
 
 export interface QuizProps {
   /** Stable id used to store the best score in the learner's progress. */
@@ -130,8 +124,8 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
         {description && <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{description}</p>}
         <p className="mt-2 text-xs text-ink-faint" aria-live="polite">
           {checked
-            ? `نتیجه: ${toPersian(score)} از ${toPersian(questions.length)} پاسخ درست`
-            : `${toPersian(answeredCount)} از ${toPersian(questions.length)} پاسخ داده شده`}
+            ? `نتیجه: ${toPersianDigits(score)} از ${toPersianDigits(questions.length)} پاسخ درست`
+            : `${toPersianDigits(answeredCount)} از ${toPersianDigits(questions.length)} پاسخ داده شده`}
         </p>
       </header>
 
@@ -149,7 +143,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                     className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-2xs font-bold text-ink-muted"
                     aria-hidden="true"
                   >
-                    {toPersian(index + 1)}
+                    {toPersianDigits(index + 1)}
                   </span>
                   <span>
                     {question.text}
@@ -186,7 +180,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                     </div>
                     {checked && (
                       <p className={`text-xs font-bold ${correct ? 'text-success' : 'text-danger'}`} role="status">
-                        {correct ? 'پاسخ درست است.' : `پاسخ درست: ${toPersian(String(question.numericAnswer ?? ''))}`}
+                        {correct ? 'پاسخ درست است.' : `پاسخ درست: ${toPersianDigits(String(question.numericAnswer ?? ''))}`}
                       </p>
                     )}
                   </div>
@@ -259,8 +253,8 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
               role="status"
             >
               {percentage >= 60
-                ? `آفرین! ${toPersian(percentage)}٪ پاسخ درست.`
-                : `${toPersian(percentage)}٪ پاسخ درست — پاسخ‌های نادرست را مرور کنید.`}
+                ? `آفرین! ${toPersianDigits(percentage)}٪ پاسخ درست.`
+                : `${toPersianDigits(percentage)}٪ پاسخ درست — پاسخ‌های نادرست را مرور کنید.`}
             </p>
             {allowRetry && (
               <button

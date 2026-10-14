@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from 'react';
 import { prefersReducedMotion } from '../../lib/a11y';
+import { toPersianDigits } from '../../lib/utils';
 
 /**
  * Generic interactive primitives — the course-agnostic building blocks for
@@ -19,9 +20,7 @@ import { prefersReducedMotion } from '../../lib/a11y';
  * the Astro wrapper, so no-JS readers still see the settled values.
  */
 
-const FA = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-const fa = (v: number | string): string => String(v).replace(/\d/g, (d) => FA[Number(d)]);
-const fmt = (v: number, digits = 2): string => fa(v.toFixed(digits));
+const fmt = (v: number, digits = 2): string => toPersianDigits(v.toFixed(digits));
 
 /* ── Slider ─────────────────────────────────────────────────────────────── */
 

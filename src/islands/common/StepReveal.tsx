@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useState } from 'react';
+import { toPersianDigits } from '../../lib/utils';
 
 /**
  * A single revealable step.
@@ -21,12 +22,6 @@ export interface StepRevealProps {
   title?: string;
   /** 'manual' reveals one step per click; 'all' reveals everything at once. */
   mode?: 'manual' | 'all';
-}
-
-const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-
-function toPersian(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
 }
 
 export default function StepReveal({ steps, title, mode = 'manual' }: StepRevealProps) {
@@ -83,7 +78,7 @@ export default function StepReveal({ steps, title, mode = 'manual' }: StepReveal
               className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-wash text-xs font-bold text-primary-deep"
               aria-hidden="true"
             >
-              {toPersian(index + 1)}
+              {toPersianDigits(index + 1)}
             </span>
             <div className="min-w-0 flex-1">
               {step.title && <p className="mb-1 font-display text-sm font-bold text-ink">{step.title}</p>}
@@ -122,7 +117,7 @@ export default function StepReveal({ steps, title, mode = 'manual' }: StepReveal
             </button>
           )}
           <span className="self-center text-xs text-ink-faint" aria-live="polite">
-            {toPersian(remaining)} گام باقی مانده
+            {toPersianDigits(remaining)} گام باقی مانده
           </span>
         </div>
       ) : (
