@@ -27,12 +27,18 @@ export default function CourseProgress({ entryIds }: CourseProgressProps) {
     read();
 
     // Re-read when another island on the page (e.g. a lesson toggle) writes.
-    const onStorage = () => read();
+    // `storage` fires cross-tab: refresh the singleton from storage first,
+    // since same-tab writes already mutate it before dispatching.
+    const onStorage = () => {
+      ProgressBridge.refresh();
+      read();
+    };
+    const onProgress = () => read();
     window.addEventListener('storage', onStorage);
-    window.addEventListener('dr-progress', onStorage);
+    window.addEventListener('dr-progress', onProgress);
     return () => {
       window.removeEventListener('storage', onStorage);
-      window.removeEventListener('dr-progress', onStorage);
+      window.removeEventListener('dr-progress', onProgress);
     };
   }, [entryIds]);
 

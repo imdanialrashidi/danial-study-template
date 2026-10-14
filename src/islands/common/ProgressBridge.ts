@@ -28,6 +28,9 @@ export const ProgressBridge = {
   completionRatio(ids: string[]): { done: number; total: number; percent: number } {
     return getProgressStore().completionRatio(ids);
   },
+  refresh(): void {
+    getProgressStore().refresh();
+  },
   get persistent(): boolean {
     return getProgressStore().status !== 'unavailable';
   },

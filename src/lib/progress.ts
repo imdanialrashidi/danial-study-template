@@ -126,6 +126,15 @@ export class ProgressStore {
     }
   }
 
+  /** Re-read storage and notify listeners (cross-tab `storage` handler path). */
+  refresh(): void {
+    this.read();
+    this.listeners.forEach((listener) => listener());
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('dr-progress'));
+    }
+  }
+
   get status(): StorageAvailability {
     return this.availability;
   }

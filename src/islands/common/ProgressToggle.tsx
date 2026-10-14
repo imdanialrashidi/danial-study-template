@@ -34,9 +34,18 @@ export default function ProgressToggle({
   const hydrated = useHydrated('progress');
 
   useEffect(() => {
-    setDone(ProgressBridge.isCompleted(id));
-    setPersistent(ProgressBridge.persistent);
+    const sync = () => {
+      setDone(ProgressBridge.isCompleted(id));
+      setPersistent(ProgressBridge.persistent);
+    };
+    sync();
     setReady(true);
+    window.addEventListener('dr-progress', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('dr-progress', sync);
+      window.removeEventListener('storage', sync);
+    };
   }, [id]);
 
   const labelId = `${id}-progress-label`;

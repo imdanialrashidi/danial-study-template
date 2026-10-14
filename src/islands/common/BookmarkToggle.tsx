@@ -20,7 +20,14 @@ export default function BookmarkToggle({ id, label = 'این صفحه' }: Bookma
   const hydrated = useHydrated('bookmark');
 
   useEffect(() => {
-    setSaved(ProgressBridge.isBookmarked(id));
+    const sync = () => setSaved(ProgressBridge.isBookmarked(id));
+    sync();
+    window.addEventListener('dr-progress', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('dr-progress', sync);
+      window.removeEventListener('storage', sync);
+    };
   }, [id]);
 
   return (
