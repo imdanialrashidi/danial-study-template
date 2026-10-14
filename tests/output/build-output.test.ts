@@ -280,6 +280,21 @@ describeIfBuilt('built output', () => {
     expect(lesson.match(/data-astro-prefetch/g)?.length ?? 0, 'lesson page should prefetch header + prev/next links').toBeGreaterThan(10);
   });
 
+  it('serves the saved page with one h1, RTL, noindex, and an empty-plate CTA', () => {
+    // The /saved shell must be meaningful without JS: a signed-in-state-free
+    // static plate (covered by the global RTL/h1 invariants) plus an
+    // imperative CTA into the course.
+    const html = readFileSync(path.join(distDir, 'saved/index.html'), 'utf8');
+    expect(html).toMatch(/<html[^>]*dir="rtl"/);
+    expect(html).toMatch(/<html[^>]*lang="fa"/);
+    expect(html.match(/<h1[\s>]/g) ?? []).toHaveLength(1);
+    expect(html).toContain('<h1');
+    expect(html).toContain('نشان‌شده‌ها');
+    expect(html).toMatch(/<meta name="robots" content="noindex, follow"/);
+    expect(html).toContain('هنوز چیزی را نشان نکرده‌اید');
+    expect(html).toContain('رفتن به فهرست درس‌ها');
+  });
+
   it('ships repeat-visit cache headers for hashed assets', () => {
     const headers = path.join(distDir, '_headers');
     expect(existsSync(headers), 'dist/_headers missing (Cloudflare Pages caching)').toBe(true);
