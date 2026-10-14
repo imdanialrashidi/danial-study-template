@@ -18,12 +18,12 @@ export default [
       '.astro/**',
       'node_modules/**',
       '.artifacts/**',
-      'tests/**',
       // Content is MDX prose with JSX components. ESLint's flat config has no
       // MDX parser wired up, and the content is already validated far more
       // strictly by `astro check` (type-aware) and scripts/validate-content.mjs.
       'src/content/**',
-      // Omp workflow files and legacy eval fixtures are a different toolchain.
+      // Unit/output tests under `tests/**` ARE linted: they are plain
+      // TypeScript with real regression value, not content prose.
       '.omp/**',
       'scripts/omp-pr.mjs',
       'scripts/verify.sh',

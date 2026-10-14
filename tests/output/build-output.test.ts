@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { courseConfig } from '../../src/config/course';
@@ -287,8 +287,3 @@ describeIfBuilt('built output', () => {
     expect(body, '_headers must pin /_astro/* immutable').toMatch(/\/_astro\/\*[\s\S]*immutable/);
   });
 });
-
-/** Files Astro serves from the site root rather than under the course base. */
-function knownAssetPrefixes(base: string): string[] {
-  return [`${base}/_astro/`, `${base}/favicon.svg`, `${base}/sitemap-index.xml`];
-}
