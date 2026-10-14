@@ -16,6 +16,7 @@ const initialQuery = Astro.url.searchParams.get('q') ?? '';
   title="جست‌وجو"
   description="جست‌وجو در درس‌ها، مفاهیم، فرمول‌ها، مثال‌ها و واژه‌نامهٔ دوره."
   noindex={true}
+  searchIndex={searchIndex}
 >
   <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-16">
     <header class="mb-8">
@@ -29,6 +30,6 @@ const initialQuery = Astro.url.searchParams.get('q') ?? '';
       </p>
     </header>
 
-    <SearchIsland client:load items={searchIndex} initialQuery={initialQuery} />
+    <SearchIsland client:load initialQuery={initialQuery} />
   </div>
 </BaseLayout>

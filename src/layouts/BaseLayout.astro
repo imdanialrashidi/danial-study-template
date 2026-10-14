@@ -35,6 +35,12 @@ interface Props {
   modifiedTime?: string;
   /** JSON-LD graphs, each rendered as its own inline script. */
   jsonLd?: Array<Record<string, unknown>>;
+  /**
+   * Prebuilt search index for this page. The search page passes the index it
+   * already built for its island so the layout reuses it for the palette
+   * instead of serializing a second copy.
+   */
+  searchIndex?: import('../lib/types').SearchableItem[];
 }
 
 const {
@@ -51,7 +57,11 @@ const {
 const pageTitle = title === courseConfig.title ? `${courseConfig.title} — ${SEO.defaultTitleSuffix}` : `${title} — ${courseConfig.title}`;
 const canonical = absoluteUrl(Astro.url.pathname.replace(basePath, '') || '/');
 const showPalette = isEnabled('commandPalette') && isEnabled('search');
-const paletteIndex = showPalette ? buildSearchIndex(await getAllEntries()) : [];
+// Single shared search payload: built once per page in the layout and reused
+// by the palette. The search page passes its own index down through this same
+// prop so `/search` never serializes the index twice.
+const sharedSearchIndex = showPalette ? buildSearchIndex(await getAllEntries()) : [];
+const paletteIndex = Astro.props.searchIndex ?? sharedSearchIndex;
 ---
 
 <!doctype html>
@@ -135,6 +145,9 @@ const paletteIndex = showPalette ? buildSearchIndex(await getAllEntries()) : [];
 
     <Footer />
     <TelegramPopup />
-    {showPalette && <CommandPalette items={paletteIndex} />}
+    {showPalette && (
+      <script type="application/json" id="site-search-index" set:html={jsonForScript(paletteIndex)} />
+    )}
+    {showPalette && <CommandPalette />}
   </body>
 </html>

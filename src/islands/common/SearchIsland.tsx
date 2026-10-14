@@ -4,6 +4,7 @@ import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
 import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
 import { useHydrated } from './useHydrated';
+import { readSiteSearchIndex } from './searchIndex';
 import IslandIcon from './IslandIcon';
 
 /**
@@ -19,7 +20,14 @@ import IslandIcon from './IslandIcon';
  */
 
 export interface SearchIslandProps {
-  items: SearchableItem[];
+  /**
+   * Server-render fallback only. The client reads the single shared
+   * `#site-search-index` payload the layout serializes once per page, so the
+   * index is never serialized as island props. Passing items here is only
+   * useful for pre-rendering `?q=` results; omit it (as `search.astro` does)
+   * and hydration fills results from the shared payload on mount.
+   */
+  items?: SearchableItem[];
   /** Optional pre-filled query (from the URL). */
   initialQuery?: string;
 }
@@ -29,7 +37,10 @@ interface Scored {
   score: number;
 }
 
-export default function SearchIsland({ items, initialQuery = '' }: SearchIslandProps) {
+export default function SearchIsland({ items: ssrItems = [], initialQuery = '' }: SearchIslandProps) {
+  // Client source of truth: the shared payload. The prop only feeds SSR.
+  const sharedItems = useMemo(() => readSiteSearchIndex(ssrItems), [ssrItems]);
+  const items = typeof document === 'undefined' ? ssrItems : sharedItems;
   const [query, setQuery] = useState(initialQuery);
   const deferredQuery = useDeferredValue(query);
   const inputRef = useRef<HTMLInputElement>(null);

@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
 import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
 import { focusFirst, trapFocus } from '../../lib/a11y';
 import IslandIcon from './IslandIcon';
+import { readSiteSearchIndex } from './searchIndex';
 
 /**
  * Command palette — `Cmd/Ctrl + K` fast navigation over the same build-time
  * index the search page uses. Lightweight by design: no library, one dialog,
  * substring scoring, first 8 hits.
+ *
+ * The index is NOT passed as island props: it is read from the single shared
+ * `#site-search-index` payload the layout serializes once per page, so opening
+ * the palette never duplicates the search page payload.
  *
  * Accessibility: `role="dialog"` + `aria-modal`, Esc closes, arrows move,
  * Enter visits, focus returns to the trigger. Any element with
@@ -17,16 +21,18 @@ import IslandIcon from './IslandIcon';
  */
 
 export interface CommandPaletteProps {
-  items: SearchableItem[];
+  /** Accepted for backward compatibility; ignored — the shared payload wins. */
+  items?: never;
 }
 
-export default function CommandPalette({ items }: CommandPaletteProps) {
+export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const items = useMemo(() => readSiteSearchIndex(), []);
 
   const close = useCallback(() => {
     setOpen(false);
