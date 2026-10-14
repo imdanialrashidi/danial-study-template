@@ -12,6 +12,7 @@ import { withBase } from '../lib/url';
 import { themeStyleAttribute } from '../lib/themes';
 import { isEnabled } from '../lib/features';
 import { getAllEntries, buildSearchIndex } from '../lib/content';
+import type { SearchableItem } from '../lib/types';
 import vazirmatnArabicUrl from '@fontsource-variable/vazirmatn/files/vazirmatn-arabic-wght-normal.woff2?url';
 import estedadArabicUrl from '@fontsource-variable/estedad/files/estedad-arabic-wght-normal.woff2?url';
 import Header from '../components/layout/Header.astro';
@@ -40,7 +41,7 @@ interface Props {
    * already built for its island so the layout reuses it for the palette
    * instead of serializing a second copy.
    */
-  searchIndex?: import('../lib/types').SearchableItem[];
+  searchIndex?: SearchableItem[];
 }
 
 const {
