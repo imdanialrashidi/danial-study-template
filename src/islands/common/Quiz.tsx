@@ -216,7 +216,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
                         >
                           <input
                             type={multi ? 'checkbox' : 'radio'}
-                            name={`${question.id}`}
+                            name={`${id}-${question.id}`}
                             value={option.id}
                             checked={isSelected}
                             onChange={() => select(question.id, option.id, !multi)}
