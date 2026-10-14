@@ -5,7 +5,7 @@ Contributions should improve representative task outcomes, reduce risk/cost, or 
 ## Setup
 
 1. Use Node.js 22.19.0 or newer.
-2. Install omp from https://omp.sh as described in `README.md`.
+2. Install omp from https://omp.sh (nothing else to install for the workflow).
 3. Review project configuration under `.omp/` before trusting the repository.
 4. Run `bash scripts/verify.sh` before and after a workflow change.
 

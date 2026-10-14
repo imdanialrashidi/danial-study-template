@@ -22,7 +22,7 @@ npm run dev          # http://localhost:4321
 Requirements: **Node.js ≥ 22.19**.
 
 ```bash
-npm run check        # validate + typecheck + test + build + budgets
+npm run check        # full gate (see `scripts.check` in `package.json`)
 ```
 
 ---
