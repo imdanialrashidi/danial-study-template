@@ -41,10 +41,14 @@ export default function ProgressToggle({
     sync();
     setReady(true);
     window.addEventListener('dr-progress', sync);
-    window.addEventListener('storage', sync);
+    const onStorage = () => {
+      ProgressBridge.refresh();
+      sync();
+    };
+    window.addEventListener('storage', onStorage);
     return () => {
       window.removeEventListener('dr-progress', sync);
-      window.removeEventListener('storage', sync);
+      window.removeEventListener('storage', onStorage);
     };
   }, [id]);
 
