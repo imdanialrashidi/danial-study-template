@@ -125,6 +125,27 @@ describe('ProgressStore', () => {
     expect(store.snapshot().bookmarks).toEqual([]);
   });
 
+  it('drops non-finite quiz scores and missing or zero totals', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        completed: [],
+        bookmarks: [],
+        quizzes: {
+          nan: { score: NaN, total: 4, completedAt: 't' },
+          inf: { score: Infinity, total: 4, completedAt: 't' },
+          missing: { score: 2, completedAt: 't' },
+          zero: { score: 0, total: 0, completedAt: 't' },
+          good: { score: 3, total: 4, completedAt: 't' },
+        },
+      }),
+    );
+    install(storage);
+    const store = new ProgressStore();
+    expect(Object.keys(store.snapshot().quizzes)).toEqual(['good']);
+  });
+
   it('reports unavailable storage and still allows in-memory use', () => {
     install(undefined);
     const store = new ProgressStore();
@@ -165,5 +186,37 @@ describe('ProgressStore', () => {
     store.recordQuiz('q', 1, 1);
     store.clear();
     expect(store.snapshot()).toEqual({ completed: [], bookmarks: [], quizzes: {}, lastVisit: {} });
+  });
+
+  it('dedupes stored ids on load and never reports more than 100%', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ completed: ['a', 'a', 'b'], bookmarks: ['s', 's'], quizzes: {}, lastVisit: {} }),
+    );
+    install(storage);
+    const store = new ProgressStore();
+    expect(store.snapshot().completed).toEqual(['a', 'b']);
+    expect(store.snapshot().bookmarks).toEqual(['s']);
+    expect(store.completionRatio(['a', 'b'])).toEqual({ done: 2, total: 2, percent: 100 });
+  });
+
+  it('refresh picks up externally changed payloads and notifies subscribers', () => {
+    const storage = new MemoryStorage();
+    install(storage);
+    const store = new ProgressStore();
+    expect(store.isCompleted('lesson-a')).toBe(false);
+    let calls = 0;
+    const unsubscribe = store.subscribe(() => {
+      calls += 1;
+    });
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ completed: ['lesson-a'], bookmarks: [], quizzes: {}, lastVisit: {} }),
+    );
+    store.refresh();
+    expect(store.isCompleted('lesson-a')).toBe(true);
+    expect(calls).toBe(1);
+    unsubscribe();
   });
 });
