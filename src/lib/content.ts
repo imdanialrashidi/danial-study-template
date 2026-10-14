@@ -66,25 +66,13 @@ const URL_BY_KIND: Record<EntryKind, (id: string) => string> = {
   glossary: (id) => `/glossary/${id}`,
 };
 
-const SINGULAR_LABELS: Record<EntryKind, string> = {
-  lesson: 'درس',
-  concept: 'مفهوم',
-  formula: 'فرمول',
-  example: 'مثال',
-  question: 'تمرین',
-  glossary: 'واژه',
-};
+// Canonical kind labels live in `./types` (client-safe): the search islands
+// import them from there because this module value-imports server-only
+// `astro:content`. Re-exported here so Astro-side importers are untouched.
+// If `ContentType`/`EntryKind` ever diverge, revisit this alias.
+export { SINGULAR_LABELS, PLURAL_LABELS } from './types';
 
-const PLURAL_LABELS: Record<EntryKind, string> = {
-  lesson: 'درس‌ها',
-  concept: 'مفاهیم',
-  formula: 'فرمول‌ها',
-  example: 'مثال‌ها',
-  question: 'تمرین‌ها',
-  glossary: 'واژه‌ها',
-};
-
-export { SINGULAR_LABELS, PLURAL_LABELS, URL_BY_KIND };
+export { URL_BY_KIND };
 
 /**
  * Glossary entries carry a `term` instead of a `title`, and have no section or

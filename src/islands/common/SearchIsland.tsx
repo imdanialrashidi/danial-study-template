@@ -1,5 +1,6 @@
 import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
-import type { SearchableItem, ContentType } from '../../lib/types';
+import type { SearchableItem } from '../../lib/types';
+import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
 import { useHydrated } from './useHydrated';
 
@@ -20,15 +21,6 @@ export interface SearchIslandProps {
   /** Optional pre-filled query (from the URL). */
   initialQuery?: string;
 }
-
-const TYPE_LABELS: Record<ContentType, string> = {
-  lesson: 'درس',
-  concept: 'مفهوم',
-  formula: 'فرمول',
-  example: 'مثال',
-  question: 'تمرین',
-  glossary: 'واژه',
-};
 
 interface Scored {
   item: SearchableItem;

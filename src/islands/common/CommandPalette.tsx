@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { SearchableItem, ContentType } from '../../lib/types';
+import type { SearchableItem } from '../../lib/types';
+import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { normalizePersian, toPersianDigits } from '../../lib/utils';
 import { focusFirst, trapFocus } from '../../lib/a11y';
 
@@ -16,15 +17,6 @@ import { focusFirst, trapFocus } from '../../lib/a11y';
 export interface CommandPaletteProps {
   items: SearchableItem[];
 }
-
-const TYPE_LABELS: Record<ContentType, string> = {
-  lesson: 'درس',
-  concept: 'مفهوم',
-  formula: 'فرمول',
-  example: 'مثال',
-  question: 'تمرین',
-  glossary: 'واژه',
-};
 
 export default function CommandPalette({ items }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
