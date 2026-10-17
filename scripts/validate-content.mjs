@@ -164,7 +164,10 @@ for (const entry of entries) {
 
 /* 2. references resolve.
       A bare slug matches an entry in the same collection first, then a
-      globally unique one — mirroring resolveEntry() in src/lib/content.ts. */
+      globally unique one — mirroring `resolveInList` in `src/lib/resolve.ts`
+      (kept local: this script runs on bare Node 22, which cannot import
+      `.ts`). The strict split below must stay identical to `parseReference`:
+      more than two segments, or an empty kind/id around `/`, is unresolved. */
 const matchesRef = (ref, preferKind) => {
   const parts = String(ref).split('/');
   if (parts.length > 2 || (String(ref).includes('/') && parts.some((p) => !p))) return undefined;
@@ -227,9 +230,11 @@ for (const entry of entries) {
 /* 4. MDX LaTeX escaping trap — the most common AI-generated mistake.
       `latex="...\frac..."` loses its backslash in MDX + Astro and renders as
       the literal text "frac". The correct form is the expression container
-      `latex={"\\frac..."}`. */
+      `latex={"\\frac..."}`. The command alternation below must stay identical
+      to `STRUCTURAL_TEX_COMMANDS` in `src/lib/contract.ts` (kept local: this
+      script runs on bare Node 22, which cannot import `.ts`). */
 for (const entry of entries) {
-  const badAttr = /(?<![{=])\blatex="(?:[^"\\]|\\[^"])*\\(frac|sqrt|cdot|lim|partial|infty)/.exec(entry.body);
+  const badAttr = /(?<![{=])\blatex="(?:[^"\\]|\\[^"])*\\(frac|dfrac|tfrac|sqrt|cdot|times|neq|leq|geq|approx|infty|partial|rightarrow|Rightarrow|nabla|theta|alpha|beta|gamma|lambda|sigma|Omega)/.exec(entry.body);
   if (badAttr) {
     error(
       entry.rel,
@@ -239,7 +244,7 @@ for (const entry of entries) {
         '{…}"}.',
     );
   }
-  const badTerms = /(?<![{=])\bterm="(?:[^"\\]|\\[^"])*\\(frac|sqrt|cdot|lim|partial)/.exec(entry.body);
+  const badTerms = /(?<![{=])\bterm="(?:[^"\\]|\\[^"])*\\(frac|dfrac|tfrac|sqrt|cdot|times|neq|leq|geq|approx|infty|partial|rightarrow|Rightarrow|nabla|theta|alpha|beta|gamma|lambda|sigma|Omega)/.exec(entry.body);
   if (badTerms) {
     error(entry.rel, 'same escaping issue in a `term="…"` attribute; use term={"\\\\…"}');
   }

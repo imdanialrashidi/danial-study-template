@@ -220,3 +220,71 @@ export function getProgressStore(): ProgressStore {
 export function __resetProgressStore(): void {
   singleton = null;
 }
+
+/**
+ * Subscribe to progress changes: same-tab writes (via the store's own
+ * `dr-progress` dispatch) and cross-tab writes (via `storage`, refreshed
+ * from `localStorage` first since another tab mutated it, not the
+ * singleton). Returns a cleanup function.
+ *
+ * The four progress islands shared one pasted effect for this; the rule now
+ * lives here so a storage-path fix lands once.
+ */
+export function subscribeProgress(listener: () => void): () => void {
+  const store = getProgressStore();
+  const onProgress = () => listener();
+  const onStorage = () => {
+    store.refresh();
+    listener();
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('dr-progress', onProgress);
+    window.addEventListener('storage', onStorage);
+  }
+  const unsubscribeStore = store.subscribe(listener);
+  return () => {
+    unsubscribeStore();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('dr-progress', onProgress);
+      window.removeEventListener('storage', onStorage);
+    }
+  };
+}
+
+/**
+ * Client-only access to the shared progress store for React islands.
+ *
+ * `progress.ts` touches `localStorage` lazily, so importing it during SSR is
+ * safe — nothing is read until a method is actually called in the browser.
+ * Prefer this over `getProgressStore()` at island call sites so a future
+ * store-shape change lands here, not in five islands.
+ */
+export const ProgressBridge = {
+  toggleCompleted(id: string): boolean {
+    return getProgressStore().toggleCompleted(id);
+  },
+  toggleBookmarked(id: string): boolean {
+    return getProgressStore().toggleBookmarked(id);
+  },
+  isCompleted(id: string): boolean {
+    return getProgressStore().isCompleted(id);
+  },
+  isBookmarked(id: string): boolean {
+    return getProgressStore().isBookmarked(id);
+  },
+  recordQuiz(id: string, score: number, total: number): void {
+    getProgressStore().recordQuiz(id, score, total);
+  },
+  snapshot() {
+    return getProgressStore().snapshot();
+  },
+  completionRatio(ids: string[]): { done: number; total: number; percent: number } {
+    return getProgressStore().completionRatio(ids);
+  },
+  refresh(): void {
+    getProgressStore().refresh();
+  },
+  get persistent(): boolean {
+    return getProgressStore().status !== 'unavailable';
+  },
+};

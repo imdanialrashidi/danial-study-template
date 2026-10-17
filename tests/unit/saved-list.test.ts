@@ -1,15 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import {
-  matchSavedEntry,
-  resolveSavedRows,
-  type SavedEntry,
-} from '../../src/islands/common/SavedList.tsx';
+import { resolveInList, resolveSavedRows } from '../../src/lib/resolve.ts';
+import { type SavedEntry } from '../../src/islands/common/SavedList.tsx';
 
 /**
- * Tolerant bookmark matcher contract (plan 022): stored ids are bare slugs
+ * Tolerant bookmark matcher contract: stored ids are bare slugs
  * (bookmark writes pass `entry.id`), so a saved id resolves against both the
  * qualified `<kind>/<slug>` identity and the bare slug. Exact qualified wins,
  * a bare id resolves only when unique, and stale/ambiguous ids are pruned.
+ * Resolution runs through the shared resolver in `src/lib/resolve.ts` — the
+ * same rule the build side uses for content references.
  */
 
 const entry = (
@@ -33,23 +32,23 @@ const entries: SavedEntry[] = [
   entry('glossary', 'term'),
 ];
 
-describe('matchSavedEntry', () => {
+describe('saved identity resolution (shared resolver rule)', () => {
   it('prefers the exact qualified match', () => {
-    expect(matchSavedEntry('lesson/shared', entries)?.qualifiedId).toBe('lesson/shared');
-    expect(matchSavedEntry('concept/shared', entries)?.qualifiedId).toBe('concept/shared');
+    expect(resolveInList(entries, 'lesson/shared')?.qualifiedId).toBe('lesson/shared');
+    expect(resolveInList(entries, 'concept/shared')?.qualifiedId).toBe('concept/shared');
   });
 
   it('resolves a unique bare slug', () => {
-    expect(matchSavedEntry('unique', entries)?.qualifiedId).toBe('formula/unique');
+    expect(resolveInList(entries, 'unique')?.qualifiedId).toBe('formula/unique');
   });
 
   it('resolves nothing for an ambiguous bare slug', () => {
-    expect(matchSavedEntry('shared', entries)).toBeUndefined();
+    expect(resolveInList(entries, 'shared')).toBeUndefined();
   });
 
   it('resolves nothing for a stale id', () => {
-    expect(matchSavedEntry('lesson/gone', entries)).toBeUndefined();
-    expect(matchSavedEntry('gone', entries)).toBeUndefined();
+    expect(resolveInList(entries, 'lesson/gone')).toBeUndefined();
+    expect(resolveInList(entries, 'gone')).toBeUndefined();
   });
 });
 

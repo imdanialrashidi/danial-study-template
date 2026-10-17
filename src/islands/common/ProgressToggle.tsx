@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ProgressBridge } from './ProgressBridge';
+import { ProgressBridge, subscribeProgress } from './ProgressBridge';
 import { useHydrated } from './useHydrated';
 import IslandIcon from './IslandIcon';
 
@@ -41,16 +41,7 @@ export default function ProgressToggle({
     };
     sync();
     setReady(true);
-    window.addEventListener('dr-progress', sync);
-    const onStorage = () => {
-      ProgressBridge.refresh();
-      sync();
-    };
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener('dr-progress', sync);
-      window.removeEventListener('storage', onStorage);
-    };
+    return subscribeProgress(sync);
   }, [id]);
 
   const labelId = `${id}-progress-label`;

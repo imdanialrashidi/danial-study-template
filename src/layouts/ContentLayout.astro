@@ -15,7 +15,8 @@ import type { CourseEntry, CrossLinks, SectionGroup } from '../lib/content';
 import { exampleData, formulaData, lessonData, questionData, getRelatedEntries, PLURAL_LABELS } from '../lib/content';
 import { absoluteUrl, creator } from '../config/site';
 import { toPersianDigits } from '../lib/utils';
-import { renderContent, mdxComponents } from '../lib/render';
+import { render } from 'astro:content';
+import { mdxComponents } from '../lib/content';
 import { withBase } from '../lib/url';
 import { isEnabled } from '../lib/features';
 interface Props {
@@ -31,7 +32,7 @@ const lesson = lessonData(entry);
 const formula = formulaData(entry);
 const example = exampleData(entry);
 const question = questionData(entry);
-const { Content, headings } = await renderContent(entry.entry);
+const { Content, headings } = await render(entry.entry);
 const showToc = isEnabled('toc');
 const showRelated = isEnabled('related');
 const showProgress = isEnabled('progress');

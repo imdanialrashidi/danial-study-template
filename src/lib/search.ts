@@ -10,8 +10,9 @@ import { normalizePersian } from './utils';
  * contract — the better-tested oracle. Weights stay an explicit parameter so
  * a future retune is a data change with test pins, not a second fork.
  *
- * Limits (40 vs 8) remain call-site parameters; this module owns *how* items
- * score, not *what* is scored or how many hits are shown.
+ * Ranking (score, order, slice, empty-query policy) lives here too behind
+ * `rankSearchItems`: limits (40 vs 8) and empty fills stay call-site
+ * parameters, so a retune is a data change with test pins, not a second fork.
  */
 
 export interface SearchWeights {
@@ -85,4 +86,47 @@ export function scoreSearchItem(
   }
 
   return total;
+}
+export interface RankedSearchItem {
+  item: SearchableItem;
+  score: number;
+}
+
+export interface RankSearchOptions {
+  /** Maximum hits returned. */
+  limit: number;
+  /** Queries shorter than this (normalized) yield no hits. The search page passes 2. */
+  minQueryLength?: number;
+  /** An empty query returns the first N items unscored instead of nothing. The palette passes 8. */
+  emptyFill?: number;
+  weights?: SearchWeights;
+}
+
+/**
+ * Rank one query against the index: score every entry, drop misses, order by
+ * score then Persian title, slice to `limit`.
+ *
+ * Islands keep input state and markup; everything about ordering lives here,
+ * so the next ranking fix lands once and result order is testable through
+ * this interface.
+ */
+export function rankSearchItems(
+  items: (SearchableItem & { _norm?: string })[],
+  query: string,
+  options: RankSearchOptions,
+): RankedSearchItem[] {
+  const { limit, minQueryLength = 0, emptyFill = 0, weights = DEFAULT_SEARCH_WEIGHTS } = options;
+  const normalized = normalizePersian(query);
+  const terms = normalized.split(/\s+/).filter(Boolean);
+  if (terms.length === 0) {
+    return emptyFill > 0 ? items.slice(0, emptyFill).map((item) => ({ item, score: 1 })) : [];
+  }
+  if (normalized.length < minQueryLength) return [];
+  // Entries carrying `_norm` reuse it; the islands memoize that shape per
+  // index load, so per-keystroke ranking never renormalizes the corpus.
+  return items
+    .map((item) => ({ item, score: scoreSearchItem(item, item, terms, weights) }))
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fa'))
+    .slice(0, limit);
 }

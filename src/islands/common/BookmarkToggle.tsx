@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ProgressBridge } from './ProgressBridge';
+import { ProgressBridge, subscribeProgress } from './ProgressBridge';
 import { useHydrated } from './useHydrated';
 import IslandIcon from './IslandIcon';
 
@@ -23,16 +23,7 @@ export default function BookmarkToggle({ id, label = 'این صفحه' }: Bookma
   useEffect(() => {
     const sync = () => setSaved(ProgressBridge.isBookmarked(id));
     sync();
-    window.addEventListener('dr-progress', sync);
-    const onStorage = () => {
-      ProgressBridge.refresh();
-      sync();
-    };
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener('dr-progress', sync);
-      window.removeEventListener('storage', onStorage);
-    };
+    return subscribeProgress(sync);
   }, [id]);
 
   return (

@@ -1,8 +1,8 @@
 import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
 import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
-import { normalizePersian, toPersianDigits } from '../../lib/utils';
-import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
+import { toPersianDigits } from '../../lib/utils';
+import { normalizeIndexEntry, rankSearchItems } from '../../lib/search';
 import { useHydrated } from './useHydrated';
 import { readSiteSearchIndex } from './searchIndex';
 import IslandIcon from './IslandIcon';
@@ -32,10 +32,7 @@ export interface SearchIslandProps {
   initialQuery?: string;
 }
 
-interface Scored {
-  item: SearchableItem;
-  score: number;
-}
+const SEARCH_LIMIT = 40;
 
 export default function SearchIsland({ items: ssrItems = [], initialQuery = '' }: SearchIslandProps) {
   // Client source of truth: the shared payload. The prop only feeds SSR.
@@ -51,19 +48,10 @@ export default function SearchIsland({ items: ssrItems = [], initialQuery = '' }
     [items],
   );
 
-  const results = useMemo<Scored[]>(() => {
-    const trimmed = deferredQuery.trim();
-    if (trimmed.length < 2) return [];
-
-    const terms = normalizePersian(trimmed).split(/\s+/).filter(Boolean);
-    if (terms.length === 0) return [];
-
-    return normalizedItems
-      .map((item) => ({ item, score: scoreSearchItem(item, item, terms) }))
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fa'))
-      .slice(0, 40);
-  }, [deferredQuery, normalizedItems]);
+  const results = useMemo(
+    () => rankSearchItems(normalizedItems, deferredQuery, { limit: SEARCH_LIMIT, minQueryLength: 2 }),
+    [deferredQuery, normalizedItems],
+  );
 
   const handleChange = useCallback((value: string) => {
     setQuery(value);

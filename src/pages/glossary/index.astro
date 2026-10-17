@@ -2,8 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
 import { absoluteUrl } from '../../config/site';
-import { getEntriesByKind, type CourseEntry } from '../../lib/content';
-import { renderContent, mdxComponents } from '../../lib/render';
+import { render } from 'astro:content';
+import { getEntriesByKind, mdxComponents, type CourseEntry } from '../../lib/content';
 import { toPersianDigits } from '../../lib/utils';
 import { withBase } from '../../lib/url';
 
@@ -21,7 +21,7 @@ const letters = [...groups.keys()].sort((a, b) => a.localeCompare(b, 'fa'));
 // Render each entry body once for the inline definitions.
 const rendered = await Promise.all(
   entries.map(async (entry) => {
-    const { Content } = await renderContent(entry.entry);
+    const { Content } = await render(entry.entry);
     return { entry, Content };
   }),
 );

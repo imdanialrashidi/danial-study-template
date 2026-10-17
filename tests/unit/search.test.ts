@@ -3,6 +3,7 @@ import type { SearchableItem } from '../../src/lib/types.ts';
 import {
   DEFAULT_SEARCH_WEIGHTS,
   normalizeIndexEntry,
+  rankSearchItems,
   scoreSearchItem,
 } from '../../src/lib/search.ts';
 import { normalizePersian } from '../../src/lib/utils.ts';
@@ -76,7 +77,7 @@ describe('scoreSearchItem ordering pins', () => {
   });
 });
 
-describe('cross-surface order agreement', () => {
+describe('rankSearchItems (shared rank seam)', () => {
   const index: SearchableItem[] = [
     item({ id: 'a', title: 'مشتق توابع', excerpt: 'تعریف مشتق', tags: ['حسابان'] }),
     item({ id: 'b', title: 'قواعد مشتق‌گیری', excerpt: 'دیگر', tags: ['دیگر'] }),
@@ -84,20 +85,17 @@ describe('cross-surface order agreement', () => {
     item({ id: 'd', title: 'انتگرال معین', excerpt: 'دیگر', tags: ['دیگر'] }),
   ];
 
-  const rank = (terms: string[], limit: number) =>
-    index
-      .map((entry) => ({ entry, score: scoreSearchItem(entry, normOf(entry), terms) }))
-      .filter((r) => r.score > 0)
-      .sort((x, y) => y.score - x.score || x.entry.title.localeCompare(y.entry.title, 'fa'))
-      .slice(0, limit)
-      .map((r) => r.entry.id);
+  const ids = (query: string, options: { limit: number; minQueryLength?: number; emptyFill?: number }) =>
+    rankSearchItems(index, query, options).map((r) => r.item.id);
 
   it('returns identical relative order under both call-site limits', () => {
-    const terms = termsOf('مشتق');
-    const pageOrder = rank(terms, 40);
-    const paletteOrder = rank(terms, 8);
-    expect(pageOrder).toEqual(['a', 'b', 'c']);
-    expect(paletteOrder).toEqual(pageOrder);
+    expect(ids('مشتق', { limit: 40, minQueryLength: 2 })).toEqual(['a', 'b', 'c']);
+    expect(ids('مشتق', { limit: 8 })).toEqual(['a', 'b', 'c']);
+  });
+
+  it('returns nothing for a short query on the search page, first hits for an empty palette', () => {
+    expect(ids('م', { limit: 40, minQueryLength: 2 })).toEqual([]);
+    expect(ids('', { limit: 8, emptyFill: 8 })).toEqual(['a', 'b', 'c', 'd']);
   });
 });
 
