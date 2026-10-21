@@ -52,5 +52,8 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Install dependencies
+        run: bash scripts/ci-install.sh
+
       - name: Run verification gate
         run: bash scripts/verify.sh

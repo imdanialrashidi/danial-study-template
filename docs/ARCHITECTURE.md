@@ -93,8 +93,9 @@ not a diary of changes.
 |---|---|---|
 | Content | `npm run validate` | bad frontmatter, dangling references, LaTeX escaping trap |
 | Types | `npm run typecheck` | unsafe casts, API drift |
-| Unit | `npm run test` | pure logic and built-output contract (RTL, single `h1`, creator identity, no institutional branding, link resolution) |
+| Unit | `npm run test` | pure logic only |
 | Build | `npm run build` | anything that breaks static rendering |
+| Output | `npm run test:dist` | built-output contract (RTL, single `h1`, creator identity, link resolution) |
 | Budgets | `npm run budgets` | JS/CSS/HTML budgets; KaTeX runtime leaking in |
 | Browser | `node scripts/visual-qa.mjs` | overflow, console errors, failed requests, hydration |
 | Interaction | `node scripts/interaction-qa.mjs` | quiz grading, reveals, search, persistence, theme, mobile nav |
