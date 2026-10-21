@@ -149,6 +149,7 @@ npm run validate          # content: frontmatter, references, LaTeX escaping
 npm run validate:links    # internal links in the built output
 npm run typecheck         # astro check
 npm run test              # unit tests
+npm run test:scripts      # remark plugin tests (node:test)
 npm run build             # static build
 npm run test:dist         # built-output tests
 npm run budgets           # performance budgets

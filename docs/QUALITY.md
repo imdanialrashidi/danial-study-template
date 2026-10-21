@@ -220,6 +220,7 @@ breaks one fails CI rather than relying on review.
 |---|---|
 | Fastest useful loop while editing content | `npm run validate && npm run test` |
 | Built-output contract | `npm run test:dist` (after `npm run build`) |
+| Remark plugin contract | `npm run test:scripts` (`node:test`) |
 | Before delivering a change | `npm run check` (same chain as `npm run ci`) |
 | Full gate | `npm run ci` |
 | Browser evidence | `npm run preview`, then `node scripts/visual-qa.mjs` and `node scripts/interaction-qa.mjs` |

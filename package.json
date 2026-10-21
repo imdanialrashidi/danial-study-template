@@ -30,11 +30,12 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "ci": "npm run validate && npm run typecheck && npm run lint && npm run test && npm run build && npm run test:dist && npm run validate:links && npm run budgets",
+    "ci": "npm run validate && npm run typecheck && npm run lint && npm run test && npm run test:scripts && npm run build && npm run test:dist && npm run validate:links && npm run budgets",
     "verify:fast": "npm run test",
     "verify:feature": "npm run validate && npm run test && npm run build && npm run test:dist",
     "verify:full": "npm run ci",
     "test:dist": "vitest run tests/output",
+    "test:scripts": "node --test tests/scripts/*.test.mjs",
     "test:all": "vitest run"
   },
   "devDependencies": {
