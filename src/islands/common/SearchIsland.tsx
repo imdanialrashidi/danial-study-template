@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import type { SearchableItem } from '../../lib/types';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import { toPersianDigits } from '../../lib/utils';
@@ -28,20 +28,26 @@ export interface SearchIslandProps {
    * and hydration fills results from the shared payload on mount.
    */
   items?: SearchableItem[];
-  /** Optional pre-filled query (from the URL). */
-  initialQuery?: string;
 }
 
 const SEARCH_LIMIT = 40;
 
-export default function SearchIsland({ items: ssrItems = [], initialQuery = '' }: SearchIslandProps) {
+export default function SearchIsland({ items: ssrItems = [] }: SearchIslandProps) {
   // Client source of truth: the shared payload. The prop only feeds SSR.
   const sharedItems = useMemo(() => readSiteSearchIndex(ssrItems), [ssrItems]);
   const items = typeof document === 'undefined' ? ssrItems : sharedItems;
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const inputRef = useRef<HTMLInputElement>(null);
   const hydrated = useHydrated('search');
+
+  // The page is static, so the query cannot be read at build time. Read it
+  // after hydration: the server and first client render stay identical (idle
+  // state), then the shared URL fills the box and results.
+  useEffect(() => {
+    const initial = new URLSearchParams(window.location.search).get('q') ?? '';
+    if (initial) setQuery(initial);
+  }, []);
 
   const normalizedItems = useMemo(
     () => items.map((item) => ({ ...item, _norm: normalizeIndexEntry(item) })),

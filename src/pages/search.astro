@@ -7,9 +7,6 @@ import { isEnabled } from '../lib/features';
 
 const searchIndex = buildSearchIndex(await getAllEntries());
 const paletteOn = isEnabled('commandPalette');
-
-// Read a shared ?q= so results are linkable.
-const initialQuery = Astro.url.searchParams.get('q') ?? '';
 ---
 
 <BaseLayout
@@ -30,6 +27,6 @@ const initialQuery = Astro.url.searchParams.get('q') ?? '';
       </p>
     </header>
 
-    <SearchIsland client:load initialQuery={initialQuery} />
+    <SearchIsland client:load />
   </div>
 </BaseLayout>

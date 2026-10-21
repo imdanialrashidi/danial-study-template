@@ -41,12 +41,23 @@ export const DEFAULT_SEARCH_WEIGHTS: SearchWeights = {
 export type NormalizedSearchEntry = SearchableItem & { _norm: string };
 
 /**
+ * Search-only normalization: Persian normalization plus ZWNJ folding.
+ *
+ * `normalizePersian` keeps U+200C for tokenization. Search must treat
+ * «زنجیره‌ای» and «زنجیرهای» as the same word, so the search layer removes it
+ * from both the index and the query.
+ */
+export function normalizeSearchText(value: string): string {
+  return normalizePersian(value).replace(/\u200C/g, '');
+}
+
+/**
  * Precompute the normalized haystack for one index entry:
- * title + excerpt + tags through the shared `normalizePersian` oracle.
+ * title + excerpt + tags through the shared search normalization.
  * Memoize per entry so per-keystroke scoring never renormalizes.
  */
 export function normalizeIndexEntry(item: SearchableItem): string {
-  return normalizePersian(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`);
+  return normalizeSearchText(`${item.title} ${item.excerpt ?? ''} ${(item.tags ?? []).join(' ')}`);
 }
 
 /**
@@ -59,7 +70,7 @@ export function normalizeIndexEntry(item: SearchableItem): string {
  * @param item  The original item (title/tags read from here).
  * @param norm  Precomputed haystack string, or an entry carrying `_norm`.
  *              Falls back to `normalizeIndexEntry(item)` when absent.
- * @param terms Normalized query terms (e.g. `normalizePersian(q).split(/\s+/)`).
+ * @param terms Normalized query terms (e.g. `normalizeSearchText(q).split(/\s+/)`).
  * @param weights Explicit weight table; defaults to the pinned contract.
  */
 export function scoreSearchItem(
@@ -69,7 +80,7 @@ export function scoreSearchItem(
   weights: SearchWeights = DEFAULT_SEARCH_WEIGHTS,
 ): number {
   if (terms.length === 0) return 0;
-  const title = normalizePersian(item.title);
+  const title = normalizeSearchText(item.title);
   const haystack =
     typeof norm === 'string' ? norm : (norm._norm ?? normalizeIndexEntry(item));
   let total = 0;
@@ -78,7 +89,7 @@ export function scoreSearchItem(
     if (title.startsWith(term)) total += weights.titlePrefix;
     else if (title.includes(term)) total += weights.titleSubstring;
 
-    if ((item.tags ?? []).some((tag) => normalizePersian(tag).includes(term)))
+    if ((item.tags ?? []).some((tag) => normalizeSearchText(tag).includes(term)))
       total += weights.tag;
 
     if (haystack.includes(term)) total += haystack.includes(` ${term}`) ? weights.bodyWordStart : weights.bodySubstring;
@@ -116,7 +127,7 @@ export function rankSearchItems(
   options: RankSearchOptions,
 ): RankedSearchItem[] {
   const { limit, minQueryLength = 0, emptyFill = 0, weights = DEFAULT_SEARCH_WEIGHTS } = options;
-  const normalized = normalizePersian(query);
+  const normalized = normalizeSearchText(query);
   const terms = normalized.split(/\s+/).filter(Boolean);
   if (terms.length === 0) {
     return emptyFill > 0 ? items.slice(0, emptyFill).map((item) => ({ item, score: 1 })) : [];

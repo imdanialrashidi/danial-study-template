@@ -155,6 +155,17 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
   });
   check('search: island actually hydrated', true);
 
+  // A shared or bookmarked `?q=` URL must open with the query applied. The
+  // page is static, so the island reads the query after hydration.
+  await page.goto(`${base}/search/?q=${encodeURIComponent('مشتق')}`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => document.documentElement.dataset.searchHydrated === 'true', null, {
+    timeout: 10000,
+  });
+  check('search: ?q= prefills the field', (await input.inputValue()) === 'مشتق', await input.inputValue());
+  await page.waitForTimeout(250);
+  check('search: ?q= returns results', (await page.locator('main ul li a').count()) >= 3);
+  check('search: shared payload is present', (await page.locator('#site-search-index').count()) === 1);
+
   await input.fill('مشتق');
   await page.waitForTimeout(250);
   const results = await page.locator('main ul li a').count();

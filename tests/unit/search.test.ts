@@ -3,10 +3,10 @@ import type { SearchableItem } from '../../src/lib/types.ts';
 import {
   DEFAULT_SEARCH_WEIGHTS,
   normalizeIndexEntry,
+  normalizeSearchText,
   rankSearchItems,
   scoreSearchItem,
 } from '../../src/lib/search.ts';
-import { normalizePersian } from '../../src/lib/utils.ts';
 
 /**
  * Pins the converged search scorer (plan 021) verbatim on the `SearchIsland`
@@ -28,7 +28,7 @@ function item(overrides: Partial<SearchableItem> = {}): SearchableItem {
 }
 
 const normOf = (entry: SearchableItem) => normalizeIndexEntry(entry);
-const termsOf = (q: string) => normalizePersian(q).split(/\s+/).filter(Boolean);
+const termsOf = (q: string) => normalizeSearchText(q).split(/\s+/).filter(Boolean);
 
 describe('scoreSearchItem ordering pins', () => {
   it('ranks title-prefix > title-substring > tag-only > body-only', () => {
@@ -100,10 +100,10 @@ describe('rankSearchItems (shared rank seam)', () => {
 });
 
 describe('normalizeIndexEntry', () => {
-  it('equals the inline title+excerpt+tags normalization', () => {
+  it('equals the inline title+excerpt+tags search normalization', () => {
     const entry = item();
     expect(normOf(entry)).toBe(
-      normalizePersian(`${entry.title} ${entry.excerpt ?? ''} ${(entry.tags ?? []).join(' ')}`),
+      normalizeSearchText(`${entry.title} ${entry.excerpt ?? ''} ${(entry.tags ?? []).join(' ')}`),
     );
   });
 
@@ -113,5 +113,15 @@ describe('normalizeIndexEntry', () => {
     expect(scoreSearchItem(entry, withNorm, termsOf('مشتق'))).toBe(
       scoreSearchItem(entry, normOf(entry), termsOf('مشتق')),
     );
+  });
+});
+
+describe('ZWNJ folding', () => {
+  it('matches ZWNJ and non-ZWNJ spellings in both directions', () => {
+    const withZwnj = item({ id: 'z', title: 'زنجیره‌ای', excerpt: 'توضیح', tags: [] });
+    const withoutZwnj = item({ id: 'p', title: 'زنجیرهای', excerpt: 'توضیح', tags: [] });
+    const opts = { limit: 40, minQueryLength: 2 };
+    expect(rankSearchItems([withZwnj], 'زنجیرهای', opts).map((r) => r.item.id)).toEqual(['z']);
+    expect(rankSearchItems([withoutZwnj], 'زنجیره‌ای', opts).map((r) => r.item.id)).toEqual(['p']);
   });
 });

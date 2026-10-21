@@ -57,11 +57,15 @@ const {
 
 const pageTitle = title === courseConfig.title ? `${courseConfig.title} — ${SEO.defaultTitleSuffix}` : `${title} — ${courseConfig.title}`;
 const canonical = absoluteUrl(Astro.url.pathname.replace(basePath, '') || '/');
-const showPalette = isEnabled('commandPalette') && isEnabled('search');
-// Single shared search payload: built once per page in the layout and reused
-// by the palette. The search page passes its own index down through this same
-// prop so `/search` never serializes the index twice.
-const sharedSearchIndex = showPalette ? buildSearchIndex(await getAllEntries()) : [];
+const searchEnabled = isEnabled('search');
+const showPalette = searchEnabled && isEnabled('commandPalette');
+// The palette needs the payload on every page; the search page passes its own
+// index down as a prop. If neither consumer exists, serialize nothing.
+const needsSearchIndex = showPalette || Astro.props.searchIndex !== undefined;
+const sharedSearchIndex =
+  needsSearchIndex && Astro.props.searchIndex === undefined
+    ? buildSearchIndex(await getAllEntries())
+    : [];
 const paletteIndex = Astro.props.searchIndex ?? sharedSearchIndex;
 ---
 
@@ -146,7 +150,7 @@ const paletteIndex = Astro.props.searchIndex ?? sharedSearchIndex;
 
     <Footer />
     <TelegramPopup />
-    {showPalette && (
+    {needsSearchIndex && (
       <script type="application/json" id="site-search-index" set:html={jsonForScript(paletteIndex)} />
     )}
     {showPalette && <CommandPalette />}
