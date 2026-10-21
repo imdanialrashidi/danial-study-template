@@ -5,6 +5,7 @@ import { withBase } from '../lib/url';
 import { absoluteUrl } from '../config/site';
 import { creator } from '../config/site';
 import { getSectionGroups } from '../lib/content';
+import { pageDescription } from '../lib/courseCopy';
 
 const sections = (await getSectionGroups()).filter((s) => s.entries.length > 0);
 
@@ -23,7 +24,7 @@ const aboutJsonLd = {
 };
 ---
 
-<BaseLayout title="دربارهٔ این دوره" description="دربارهٔ درس‌نامهٔ آزاد حساب دیفرانسیل دانیال رشیدی: روش مطالعهٔ پیشنهادی، ساختار بخش‌ها و راه ارتباط برای گزارش اشتباه." jsonLd={[aboutJsonLd]}>
+<BaseLayout title="دربارهٔ این دوره" description={pageDescription('about')} jsonLd={[aboutJsonLd]}>
   <div class="mx-auto max-w-measure px-4 py-12 sm:px-6 lg:py-16">
     <header class="mb-10">
       <h1 class="text-3xl">دربارهٔ این دوره</h1>

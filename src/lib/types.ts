@@ -101,6 +101,17 @@ export interface CourseFeatures {
   courseMap?: boolean;
 }
 
+/** Shared engine pages whose copy may be overridden per course. */
+export type PageCopyKey =
+  | 'lessons'
+  | 'concepts'
+  | 'formulas'
+  | 'examples'
+  | 'practice'
+  | 'glossary'
+  | 'map'
+  | 'about';
+
 /** Per-topic brand mark for a course site built from this template. */
 export interface CourseLogo {
   /** 1–2 characters rendered in the favicon, e.g. `ح` for حساب. */
@@ -133,6 +144,12 @@ export interface CourseConfig {
   themePreset?: ThemePresetName;
   /** Feature flags — capabilities enabled for this course. Omitted = enabled. */
   features?: CourseFeatures;
+  /**
+   * Optional per-page meta descriptions for the shared listing/reference
+   * routes. Omitted keys fall back to copy derived from `title`/`description`.
+   * Course-specific prose belongs here, never in a shared page component.
+   */
+  pageCopy?: Partial<Record<PageCopyKey, string>>;
 }
 
 // ─── Shared Content Metadata ─────────────────────────────────────────────────

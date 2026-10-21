@@ -1,12 +1,13 @@
 ---
 import ListingLayout from '../../layouts/ListingLayout.astro';
 import { getEntriesByKind } from '../../lib/content';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = await getEntriesByKind('lesson');
 ---
 
 <ListingLayout
   title="درس‌ها"
-  description="درس‌های حساب دیفرانسیل به‌ترتیب وابستگی: از حد تا مشتق و قاعدهٔ زنجیره‌ای. هر درس را بخوانید، مثالش را حل کنید و با تمرین بسنجید."
+  description={pageDescription('lessons')}
   entries={entries}
 />

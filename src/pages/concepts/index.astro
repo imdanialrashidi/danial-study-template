@@ -1,12 +1,13 @@
 ---
 import ListingLayout from '../../layouts/ListingLayout.astro';
 import { getEntriesByKind } from '../../lib/content';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = await getEntriesByKind('concept');
 ---
 
 <ListingLayout
   title="مفاهیم"
-  description="مفاهیم پایهٔ حساب دیفرانسیل — حد، مشتق و نرخ تغییر — هرکدام دقیق و با مثال. برای شروع از صفر یا مرور سریع بخوانید."
+  description={pageDescription('concepts')}
   entries={entries}
 />

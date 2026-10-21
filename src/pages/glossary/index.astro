@@ -6,6 +6,7 @@ import { render } from 'astro:content';
 import { getEntriesByKind, mdxComponents, type CourseEntry } from '../../lib/content';
 import { toPersianDigits } from '../../lib/utils';
 import { withBase } from '../../lib/url';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = (await getEntriesByKind('glossary')).sort((a, b) => a.title.localeCompare(b.title, 'fa'));
 
@@ -45,7 +46,7 @@ const glossaryJsonLd = {
 
 <BaseLayout
   title="واژه‌نامه"
-  description="واژه‌نامهٔ حساب دیفرانسیل: تعریف کوتاه و دقیق هر اصطلاح، از تابع مرکب تا نقطهٔ بحرانی، برای مرور سریع هنگام حل مسئله."
+  description={pageDescription('glossary')}
   jsonLd={[glossaryJsonLd]}
 >
   <div class="mx-auto max-w-shell px-4 py-10 sm:px-6 lg:py-14">

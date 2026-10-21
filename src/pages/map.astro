@@ -12,6 +12,7 @@ import { getSectionGroups } from '../lib/content';
 import { absoluteUrl } from '../config/site';
 import { toPersianDigits, toPersianNumeral, formatMinutes } from '../lib/utils';
 import { withBase } from '../lib/url';
+import { pageDescription } from '../lib/courseCopy';
 
 const sections = (await getSectionGroups()).filter((s) => s.entries.length > 0);
 const totalEntries = sections.reduce((n, s) => n + s.entries.length, 0);
@@ -38,7 +39,7 @@ const mapJsonLd = {
 
 <CourseLayout
   title="نقشهٔ دوره"
-  description="نقشهٔ کامل دورهٔ حساب دیفرانسیل: همهٔ بخش‌ها و مطالب به‌ترتیب خواندن با زمان تقریبی مطالعه. از کجا شروع کنید و بعد چه بخوانید."
+  description={pageDescription('map')}
   sections={sections}
   jsonLd={[mapJsonLd]}
 >
