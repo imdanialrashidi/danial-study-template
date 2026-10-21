@@ -48,6 +48,12 @@ function walk(node, base) {
     node.url = prefix(node.url, base);
   }
 
+  // Markdown images and reference definitions carry their destination in `url`
+  // too, so they escape GitHub Pages' base just like links do.
+  if ((node.type === 'image' || node.type === 'definition') && typeof node.url === 'string') {
+    node.url = prefix(node.url, base);
+  }
+
   // MDX JSX attributes: <a href="/x">, <Formula href="/x" />
   if (node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') {
     for (const attribute of node.attributes ?? []) {
