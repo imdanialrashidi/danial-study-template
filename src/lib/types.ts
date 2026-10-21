@@ -66,11 +66,18 @@ export interface SectionConfig {
 
 export interface ThemeConfig {
   name: string;
-  /** Per-role overrides. Omitted roles fall back to the `themePreset` preset. */
+  /**
+   * Per-role overrides. Omitted roles fall back to the `themePreset` preset.
+   * Only the primary and accent families are themable; there is no `secondary`
+   * role (setting one has no effect).
+   */
   colors: {
     primary?: string;
+    /** Deep shade of `primary` (`--course-rgb-primary-deep`). */
+    primaryDeep?: string;
+    /** @deprecated Alias for `primaryDeep`; kept for back-compat and
+     *  removable in the next major. */
     primaryHover?: string;
-    secondary?: string;
     accent?: string;
   };
   typography?: 'traditional' | 'modern';
