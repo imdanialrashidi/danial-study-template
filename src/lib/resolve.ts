@@ -56,6 +56,20 @@ export function resolveInList<T extends Pick<CourseEntry, 'id' | 'kind'>>(
 }
 
 /**
+ * Index of the entry with this exact qualified identity (`<kind>/<slug>`).
+ *
+ * Routes must not use a bare-id scan over the mixed entry list: slugs are only
+ * unique per collection, so the first bare match can be a different kind.
+ * Returns -1 when the identity is absent.
+ */
+export function findEntryIndex<T extends Pick<CourseEntry, 'qualifiedId'>>(
+  entries: T[],
+  qualifiedId: string,
+): number {
+  return entries.findIndex((entry) => entry.qualifiedId === qualifiedId);
+}
+
+/**
  * Prerequisite identity matcher: a declared prerequisite
  * matches either the qualified `<kind>/<slug>` identity or the bare slug.
  */

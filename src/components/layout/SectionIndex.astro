@@ -13,10 +13,10 @@ import Icon from '../ui/Icon.astro';
 
 interface Props {
   sections: SectionGroup[];
-  currentId?: string;
+  currentQualifiedId?: string;
 }
 
-const { sections, currentId } = Astro.props;
+const { sections, currentQualifiedId } = Astro.props;
 ---
 
 <nav aria-label="فهرست بخش‌ها" class="max-h-[calc(100vh-8rem)] overflow-y-auto pe-1">
@@ -33,7 +33,7 @@ const { sections, currentId } = Astro.props;
             </p>
             <ul class="grid gap-1.5 border-s border-line ps-3">
               {section.entries.map((entry, eIndex) => {
-                const active = entry.id === currentId;
+                const active = entry.qualifiedId === currentQualifiedId;
                 return (
                   <li>
                     <a

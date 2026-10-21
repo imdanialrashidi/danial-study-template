@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dependentsInList, parseReference, prereqMatches, resolveInList } from '../../src/lib/resolve.ts';
+import { dependentsInList, findEntryIndex, parseReference, prereqMatches, resolveInList } from '../../src/lib/resolve.ts';
 import type { CourseEntry } from '../../src/lib/content.ts';
 
 /**
@@ -107,6 +107,18 @@ describe('dependentsInList (bare-slug prerequisites match)', () => {
     const list = [...entries, entry('example', 'dep2', { prerequisites: ['concept/shared'] })];
     const found = dependentsInList(asEntries(list), 'concept/shared');
     expect(found.map((e) => e.qualifiedId)).toContain('example/dep2');
+  });
+});
+
+describe('findEntryIndex (qualified identity)', () => {
+  it('selects the requested kind when a bare slug collides', () => {
+    expect(findEntryIndex(entries, 'lesson/shared')).toBe(0);
+    expect(findEntryIndex(entries, 'concept/shared')).toBe(1);
+  });
+
+  it('returns -1 for an absent qualified identity', () => {
+    expect(findEntryIndex(entries, 'formula/shared')).toBe(-1);
+    expect(findEntryIndex(entries, 'lesson/unique')).toBe(-1);
   });
 });
 

@@ -251,11 +251,6 @@ export interface CrossLinks {
 
 export async function getCrossLinks(entry: CourseEntry): Promise<CrossLinks> {
   const data = entry.entry.data as Record<string, unknown>;
-  const referenced = [
-    ...((data.formulas as string[] | undefined) ?? []),
-    ...((data.concepts as string[] | undefined) ?? []),
-    ...(data.formula !== undefined ? [data.formula as string] : []),
-  ];
 
   const unresolved: string[] = [];
   const resolve = async (ids: string[], preferKind?: EntryKind) => {
@@ -272,11 +267,18 @@ export async function getCrossLinks(entry: CourseEntry): Promise<CrossLinks> {
     return out;
   };
 
-  const [prerequisites, dependents, linked] = await Promise.all([
+  const [formulaLinks, conceptLinks, formulaFieldLinks, prerequisites, dependents] = await Promise.all([
+    resolve((data.formulas as string[] | undefined) ?? [], 'formula'),
+    resolve((data.concepts as string[] | undefined) ?? [], 'concept'),
+    resolve(data.formula !== undefined ? [data.formula as string] : [], 'formula'),
     resolve(entry.prerequisites),
     getDependents(entry.qualifiedId),
-    resolve(referenced),
   ]);
+
+  const linked = [...formulaLinks, ...conceptLinks, ...formulaFieldLinks].filter(
+    (candidate, index, list) =>
+      list.findIndex((other) => other.qualifiedId === candidate.qualifiedId) === index,
+  );
 
   if (unresolved.length > 0) {
     throw new Error(
