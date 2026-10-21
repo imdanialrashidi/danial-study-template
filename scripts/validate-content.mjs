@@ -81,11 +81,12 @@ function parseFrontmatter(source, file) {
       .filter(Boolean);
   };
 
-  for (const line of body.split(/\r?\n/)) {
-    // Only top-level `key: value` lines. List items (`  - x`) and nested
-    // mappings are intentionally skipped: this reader only needs the scalars
-    // and inline lists used for cross-file checks.
-    const kv = line.match(/^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$/);
+  const lines = body.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    // Only top-level `key: value` lines. Nested mappings are intentionally
+    // skipped: this reader only needs the scalars and inline lists used for
+    // cross-file checks. Indented `- item` lines are consumed by their key.
+    const kv = lines[index].match(/^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$/);
     if (!kv) continue;
     const [, key, rawValue] = kv;
     const value = rawValue.trim();
@@ -93,8 +94,18 @@ function parseFrontmatter(source, file) {
     if (value.startsWith('[') && value.endsWith(']')) {
       data[key] = parseList(value);
     } else if (value === '') {
-      // A key with a nested block below it; collect simple `- item` children.
-      data[key] = [];
+      // A key with a nested block below it: collect the indented `- item`
+      // children, so a YAML block list reads the same as an inline one. Nested
+      // mappings have no dashes and still read as `[]`.
+      const items = [];
+      while (index + 1 < lines.length) {
+        const child = lines[index + 1].match(/^\s+-\s+(.*)$/);
+        if (!child) break;
+        index += 1;
+        const item = unquote(child[1]);
+        if (item) items.push(item);
+      }
+      data[key] = items;
     } else {
       data[key] = unquote(value);
     }
