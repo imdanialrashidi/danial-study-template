@@ -73,7 +73,7 @@ const glossaryJsonLd = {
           <nav aria-label="پرش به حرف" class="mb-10 flex flex-wrap gap-1.5">
             {jumpTargets.map(({ letter, count }) => (
               <a
-                href={withBase(`/#letter-${encodeURIComponent(letter)}`)}
+                href={`#letter-${encodeURIComponent(letter)}`}
                 class="inline-flex min-h-[40px] items-center gap-1 rounded-md border border-line bg-surface px-3 py-1.5 text-sm font-bold text-ink transition-colors duration-fast hover:border-primary hover:bg-primary-wash"
               >
                 {letter}

@@ -263,6 +263,19 @@ describeIfBuilt('built output', () => {
     expect(xml, 'sitemap must not carry build-time lastmod stamps').not.toContain('<lastmod>');
   });
 
+  it('keeps noindex routes out of the sitemap', () => {
+    const xml = readFileSync(path.join(distDir, 'sitemap-0.xml'), 'utf8');
+    expect(xml, 'sitemap must not contain /search').not.toMatch(/<loc>[^<]*\/search\/?<\/loc>/);
+    expect(xml, 'sitemap must not contain /saved').not.toMatch(/<loc>[^<]*\/saved\/?<\/loc>/);
+  });
+
+  it('points glossary letter jumps at same-page anchors', () => {
+    const html = readFileSync(path.join(distDir, 'glossary/index.html'), 'utf8');
+    expect(html, 'glossary jump bar has no same-page letter target').toMatch(/href="#letter-/);
+    expect(html, 'glossary jump bar still points at the homepage').not.toMatch(/href="\/#letter-/);
+    expect(html, 'glossary letter anchors are missing').toContain('id="letter-');
+  });
+
   it('stripBase delegates to the shared lib helper', () => {
     // Dedup guard: the local wrapper must stay a thin alias of
     // `stripBaseWith(BASE, …)` so output assertions and nav highlighting
