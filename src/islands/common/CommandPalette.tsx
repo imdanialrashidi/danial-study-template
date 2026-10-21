@@ -26,6 +26,8 @@ export default function CommandPalette() {
 
   const close = useCallback(() => {
     setOpen(false);
+    const trigger = triggerRef.current;
+    if (trigger && document.contains(trigger)) trigger.focus();
   }, []);
 
   // Global shortcut + declarative triggers. Stays mounted while the dialog
@@ -35,8 +37,12 @@ export default function CommandPalette() {
       const mod = e.metaKey || e.ctrlKey;
       if (mod && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
-        if (!open) triggerRef.current = document.activeElement as HTMLElement | null;
-        setOpen((v) => !v);
+        if (open) {
+          close();
+        } else {
+          triggerRef.current = document.activeElement as HTMLElement | null;
+          setOpen(true);
+        }
       }
     }
     function onTriggerClick(e: Event) {
@@ -52,7 +58,7 @@ export default function CommandPalette() {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('click', onTriggerClick);
     };
-  }, [open ]);
+  }, [open, close]);
 
   useEffect(() => {
     document.documentElement.dataset.paletteHydrated = 'true';
