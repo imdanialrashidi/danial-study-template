@@ -181,10 +181,14 @@ export class ProgressStore {
     return next;
   }
 
-  /** Keeps the highest score, so a retry can only improve the record. */
+  /**
+   * Keeps the highest score, so a retry can only improve the record.
+   * A changed question count means a different quiz, so its result replaces
+   * the old record instead of competing with an incomparable raw score.
+   */
   recordQuiz(id: string, score: number, total: number): void {
     const previous = this.data.quizzes[id];
-    if (previous && previous.score >= score) return;
+    if (previous && previous.total === total && previous.score >= score) return;
     this.data.quizzes[id] = { score, total, completedAt: new Date().toISOString() };
     this.commit();
   }

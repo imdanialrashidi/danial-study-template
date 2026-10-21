@@ -93,6 +93,29 @@ describe('ProgressStore', () => {
     expect(store.quizScore('quiz-a')).toMatchObject({ score: 4, total: 4 });
   });
 
+  it('resets the record when the quiz shrinks', () => {
+    const store = new ProgressStore();
+    store.recordQuiz('quiz-a', 4, 5);
+    // The course dropped a question: 3/4 is not comparable to 4/5, so the
+    // higher raw score from the old quiz must not keep its stale denominator.
+    store.recordQuiz('quiz-a', 3, 4);
+    expect(store.quizScore('quiz-a')).toMatchObject({ score: 3, total: 4 });
+  });
+
+  it('resets the record when the quiz grows', () => {
+    const store = new ProgressStore();
+    store.recordQuiz('quiz-a', 3, 4);
+    store.recordQuiz('quiz-a', 4, 5);
+    expect(store.quizScore('quiz-a')).toMatchObject({ score: 4, total: 5 });
+  });
+
+  it('keeps the best score when the quiz size is unchanged', () => {
+    const store = new ProgressStore();
+    store.recordQuiz('quiz-a', 3, 4);
+    store.recordQuiz('quiz-a', 2, 4);
+    expect(store.quizScore('quiz-a')).toMatchObject({ score: 3, total: 4 });
+  });
+
   it('ignores ids outside the known course when computing progress', () => {
     const store = new ProgressStore();
     store.toggleCompleted('lesson-a');
