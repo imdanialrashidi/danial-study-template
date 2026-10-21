@@ -39,30 +39,14 @@ export const courseConfig: CourseConfig = {
   category: 'آموزشی',
 
   // --- Sections (navigation groups) ---
+  // New courses add their sections here — one object per navigation group.
+  // Every entry's `section` must match a declared id; `npm run validate` enforces it.
   sections: [
     {
       id: 'foundations',
       title: 'مبانی',
       description: 'مفاهیم اولیه و پیش‌نیازها',
       order: 1,
-    },
-    {
-      id: 'calculus',
-      title: 'حساب دیفرانسیل و انتگرال',
-      description: 'مشتق، انتگرال و کاربردهایشان',
-      order: 2,
-    },
-    {
-      id: 'physics',
-      title: 'فیزیک',
-      description: 'مکانیک، الکتریسیته و مغناطیس‌گری',
-      order: 3,
-    },
-    {
-      id: 'practice',
-      title: 'تمرین',
-      description: 'سوالات و مسائل تمرینی',
-      order: 4,
     },
   ],
 
