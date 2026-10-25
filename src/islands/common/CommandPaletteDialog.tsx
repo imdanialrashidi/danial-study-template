@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { SINGULAR_LABELS as TYPE_LABELS } from '../../lib/types';
 import type { SearchableItem } from '../../lib/types';
-import { normalizePersian, toPersianDigits } from '../../lib/utils';
-import { normalizeIndexEntry, scoreSearchItem } from '../../lib/search';
+import { toPersianDigits } from '../../lib/utils';
+import { normalizeIndexEntry, rankSearchItems } from '../../lib/search';
 import { focusFirst, trapFocus } from '../../lib/a11y';
 import IslandIcon from './IslandIcon';
 import { readSiteSearchIndex } from './searchIndex';
@@ -41,18 +41,10 @@ export default function CommandPaletteDialog({ trigger, onClose }: CommandPalett
     [items],
   );
 
-  const results = useMemo(() => {
-    const terms = normalizePersian(query).split(/\s+/).filter(Boolean);
-    const pool = terms.length === 0 ? normalizedItems.slice(0, 8) : normalizedItems;
-    const scored = pool
-      .map((item) => {
-        if (terms.length === 0) return { item, score: 1 };
-        return { item, score: scoreSearchItem(item, item, terms) };
-      })
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fa'));
-    return scored.slice(0, 8).map((r) => r.item);
-  }, [normalizedItems, query]);
+  const results = useMemo(
+    () => rankSearchItems(normalizedItems, query, { limit: 8, emptyFill: 8 }).map((r) => r.item),
+    [normalizedItems, query],
+  );
 
   useEffect(() => {
     setActive(0);

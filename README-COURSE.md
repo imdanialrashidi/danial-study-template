@@ -107,7 +107,8 @@ src/
   pages/         routes
   styles/theme.css   design tokens              (shared)
 scripts/         validation, budgets, browser QA
-tests/unit/      unit + build-output tests
+tests/unit/      unit tests
+tests/output/    built-output tests
 ```
 
 The engine contains no subject-specific logic: it asks "what kind of entry is
@@ -147,8 +148,10 @@ legal footer: header, homepage creator block, and footer all carry it.
 npm run validate          # content: frontmatter, references, LaTeX escaping
 npm run validate:links    # internal links in the built output
 npm run typecheck         # astro check
-npm run test              # unit + build-output tests
+npm run test              # unit tests
+npm run test:scripts      # remark plugin tests (node:test)
 npm run build             # static build
+npm run test:dist         # built-output tests
 npm run budgets           # performance budgets
 npm run ci                # all of the above
 ```

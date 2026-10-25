@@ -2,6 +2,7 @@
 import ContentLayout from '../../layouts/ContentLayout.astro';
 import { getCollection } from 'astro:content';
 import { getAllEntries, getSectionGroups, getCrossLinks, type CourseEntry } from '../../lib/content';
+import { findEntryIndex } from '../../lib/resolve';
 
 export async function getStaticPaths() {
   const formulas = await getCollection('formula', ({ data }) => data.draft !== true);
@@ -9,11 +10,14 @@ export async function getStaticPaths() {
   const sections = await getSectionGroups();
 
   return formulas.map((formula) => {
-    const index = all.findIndex((e) => e.id === formula.id);
+    const index = findEntryIndex(all, `formula/${formula.id}`);
+    if (index === -1) {
+      throw new Error(`formula/${formula.id} is missing from the content index`);
+    }
     return {
       params: { slug: formula.id },
       props: {
-        entry: all.find((e) => e.id === formula.id)!,
+        entry: all[index],
         sections,
         prev: index > 0 ? all[index - 1] : undefined,
         next: index < all.length - 1 ? all[index + 1] : undefined,

@@ -2,10 +2,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
 import { absoluteUrl } from '../../config/site';
-import { getEntriesByKind, type CourseEntry } from '../../lib/content';
-import { renderContent, mdxComponents } from '../../lib/render';
+import { render } from 'astro:content';
+import { getEntriesByKind, mdxComponents, type CourseEntry } from '../../lib/content';
 import { toPersianDigits } from '../../lib/utils';
 import { withBase } from '../../lib/url';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = (await getEntriesByKind('glossary')).sort((a, b) => a.title.localeCompare(b.title, 'fa'));
 
@@ -21,7 +22,7 @@ const letters = [...groups.keys()].sort((a, b) => a.localeCompare(b, 'fa'));
 // Render each entry body once for the inline definitions.
 const rendered = await Promise.all(
   entries.map(async (entry) => {
-    const { Content } = await renderContent(entry.entry);
+    const { Content } = await render(entry.entry);
     return { entry, Content };
   }),
 );
@@ -45,7 +46,7 @@ const glossaryJsonLd = {
 
 <BaseLayout
   title="واژه‌نامه"
-  description="واژه‌نامهٔ حساب دیفرانسیل: تعریف کوتاه و دقیق هر اصطلاح، از تابع مرکب تا نقطهٔ بحرانی، برای مرور سریع هنگام حل مسئله."
+  description={pageDescription('glossary')}
   jsonLd={[glossaryJsonLd]}
 >
   <div class="mx-auto max-w-shell px-4 py-10 sm:px-6 lg:py-14">
@@ -72,7 +73,7 @@ const glossaryJsonLd = {
           <nav aria-label="پرش به حرف" class="mb-10 flex flex-wrap gap-1.5">
             {jumpTargets.map(({ letter, count }) => (
               <a
-                href={withBase(`/#letter-${encodeURIComponent(letter)}`)}
+                href={`#letter-${encodeURIComponent(letter)}`}
                 class="inline-flex min-h-[40px] items-center gap-1 rounded-md border border-line bg-surface px-3 py-1.5 text-sm font-bold text-ink transition-colors duration-fast hover:border-primary hover:bg-primary-wash"
               >
                 {letter}

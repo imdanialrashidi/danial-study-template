@@ -1,12 +1,13 @@
 ---
 import ListingLayout from '../../layouts/ListingLayout.astro';
 import { getEntriesByKind } from '../../lib/content';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = await getEntriesByKind('formula');
 ---
 
 <ListingLayout
   title="فرمول‌ها"
-  description="فرمول‌های مشتق با معنی هر نماد، شرایط اعتبار و مثال کاربردی: تعریف مشتق و قاعدهٔ زنجیره‌ای. برای حل مسئله مستقیم استفاده کنید."
+  description={pageDescription('formulas')}
   entries={entries}
 />

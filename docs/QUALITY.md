@@ -165,7 +165,7 @@ breaks one fails CI rather than relying on review.
 **Architecture**
 
 1. **Static-first.** No page may require JavaScript to be readable. Interactive
-   islands add behaviour, never content. Verified: `tests/unit/build-output.test.ts`
+   islands add behaviour, never content. Verified: `tests/output/build-output.test.ts`
    asserts rendered KaTeX markup and `scripts/check-budgets.mjs` fails if any
    KaTeX runtime JavaScript is emitted.
 2. **Globally unique content identity.** Every entry has `qualifiedId`
@@ -192,7 +192,7 @@ breaks one fails CI rather than relying on review.
    that carries a `client:*` directive. Islands expose `data-hydrated` so
    `scripts/interaction-qa.mjs` can prove hydration rather than assume it.
 
-**Rendered output** (`tests/unit/build-output.test.ts` reads the real `dist/`)
+**Rendered output** (`tests/output/build-output.test.ts` reads the real `dist/`)
 
 8. Every page declares `lang="fa"` and `dir="rtl"`.
 9. Exactly one `<h1>` per page.
@@ -219,7 +219,9 @@ breaks one fails CI rather than relying on review.
 | Purpose | Command |
 |---|---|
 | Fastest useful loop while editing content | `npm run validate && npm run test` |
-| Before delivering a change | `npm run check` (validate + typecheck + test + build + budgets) |
+| Built-output contract | `npm run test:dist` (after `npm run build`) |
+| Remark plugin contract | `npm run test:scripts` (`node:test`) |
+| Before delivering a change | `npm run check` (same chain as `npm run ci`) |
 | Full gate | `npm run ci` |
 | Browser evidence | `npm run preview`, then `node scripts/visual-qa.mjs` and `node scripts/interaction-qa.mjs` |
 | Reproduce a project-site deployment | `BASE_PATH=/<repo> npm run build && BASE_PATH=/<repo> npm run validate:links` |
@@ -229,5 +231,5 @@ breaks one fails CI rather than relying on review.
 contract, the plausible regression, and the evidence gap; derive the expectation
 independently of the implementation; then show it fails without the fix (or via
 a focused mutation). During development prefer the existing
-`tests/unit/build-output.test.ts` and the two browser scripts over new unit
+`tests/output/build-output.test.ts` and the two browser scripts over new unit
 tests for layout, styling, or rendering questions.

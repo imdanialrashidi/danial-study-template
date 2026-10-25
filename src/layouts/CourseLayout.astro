@@ -140,7 +140,7 @@ const difficultyLabel = entry?.difficulty ? DIFFICULTY_LABELS[entry.difficulty] 
       {!wide && (sections.length > 0 || showToc) && (
         <aside class="no-print hidden w-60 shrink-0 lg:block">
           <div class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-auto pb-6">
-            {sections.length > 0 && <SectionIndex sections={sections} currentId={entry?.id} />}
+            {sections.length > 0 && <SectionIndex sections={sections} currentQualifiedId={entry?.qualifiedId} />}
             {showToc && <TableOfContents headings={tocHeadings} variant="desktop" />}
           </div>
         </aside>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ProgressBridge } from './ProgressBridge';
+import { ProgressBridge, subscribeProgress } from './ProgressBridge';
 import { useHydrated } from './useHydrated';
 import IslandIcon from './IslandIcon';
 
@@ -18,38 +18,42 @@ export interface BookmarkToggleProps {
  */
 export default function BookmarkToggle({ id, label = 'این صفحه' }: BookmarkToggleProps) {
   const [saved, setSaved] = useState(false);
+  const [persistent, setPersistent] = useState(true);
+  const [ready, setReady] = useState(false);
   const hydrated = useHydrated('bookmark');
 
   useEffect(() => {
-    const sync = () => setSaved(ProgressBridge.isBookmarked(id));
+    const sync = () => {
+      setSaved(ProgressBridge.isBookmarked(id));
+      setPersistent(ProgressBridge.persistent);
+    };
     sync();
-    window.addEventListener('dr-progress', sync);
-    const onStorage = () => {
-      ProgressBridge.refresh();
-      sync();
-    };
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener('dr-progress', sync);
-      window.removeEventListener('storage', onStorage);
-    };
+    setReady(true);
+    return subscribeProgress(sync);
   }, [id]);
 
   return (
-    <button
-      type="button"
-      onClick={() => setSaved(ProgressBridge.toggleBookmarked(id))}
-      aria-pressed={saved}
-      aria-label={saved ? `حذف ${label} از نشان‌شده‌ها` : `افزودن ${label} به نشان‌شده‌ها`}
-      title={saved ? 'حذف از نشان‌شده‌ها' : 'نشان کردن برای بعد'}
-      data-hydrated={hydrated ? 'true' : 'false'}
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors duration-fast ${
-        saved
-          ? 'border-accent/40 bg-accent-wash text-accent-deep'
-          : 'border-line bg-surface text-ink-muted hover:border-line-control hover:text-ink'
-      }`}
-    >
-      <IslandIcon name="bookmark" size={16} fill={saved ? 'currentColor' : 'none'} />
-    </button>
+    <span className="inline-flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setSaved(ProgressBridge.toggleBookmarked(id))}
+        aria-pressed={saved}
+        aria-label={saved ? `حذف ${label} از نشان‌شده‌ها` : `افزودن ${label} به نشان‌شده‌ها`}
+        title={saved ? 'حذف از نشان‌شده‌ها' : 'نشان کردن برای بعد'}
+        data-hydrated={hydrated ? 'true' : 'false'}
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors duration-fast ${
+          saved
+            ? 'border-accent/40 bg-accent-wash text-accent-deep'
+            : 'border-line bg-surface text-ink-muted hover:border-line-control hover:text-ink'
+        }`}
+      >
+        <IslandIcon name="bookmark" size={16} fill={saved ? 'currentColor' : 'none'} />
+      </button>
+      {ready && !persistent && (
+        <span role="status" className="text-2xs text-ink-faint">
+          در این مرورگر ذخیره نمی‌شود
+        </span>
+      )}
+    </span>
   );
 }

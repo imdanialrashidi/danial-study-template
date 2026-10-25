@@ -1,5 +1,6 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { CONTENT_REF_RE } from './lib/contract';
 
 /*
  * The content contract for course authors and AI agents.
@@ -64,11 +65,11 @@ const baseMeta = z.object({
 /** Reference to a formula entry, optionally with the specific formula id. */
 const formulaRef = z
   .string()
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*(#[a-z0-9][a-z0-9-]*)?$/, 'must be "formula-slug" or "formula-slug#formula-id"');
+  .regex(CONTENT_REF_RE, 'must be "formula-slug" or "formula-slug#formula-id"');
 
 const conceptRef = z
   .string()
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*(#[a-z0-9][a-z0-9-]*)?$/, 'must be "concept-slug" or "concept-slug#concept-id"');
+  .regex(CONTENT_REF_RE, 'must be "concept-slug" or "concept-slug#concept-id"');
 
 /* ── Lessons ──────────────────────────────────────────────────────────────
    The main teaching unit. An ordered narrative with prerequisites and

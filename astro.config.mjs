@@ -16,6 +16,9 @@ import { remarkBaseLinks } from './src/lib/remark-base-links.mjs';
 const basePath = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 const site = process.env.SITE_URL ?? 'https://imdanialrashidi.github.io';
 
+/** Routes that render `noindex` and must never appear in the sitemap. */
+const noindexRoutes = ['/search', '/saved'];
+
 export default defineConfig({
   site,
   base: basePath || '/',
@@ -44,14 +47,14 @@ export default defineConfig({
     // plugin must be registered there as well as on `markdown`.
     mdx({ remarkPlugins: [[remarkBaseLinks, { base: basePath }]] }),
     sitemap({
-      // Suggest only indexable routes: the search page carries
-      // `noindex, follow` and must never appear in the sitemap.
+      // Suggest only indexable routes: `noindexRoutes` are the pages that
+      // render `noindex, follow` and must never appear in the sitemap.
       // No `lastmod`: every page rebuilds on each deploy, so a build-time
       // stamp would mark all URLs changed on every build and waste crawl
       // budget. Omit it until per-page modification evidence exists.
       filter: (page) => {
-        const pathname = new URL(page).pathname.replace(/\/+$/, '');
-        return pathname !== `${basePath}/search`;
+        const pathname = new URL(page).pathname.replace(/\/+$/, '') || '/';
+        return !noindexRoutes.some((route) => pathname === `${basePath}${route}`);
       },
     }),
   ]

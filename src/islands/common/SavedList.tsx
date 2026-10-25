@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ProgressBridge } from './ProgressBridge';
+import { resolveSavedRows } from '../../lib/resolve';
+import { ProgressBridge, subscribeProgress } from './ProgressBridge';
 import { useHydrated } from './useHydrated';
 import IslandIcon from './IslandIcon';
 import { withBase } from '../../lib/url';
@@ -39,45 +40,11 @@ export interface SavedRow {
 }
 
 /**
- * Tolerant bookmark matcher: a stored id resolves against both the qualified
- * `<kind>/<slug>` identity and the bare slug (bookmark writes store the bare
- * `entry.id`, so cross-kind slug collisions are real). An exact qualified
- * match wins; a bare id resolves only when it names exactly one entry;
- * anything else (ambiguous bare, unknown id) resolves to nothing and is
- * pruned silently by `resolveSavedRows`.
+ * Bookmark identity resolves through the shared resolver (`src/lib/resolve`):
+ * a stored id matches the qualified `<kind>/<slug>` identity or a unique
+ * bare slug, and anything ambiguous or stale is pruned by `resolveSavedRows`
+ * rather than linking wrongly.
  */
-export function matchSavedEntry(
-  bookmarkId: string,
-  entries: SavedEntry[],
-): SavedEntry | undefined {
-  const exact = entries.find((e) => e.qualifiedId === bookmarkId);
-  if (exact) return exact;
-  const bare = entries.filter((e) => e.id === bookmarkId);
-  return bare.length === 1 ? bare[0] : undefined;
-}
-
-/**
- * Resolve stored bookmark ids to rows in course order, dropping stale or
- * ambiguous ids silently and deduping entries bookmarked under both forms.
- */
-export function resolveSavedRows(bookmarks: string[], entries: SavedEntry[]): SavedRow[] {
-  const rows: SavedRow[] = [];
-  const seen = new Set<string>();
-  for (const entry of entries) {
-    const bookmark = bookmarks.find(
-      (b) => b === entry.qualifiedId || b === entry.id,
-    );
-    if (bookmark === undefined) continue;
-    // A bare stored id shared by two kinds must not attach to either entry —
-    // `matchSavedEntry` is the arbiter, mirroring the resolveInList rule that
-    // an ambiguous bare slug resolves to nothing rather than wrongly.
-    if (matchSavedEntry(bookmark, entries) !== entry) continue;
-    if (seen.has(entry.qualifiedId)) continue;
-    seen.add(entry.qualifiedId);
-    rows.push({ bookmark, entry });
-  }
-  return rows;
-}
 
 interface SavedGroup {
   title: string;
@@ -103,17 +70,7 @@ export default function SavedList({ entries, sections }: SavedListProps) {
       setPersistent(ProgressBridge.persistent);
     };
     read();
-    const onStorage = () => {
-      ProgressBridge.refresh();
-      read();
-    };
-    const onProgress = () => read();
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('dr-progress', onProgress);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('dr-progress', onProgress);
-    };
+    return subscribeProgress(read);
   }, [entries]);
 
   const groups: SavedGroup[] = [];

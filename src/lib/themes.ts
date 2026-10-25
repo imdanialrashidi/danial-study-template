@@ -88,7 +88,9 @@ export function resolvedTheme(): { primary: string; primaryDeep: string; accent:
   const colors = courseConfig.theme.colors ?? {};
   return {
     primary: colors.primary ?? preset.primary,
-    primaryDeep: colors.primaryHover ?? preset.primaryDeep,
+    // `primaryHover` is the deprecated alias for `primaryDeep`; drop it in the
+    // next major once courses have migrated.
+    primaryDeep: colors.primaryDeep ?? colors.primaryHover ?? preset.primaryDeep,
     accent: colors.accent ?? preset.accent,
     primaryWash: preset.primaryWash,
   };

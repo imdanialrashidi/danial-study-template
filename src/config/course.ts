@@ -13,11 +13,11 @@ import type { CourseConfig } from '../lib/types';
 
 export const courseConfig: CourseConfig = {
   // --- Identity (course-specific) ---
-  title: 'حساب دیفرانسیل، قدم‌به‌قدم',
+  title: 'حساب دیفرانسیل',
   tagline: 'از حد تا قاعدهٔ زنجیره‌ای — با مثال حل‌شده، فرمول دقیق و تمرین',
   description:
-    'درس‌نامهٔ آزاد و قدم‌به‌قدم حساب دیفرانسیل: هر مفهوم با مثال حل‌شده، هر فرمول با توضیح دقیق. از حد شروع کنید و تا قاعدهٔ زنجیره‌ای پیش بروید.',
-  shortDescription: 'درس‌نامهٔ قدم‌به‌قدم حساب دیفرانسیل',
+    'درس‌نامهٔ آزاد حساب دیفرانسیل: هر مفهوم با مثال حل‌شده، هر فرمول با توضیح دقیق. از حد شروع کنید و تا قاعدهٔ زنجیره‌ای پیش بروید.',
+  shortDescription: 'درس‌نامهٔ حساب دیفرانسیل',
   locale: 'fa',
   direction: 'rtl',
 
@@ -39,30 +39,14 @@ export const courseConfig: CourseConfig = {
   category: 'آموزشی',
 
   // --- Sections (navigation groups) ---
+  // New courses add their sections here — one object per navigation group.
+  // Every entry's `section` must match a declared id; `npm run validate` enforces it.
   sections: [
     {
       id: 'foundations',
       title: 'مبانی',
       description: 'مفاهیم اولیه و پیش‌نیازها',
       order: 1,
-    },
-    {
-      id: 'calculus',
-      title: 'حساب دیفرانسیل و انتگرال',
-      description: 'مشتق، انتگرال و کاربردهایشان',
-      order: 2,
-    },
-    {
-      id: 'physics',
-      title: 'فیزیک',
-      description: 'مکانیک، الکتریسیته و مغناطیس‌گری',
-      order: 3,
-    },
-    {
-      id: 'practice',
-      title: 'تمرین',
-      description: 'سوالات و مسائل تمرینی',
-      order: 4,
     },
   ],
 
@@ -95,5 +79,26 @@ export const courseConfig: CourseConfig = {
     toc: true,
     related: true,
     courseMap: true,
+  },
+
+  // --- Shared-page meta descriptions ---
+  // Course-specific copy for the engine's listing/reference routes. Omit a
+  // key to use the generic fallback in src/lib/courseCopy.ts.
+  pageCopy: {
+    lessons:
+      'درس‌های حساب دیفرانسیل به‌ترتیب وابستگی: از حد تا مشتق و قاعدهٔ زنجیره‌ای. هر درس را بخوانید، مثالش را حل کنید و با تمرین بسنجید.',
+    concepts:
+      'مفاهیم پایهٔ حساب دیفرانسیل — حد، مشتق و نرخ تغییر — هرکدام دقیق و با مثال. برای شروع از صفر یا مرور سریع بخوانید.',
+    formulas:
+      'فرمول‌های مشتق با معنی هر نماد، شرایط اعتبار و مثال کاربردی: تعریف مشتق و قاعدهٔ زنجیره‌ای. برای حل مسئله مستقیم استفاده کنید.',
+    examples:
+      'مثال‌های حل‌شدهٔ مشتق، گام‌به‌گام: اول خودتان تلاش کنید، بعد راه‌حل را مرحله‌به‌مرحله ببینید. بهترین راه تثبیت فرمول‌ها.',
+    practice:
+      'تمرین‌های حساب دیفرانسیل برای سنجش فهم حد و مشتق. پاسخ در مرورگر خودتان ذخیره می‌شود؛ هرچند بار بخواهید تلاش کنید.',
+    glossary:
+      'واژه‌نامهٔ حساب دیفرانسیل: تعریف کوتاه و دقیق هر اصطلاح، از تابع مرکب تا نقطهٔ بحرانی، برای مرور سریع هنگام حل مسئله.',
+    map: 'نقشهٔ کامل دورهٔ حساب دیفرانسیل: همهٔ بخش‌ها و مطالب به‌ترتیب خواندن با زمان تقریبی مطالعه. از کجا شروع کنید و بعد چه بخوانید.',
+    about:
+      'دربارهٔ درس‌نامهٔ آزاد حساب دیفرانسیل دانیال رشیدی: روش مطالعهٔ پیشنهادی، ساختار بخش‌ها و راه ارتباط برای گزارش اشتباه.',
   },
 };

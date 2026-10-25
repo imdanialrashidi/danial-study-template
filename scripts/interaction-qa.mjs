@@ -155,6 +155,17 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
   });
   check('search: island actually hydrated', true);
 
+  // A shared or bookmarked `?q=` URL must open with the query applied. The
+  // page is static, so the island reads the query after hydration.
+  await page.goto(`${base}/search/?q=${encodeURIComponent('مشتق')}`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => document.documentElement.dataset.searchHydrated === 'true', null, {
+    timeout: 10000,
+  });
+  check('search: ?q= prefills the field', (await input.inputValue()) === 'مشتق', await input.inputValue());
+  await page.waitForTimeout(250);
+  check('search: ?q= returns results', (await page.locator('main ul li a').count()) >= 3);
+  check('search: shared payload is present', (await page.locator('#site-search-index').count()) === 1);
+
   await input.fill('مشتق');
   await page.waitForTimeout(250);
   const results = await page.locator('main ul li a').count();
@@ -275,6 +286,80 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
   await nav.getByRole('link', { name: 'واژه‌نامه' }).click();
   await page.waitForURL('**/glossary');
   check('mobile: nav link navigates', page.url().includes('/glossary'));
+  await context.close();
+}
+
+/* ── Telegram popup after client-side navigation ─────────────────────────── */
+{
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'fa-IR' });
+  const page = await context.newPage();
+  await page.goto(`${base}/`, { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    window.__qaNavigationMarker = 'kept';
+  });
+  await page.locator('main a[href="/lessons/01-intro-to-calculus"]').first().click();
+  await page.waitForURL('**/lessons/01-intro-to-calculus');
+  check(
+    'popup: navigation stayed client-side',
+    await page.evaluate(() => window.__qaNavigationMarker === 'kept'),
+  );
+  await page.waitForFunction(
+    () => document.querySelector('[data-telegram-popup]')?.dataset.telegramReady === 'true',
+    null,
+    { timeout: 10000 },
+  );
+  const dismissed = await page.evaluate(() => {
+    const root = document.querySelector('[data-telegram-popup]');
+    root.hidden = false;
+    root.querySelector('[data-telegram-dismiss]').click();
+    return root.hidden === true;
+  });
+  check('popup: dismiss works after client-side navigation', dismissed);
+  await context.close();
+}
+
+/* ── Command palette focus return ────────────────────────────────────────── */
+{
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'fa-IR' });
+  const page = await context.newPage();
+  await page.goto(`${base}/search/`, { waitUntil: 'networkidle' });
+  const trigger = page.locator('[data-open-palette]').first();
+  await trigger.click();
+  await page.waitForSelector('#palette-input', { timeout: 10000 });
+  await page.keyboard.press('Control+k');
+  await page.waitForTimeout(300);
+  const restored = await page.evaluate(
+    () => document.activeElement?.hasAttribute('data-open-palette') === true,
+  );
+  check('palette: shortcut close restores the trigger', restored);
+  await context.close();
+}
+
+/* ── Bookmark persistence failure ────────────────────────────────────────── */
+{
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'fa-IR' });
+  await context.addInitScript(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'dr-study-progress:v1') throw new Error('quota');
+      return original.call(this, key, value);
+    };
+  });
+  const page = await context.newPage();
+  await page.goto(`${base}/lessons/01-intro-to-calculus`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(
+    () => document.documentElement.dataset.bookmarkHydrated === 'true',
+    null,
+    { timeout: 10000 },
+  );
+  const bookmark = page.getByRole('button', { name: /نشان‌شده‌ها/ }).first();
+  await bookmark.click();
+  await page.waitForTimeout(150);
+  check(
+    'bookmark: failure is reported in the page header',
+    (await page.locator('header').getByText('در این مرورگر ذخیره نمی‌شود').count()) === 1,
+  );
+  check('bookmark: in-memory state still flips', (await bookmark.getAttribute('aria-pressed')) === 'true');
   await context.close();
 }
 

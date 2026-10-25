@@ -89,11 +89,35 @@ import { telegramPopup } from '../../config/site';
 </div>
 
 <script define:vars={{ storageKey: telegramPopup.storageKey, cooldownDays: telegramPopup.cooldownDays, delayMs: telegramPopup.delayMs, scrollDepth: telegramPopup.scrollDepth }}>
-  (function () {
+  // BaseLayout mounts Astro's ClientRouter, which swaps the body without a
+  // document reload. The popup ships one element per page, so a one-shot IIFE
+  // would leave the swapped-in dialog inert and its timer/listener pointing at
+  // a detached node. Wiring therefore lives in initTelegramPopup(), armed once
+  // per document and re-run on every `astro:page-load` (same pattern as
+  // Header/TableOfContents/Formula).
+  function initTelegramPopup() {
     var root = document.querySelector('[data-telegram-popup]');
-    if (!root) return;
+    if (!root || root.dataset.telegramReady === 'true') return;
+    root.dataset.telegramReady = 'true';
+
     var panel = root.querySelector('[data-telegram-panel]');
     var previouslyFocused = null;
+    var timerId = null;
+    var onScroll = null;
+
+    function cleanup() {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+      if (onScroll) {
+        window.removeEventListener('scroll', onScroll);
+        onScroll = null;
+      }
+      // Function declarations are hoisted, so this is safe even though `onKey`
+      // is defined below. `close()` also removes it; removing twice is a no-op.
+      document.removeEventListener('keydown', onKey);
+    }
 
     function readStamp() {
       try {
@@ -178,24 +202,40 @@ import { telegramPopup } from '../../config/site';
       if (!shown && delayPassed && (depthPassed || depth() >= scrollDepth)) open();
     }
 
-    setTimeout(function () {
+    timerId = setTimeout(function () {
       delayPassed = true;
       maybeOpen();
     }, delayMs);
 
-    window.addEventListener('scroll', function () {
+    onScroll = function () {
       if (depth() >= scrollDepth) {
         depthPassed = true;
         maybeOpen();
       }
-    }, { passive: true });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     root.querySelectorAll('[data-telegram-dismiss]').forEach(function (btn) {
       btn.addEventListener('click', close);
     });
     var backdrop = root.querySelector('[data-telegram-backdrop]');
     if (backdrop) backdrop.addEventListener('click', close);
-  })();
+
+    window['__telegramPopupCleanup'] = cleanup;
+  }
+
+  if (!window['__telegramPopupArmed']) {
+    window['__telegramPopupArmed'] = true;
+    document.addEventListener('astro:before-swap', function () {
+      var pending = window['__telegramPopupCleanup'];
+      if (typeof pending === 'function') {
+        pending();
+        window['__telegramPopupCleanup'] = null;
+      }
+    });
+    document.addEventListener('astro:page-load', initTelegramPopup);
+  }
+  initTelegramPopup();
 </script>
 
 <style>

@@ -3,7 +3,7 @@ import { courseConfig } from '../config/course';
 import type { ContentType, Difficulty, SearchableItem } from './types';
 import { normalizePersian } from './utils';
 import { withBase } from './url';
-import { renderContent } from './render';
+import { mdxComponents } from './mdx';
 import { dependentsInList, prereqMatches, resolveInList } from './resolve';
 
 /**
@@ -251,11 +251,6 @@ export interface CrossLinks {
 
 export async function getCrossLinks(entry: CourseEntry): Promise<CrossLinks> {
   const data = entry.entry.data as Record<string, unknown>;
-  const referenced = [
-    ...((data.formulas as string[] | undefined) ?? []),
-    ...((data.concepts as string[] | undefined) ?? []),
-    ...(data.formula !== undefined ? [data.formula as string] : []),
-  ];
 
   const unresolved: string[] = [];
   const resolve = async (ids: string[], preferKind?: EntryKind) => {
@@ -272,11 +267,18 @@ export async function getCrossLinks(entry: CourseEntry): Promise<CrossLinks> {
     return out;
   };
 
-  const [prerequisites, dependents, linked] = await Promise.all([
+  const [formulaLinks, conceptLinks, formulaFieldLinks, prerequisites, dependents] = await Promise.all([
+    resolve((data.formulas as string[] | undefined) ?? [], 'formula'),
+    resolve((data.concepts as string[] | undefined) ?? [], 'concept'),
+    resolve(data.formula !== undefined ? [data.formula as string] : [], 'formula'),
     resolve(entry.prerequisites),
     getDependents(entry.qualifiedId),
-    resolve(referenced),
   ]);
+
+  const linked = [...formulaLinks, ...conceptLinks, ...formulaFieldLinks].filter(
+    (candidate, index, list) =>
+      list.findIndex((other) => other.qualifiedId === candidate.qualifiedId) === index,
+  );
 
   if (unresolved.length > 0) {
     throw new Error(
@@ -356,68 +358,4 @@ export function glossaryData(entry: CourseEntry): GlossaryData | undefined {
   return entry.kind === 'glossary' ? (entry.entry.data as GlossaryData) : undefined;
 }
 
-/**
- * Validate that every declared prerequisite and reference resolves.
- * Used by the build-time validation script.
- */
-export interface LinkProblem {
-  from: string;
-  kind: 'prerequisite' | 'formula' | 'concept';
-  target: string;
-  message: string;
-}
-
-export async function collectLinkProblems(entries: CourseEntry[]): Promise<LinkProblem[]> {
-  const problems: LinkProblem[] = [];
-
-  for (const entry of entries) {
-    for (const target of entry.prerequisites) {
-      if (!resolveSync(entries, target, entry.kind)) {
-        problems.push({
-          from: entry.qualifiedId,
-          kind: 'prerequisite',
-          target,
-          message: `پیش‌نیاز «${target}» در «${entry.title}» یافت نشد`,
-        });
-      }
-    }
-
-    const data = entry.entry.data as Record<string, unknown>;
-    const refs: Array<[LinkProblem['kind'], string[]]> = [
-      ['formula', (data.formulas as string[] | undefined) ?? (data.formula ? [data.formula as string] : [])],
-      ['concept', (data.concepts as string[] | undefined) ?? []],
-    ];
-
-    for (const [kind, list] of refs) {
-      for (const raw of list) {
-        const [target, fragment] = raw.split('#');
-        const resolved = resolveSync(entries, target, entry.kind);
-        if (!resolved) {
-          problems.push({
-            from: entry.qualifiedId,
-            kind,
-            target: raw,
-            message: `ارجاع ${kind} «${raw}» در «${entry.title}» یافت نشد`,
-          });
-        } else if (fragment) {
-          const body = await renderContent(resolved.entry);
-          if (body && !new RegExp(`id=["']${fragment}["']`).test(body.Content.toString())) {
-            problems.push({
-              from: entry.qualifiedId,
-              kind,
-              target: raw,
-              message: `شناسهٔ «${fragment}» در صفحهٔ «${target}» وجود ندارد`,
-            });
-          }
-        }
-      }
-    }
-  }
-
-  return problems;
-}
-
-/** Synchronous resolution helper mirroring `resolveEntry`, for validation. */
-function resolveSync(entries: CourseEntry[], reference: string, preferKind?: EntryKind): CourseEntry | undefined {
-  return resolveInList(entries, reference, preferKind);
-}
+export { mdxComponents };

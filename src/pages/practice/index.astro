@@ -1,12 +1,13 @@
 ---
 import ListingLayout from '../../layouts/ListingLayout.astro';
 import { getEntriesByKind } from '../../lib/content';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = await getEntriesByKind('question');
 ---
 
 <ListingLayout
   title="تمرین"
-  description="تمرین‌های حساب دیفرانسیل برای سنجش فهم حد و مشتق. پاسخ در مرورگر خودتان ذخیره می‌شود؛ هرچند بار بخواهید تلاش کنید."
+  description={pageDescription('practice')}
   entries={entries}
 />

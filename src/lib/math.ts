@@ -1,4 +1,5 @@
 import katex from 'katex';
+import { findStrippedTeXCommand } from './contract';
 
 /**
  * Build-time math rendering.
@@ -49,33 +50,11 @@ const RENDER_OPTIONS: katex.KatexOptions = {
 };
 
 /**
- * Structural TeX commands. These never appear in ordinary prose, so finding one
- * without a leading backslash means an escaping step ate the backslash.
+ * Structural TeX commands — the shared contract list. These never appear in
+ * ordinary prose, so finding one without a leading backslash means an
+ * escaping step ate the backslash.
  */
-const STRUCTURAL_COMMANDS = [
-  'frac',
-  'dfrac',
-  'tfrac',
-  'sqrt',
-  'cdot',
-  'times',
-  'neq',
-  'leq',
-  'geq',
-  'approx',
-  'infty',
-  'partial',
-  'rightarrow',
-  'Rightarrow',
-  'nabla',
-  'theta',
-  'alpha',
-  'beta',
-  'gamma',
-  'lambda',
-  'sigma',
-  'Omega',
-];
+export { STRUCTURAL_TEX_COMMANDS as STRUCTURAL_COMMANDS } from './contract';
 
 /** Remove `\text{...}` / `\operatorname{...}` groups so their words are not scanned. */
 function stripTextGroups(tex: string): string {
@@ -87,18 +66,15 @@ function stripTextGroups(tex: string): string {
  * escape processing, and name the correct authoring form.
  */
 export function assertTeXIntact(tex: string, where: string): void {
-  const scannable = stripTextGroups(tex);
-  for (const command of STRUCTURAL_COMMANDS) {
-    // A command that is not preceded by a backslash (and not part of a longer word).
-    if (new RegExp(`(^|[^\\\\a-zA-Z])${command}(?![a-zA-Z])`).test(scannable)) {
-      throw new Error(
-        `${where}: the LaTeX command "${command}" has no backslash. ` +
-          `MDX and the Astro compiler each strip one level of escaping in plain JSX ` +
-          `attributes, so "latex="${command}..." becomes "${command}...". ` +
-          `Use the MDX expression container instead: ` +
-          `latex={"\\\\${command}{...}"} — written in the .mdx file as latex={"\\\\\\\\${command}{...}"}.`,
-      );
-    }
+  const command = findStrippedTeXCommand(stripTextGroups(tex));
+  if (command) {
+    throw new Error(
+      `${where}: the LaTeX command "${command}" has no backslash. ` +
+        `MDX and the Astro compiler each strip one level of escaping in plain JSX ` +
+        `attributes, so "latex="${command}..." becomes "${command}...". ` +
+        `Use the MDX expression container instead: ` +
+        `latex={"\\\\${command}{...}"} — written in the .mdx file as latex={"\\\\\\\\${command}{...}"}.`,
+    );
   }
 }
 

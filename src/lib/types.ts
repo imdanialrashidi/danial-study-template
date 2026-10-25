@@ -66,11 +66,18 @@ export interface SectionConfig {
 
 export interface ThemeConfig {
   name: string;
-  /** Per-role overrides. Omitted roles fall back to the `themePreset` preset. */
+  /**
+   * Per-role overrides. Omitted roles fall back to the `themePreset` preset.
+   * Only the primary and accent families are themable; there is no `secondary`
+   * role (setting one has no effect).
+   */
   colors: {
     primary?: string;
+    /** Deep shade of `primary` (`--course-rgb-primary-deep`). */
+    primaryDeep?: string;
+    /** @deprecated Alias for `primaryDeep`; kept for back-compat and
+     *  removable in the next major. */
     primaryHover?: string;
-    secondary?: string;
     accent?: string;
   };
   typography?: 'traditional' | 'modern';
@@ -100,6 +107,17 @@ export interface CourseFeatures {
   related?: boolean;
   courseMap?: boolean;
 }
+
+/** Shared engine pages whose copy may be overridden per course. */
+export type PageCopyKey =
+  | 'lessons'
+  | 'concepts'
+  | 'formulas'
+  | 'examples'
+  | 'practice'
+  | 'glossary'
+  | 'map'
+  | 'about';
 
 /** Per-topic brand mark for a course site built from this template. */
 export interface CourseLogo {
@@ -133,6 +151,12 @@ export interface CourseConfig {
   themePreset?: ThemePresetName;
   /** Feature flags — capabilities enabled for this course. Omitted = enabled. */
   features?: CourseFeatures;
+  /**
+   * Optional per-page meta descriptions for the shared listing/reference
+   * routes. Omitted keys fall back to copy derived from `title`/`description`.
+   * Course-specific prose belongs here, never in a shared page component.
+   */
+  pageCopy?: Partial<Record<PageCopyKey, string>>;
 }
 
 // ─── Shared Content Metadata ─────────────────────────────────────────────────

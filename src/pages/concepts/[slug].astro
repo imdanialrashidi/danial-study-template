@@ -2,6 +2,7 @@
 import ContentLayout from '../../layouts/ContentLayout.astro';
 import { getCollection } from 'astro:content';
 import { getAllEntries, getSectionGroups, getCrossLinks, type CourseEntry } from '../../lib/content';
+import { findEntryIndex } from '../../lib/resolve';
 
 export async function getStaticPaths() {
   const concepts = await getCollection('concept', ({ data }) => data.draft !== true);
@@ -9,11 +10,14 @@ export async function getStaticPaths() {
   const sections = await getSectionGroups();
 
   return concepts.map((concept) => {
-    const index = all.findIndex((e) => e.id === concept.id);
+    const index = findEntryIndex(all, `concept/${concept.id}`);
+    if (index === -1) {
+      throw new Error(`concept/${concept.id} is missing from the content index`);
+    }
     return {
       params: { slug: concept.id },
       props: {
-        entry: all.find((e) => e.id === concept.id)!,
+        entry: all[index],
         sections,
         prev: index > 0 ? all[index - 1] : undefined,
         next: index < all.length - 1 ? all[index + 1] : undefined,

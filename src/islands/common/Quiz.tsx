@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { QuizQuestion } from '../../lib/types';
-import { gradeChoice, gradeNumeric, isNumericQuestion } from '../../lib/quiz';
+import { gradeChoice, gradeQuiz, isNumericQuestion } from '../../lib/quiz';
 import { toLatinDigits, toPersianDigits } from '../../lib/utils';
 import { ProgressBridge } from './ProgressBridge';
 import IslandIcon from './IslandIcon';
@@ -15,11 +15,6 @@ export interface QuizProps {
 }
 
 type AnswerState = Record<string, string[]>;
-
-function isCorrect(question: QuizQuestion, answer: string[]): boolean {
-  if (isNumericQuestion(question)) return gradeNumeric(question, answer[0] ?? '');
-  return gradeChoice(question, answer);
-}
 
 function isTrueFalse(question: QuizQuestion): boolean {
   return question.type === 'true-false';
@@ -60,7 +55,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
 
   const score = useMemo(() => {
     if (!checked) return 0;
-    return questions.filter((q) => isCorrect(q, answers[q.id] ?? [])).length;
+    return gradeQuiz(questions, answers);
   }, [answers, checked, questions]);
 
   const select = useCallback((questionId: string, optionId: string, single: boolean) => {
@@ -87,8 +82,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
   const submit = useCallback(() => {
     if (!allAnswered) return;
     setChecked(true);
-    const correct = questions.filter((q) => isCorrect(q, answers[q.id] ?? [])).length;
-    ProgressBridge.recordQuiz(id, correct, questions.length);
+    ProgressBridge.recordQuiz(id, gradeQuiz(questions, answers), questions.length);
   }, [allAnswered, answers, id, questions]);
 
   const retry = useCallback(() => {
@@ -120,7 +114,7 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
           const selected = answers[question.id] ?? [];
           const numeric = isNumericQuestion(question);
           const multi = !numeric && Array.isArray(question.correctAnswer);
-          const correct = isCorrect(question, selected);
+          const correct = gradeChoice(question, selected);
           return (
             <li key={question.id} className="px-5 py-5">
               <fieldset disabled={checked}>

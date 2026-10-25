@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ProgressBridge } from './ProgressBridge';
+import { ProgressBridge, subscribeProgress } from './ProgressBridge';
 import { toPersianDigits } from '../../lib/utils';
 import { useHydrated } from './useHydrated';
 import IslandIcon from './IslandIcon';
@@ -26,21 +26,7 @@ export default function CourseProgress({ entryIds }: CourseProgressProps) {
       setState({ ...ratio, persistent: ProgressBridge.persistent });
     };
     read();
-
-    // Re-read when another island on the page (e.g. a lesson toggle) writes.
-    // `storage` fires cross-tab: refresh the singleton from storage first,
-    // since same-tab writes already mutate it before dispatching.
-    const onStorage = () => {
-      ProgressBridge.refresh();
-      read();
-    };
-    const onProgress = () => read();
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('dr-progress', onProgress);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('dr-progress', onProgress);
-    };
+    return subscribeProgress(read);
   }, [entryIds]);
 
   const { done, total, percent, persistent } = state;

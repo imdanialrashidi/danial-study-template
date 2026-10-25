@@ -1,12 +1,13 @@
 ---
 import ListingLayout from '../../layouts/ListingLayout.astro';
 import { getEntriesByKind } from '../../lib/content';
+import { pageDescription } from '../../lib/courseCopy';
 
 const entries = await getEntriesByKind('example');
 ---
 
 <ListingLayout
   title="مثال‌های حل‌شده"
-  description="مثال‌های حل‌شدهٔ مشتق، گام‌به‌گام: اول خودتان تلاش کنید، بعد راه‌حل را مرحله‌به‌مرحله ببینید. بهترین راه تثبیت فرمول‌ها."
+  description={pageDescription('examples')}
   entries={entries}
 />
