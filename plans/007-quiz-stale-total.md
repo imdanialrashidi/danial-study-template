@@ -25,8 +25,10 @@
 
 `ProgressStore.recordQuiz` keeps the highest raw score forever. When course
 content adds (or removes) a question, the stored `total` goes stale: a
-previous 3/4 blocks a new 4/5 (`4 >= 3` → keep), so the learner's record shows
-the old denominator and the new best never persists. Comparing on equal
+previous 4/5 blocks a new 3/4 (`previous.score >= score` → `4 >= 3` → keep),
+so the learner's record keeps the old denominator and the new result never
+persists. (Corrected 2026-10-21: the original plan had the comparison
+backwards; the shrinking-quiz case is the failing one.) Comparing on equal
 footing only when `total` matches fixes it with a three-line change.
 
 ## Current state
