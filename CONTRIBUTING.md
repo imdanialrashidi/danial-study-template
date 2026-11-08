@@ -5,8 +5,9 @@ Contributions should improve representative task outcomes, reduce risk/cost, or 
 ## Setup
 
 1. Use Node.js 22.19.0 or newer.
-2. Install omp from https://omp.sh (nothing else to install for the workflow).
-3. Review project configuration under `.omp/` before trusting the repository.
+2. Install DeepSeek Harness (DSH), for example `npx @deepseek-ai/dsh web`.
+3. Review [`AGENTS.md`](AGENTS.md), [`.dsh/skills/`](.dsh/skills/), and
+   [`docs/WORKFLOW.md`](docs/WORKFLOW.md) before trusting the repository.
 4. Install dependencies with `npm ci` (or `bash scripts/ci-install.sh`, which
    also handles pnpm/Yarn lockfiles and Python projects).
 5. Run `bash scripts/verify.sh` before and after a workflow change.
@@ -25,7 +26,7 @@ Preserve unrelated work and keep one primary writer. Do not add dependencies wit
 
 ## Workflow-policy changes
 
-Workflow maintenance is allowed in the default autonomous mode. Keep it explicitly scoped, update all affected source-of-truth documents, doctor assertions, integrity records, eval cases, and `CHANGELOG.md`, and rely on the tested diff/CI evidence rather than a startup flag.
+Workflow maintenance is allowed in the default autonomous mode. Keep it explicitly scoped, update all affected source-of-truth documents — `AGENTS.md`, `docs/WORKFLOW.md`, `docs/QUALITY.md`, `docs/GIT_POLICY.md`, the matching `.dsh/skills` procedures, `scripts/verify.sh`, and `CHANGELOG.md` — and rely on the tested diff/CI evidence.
 
 Run:
 
@@ -38,9 +39,9 @@ Do not publish workflow artifacts containing repository content or credentials.
 ## Frontend contributions
 
 - Follow the accepted `docs/DESIGN.md`; update it before introducing a new visual direction.
-- Prove the critical journey and required states in the real browser.
+- Prove the critical journey and required states with `npm run preview` and the project QA scripts.
 - Include deterministic desktop/mobile/demanding-state evidence for a material visual change.
-- Report `frontend-design` hard gates and craft score; aesthetics never cancel a functional/accessibility/performance failure.
+- Report the `docs/DESIGN.md` hard gates and craft score; aesthetics never cancel a functional/accessibility/performance failure.
 - Record third-party font/media/icon source and license.
 
 ## Pull request evidence

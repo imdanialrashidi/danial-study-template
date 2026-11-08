@@ -27,14 +27,17 @@ and writing content, never rebuilding the UI.
 | [`docs/QUALITY.md`](docs/QUALITY.md) | Quality policy and gates |
 | [`docs/CONTENT-CONTRACT.md`](docs/CONTENT-CONTRACT.md) | Content schemas and build rules |
 | [`docs/AI-CONTENT-PROMPT.md`](docs/AI-CONTENT-PROMPT.md) | Canonical entry point for content work |
-| [`docs/HARNESS.md`](docs/HARNESS.md) | Agent operating playbook |
+| [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Agent execution model and verification lanes |
+| [`.dsh/skills/`](.dsh/skills/) | Project workflow skills |
 | [`docs/GIT_POLICY.md`](docs/GIT_POLICY.md) | Branch, commit, and PR policy |
 
-Agent entry point: [`AGENTS.md`](AGENTS.md) (map) with workflow detail under
-[`.omp/`](.omp/) and [`docs/HARNESS.md`](docs/HARNESS.md).
+Agent entry point: [`AGENTS.md`](AGENTS.md) (map) with workflow skills under
+[`.dsh/skills/`](.dsh/skills/) and detail in [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
 
-> Migrated from the Pi coding-agent workflow to [oh-my-pi (omp)](https://omp.sh);
-> see [`CHANGELOG.md`](CHANGELOG.md) for history.
+> Agent workflow: [DSH Workflow](https://github.com/imdanialrashidi/dsh-workflow),
+> adapted for this repository. The six skills live in `.dsh/skills/` so the
+> workflow travels with the checkout; install the upstream globally to reuse it
+> across other projects. See [`CHANGELOG.md`](CHANGELOG.md) for history.
 
 ## License
 

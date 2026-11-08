@@ -90,6 +90,18 @@ export default function Quiz({ id, title, description, questions, allowRetry = t
     setChecked(false);
   }, []);
 
+  // An empty quiz used to render a submit button that could never enable and
+  // a "0 از 0" counter: a dead control dressed as a finished one. Say what is
+  // actually true instead. (Hooks above run unconditionally.)
+  if (questions.length === 0) {
+    return (
+      <section className="my-8 rounded-lg border border-dashed border-line-control bg-surface px-5 py-6" aria-label={title}>
+        <p className="font-display text-base font-bold text-ink">{title}</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted">این تمرین هنوز پرسشی ندارد.</p>
+      </section>
+    );
+  }
+
   const percentage = questions.length ? Math.round((score / questions.length) * 100) : 0;
 
   return (

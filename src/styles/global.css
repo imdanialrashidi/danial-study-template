@@ -256,6 +256,15 @@
     counter-increment: persian;
   }
 
+  /* Directional icons follow the writing direction. The SVG paths are drawn
+     for LTR, so in RTL every "end" chevron points backwards unless mirrored.
+     `fill-box` keeps the flip centred on the glyph instead of the viewBox. */
+  [dir='rtl'] .icon-directional {
+    transform: scaleX(-1);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
   .sr-only-focusable:not(:focus):not(:focus-within) {
     position: absolute;
     inline-size: 1px;

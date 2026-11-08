@@ -12,7 +12,7 @@
 import Icon from '../ui/Icon.astro';
 import type { IconName } from '../ui/icon-names';
 import { courseConfig } from '../../config/course';
-import { creator } from '../../config/site';
+import { creator, creatorLinks } from '../../config/site';
 import { withBase, stripBase } from '../../lib/url';
 import { isEnabled } from '../../lib/features';
 
@@ -42,9 +42,20 @@ const isActive = (href: string) => {
 
 // Per-topic brand mark: change `logo` in src/config/course.ts and the header
 // follows. Falls back to the book mark for courses without a logo.
+
+/** Icon per creator-link kind, so the mobile sheet maps the config list. */
+const creatorIcon: Record<string, IconName> = {
+  github: 'github',
+  instagram: 'instagram',
+  telegram: 'telegram',
+  website: 'globe',
+};
 ---
 
-<header class="no-print sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur-sm">
+<!-- Solid canvas, not a frosted pane: the owner brief rejects glassmorphism,
+     and a full-width backdrop-filter re-composites on every scroll frame.
+     The hairline is what separates the chrome from the page. -->
+<header class="no-print sticky top-0 z-40 border-b border-line bg-canvas">
   <div class="mx-auto flex h-16 max-w-shell items-center gap-3 px-4 sm:gap-4 sm:px-6">
     <!-- Brand / creator identity: monogram + rule + wordmark as one lockup -->
     <!-- Brand: per-topic mark (src/config/course.ts → `logo`) + course title
@@ -96,10 +107,12 @@ const isActive = (href: string) => {
     </nav>
 
     <div class="ms-auto flex items-center gap-1 lg:ms-0">
-      <!-- Search: real link on desktop, opens the search page focus on mobile -->
+      <!-- Search: a real link. `focus=search` lands the cursor in the field
+           (the header script consumes and strips the param), so tapping the
+           icon on a phone is one step instead of two. -->
       {isEnabled('search') && (
       <a
-        href={withBase('/search')}
+        href={withBase('/search?focus=search')}
         aria-label="جست‌وجو در دوره"
         title="جست‌وجو (Ctrl/⌘ + K)"
         class="inline-flex h-10 w-10 items-center justify-center rounded-md text-ink-muted transition-colors duration-fast hover:bg-surface-sunken hover:text-ink"
@@ -162,23 +175,21 @@ const isActive = (href: string) => {
       </ul>
       <div class="mt-4 border-t border-line pt-4">
         <p class="mb-2 text-2xs font-bold tracking-wide text-ink-faint">ساختهٔ {creator.name}</p>
+        <!-- The mobile sheet maps the one identity list instead of repeating
+             four hand-written anchors, so a new site or handle added to
+             `site.ts` appears here automatically. -->
         <div class="flex flex-wrap gap-2">
-          <a href={creator.github} rel="me noopener" target="_blank" class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-ink-muted hover:border-primary hover:text-primary-deep">
-            <Icon name="github" size={17} />
-            گیت‌هاب
-          </a>
-          <a href={creator.instagram} rel="me noopener" target="_blank" class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-ink-muted hover:border-primary hover:text-primary-deep">
-            <Icon name="instagram" size={17} />
-            اینستاگرام
-          </a>
-          <a href={creator.telegram} rel="me noopener" target="_blank" class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-ink-muted hover:border-primary hover:text-primary-deep">
-            <Icon name="telegram" size={17} />
-            تلگرام
-          </a>
-          <a href={creator.website} rel="noopener" target="_blank" class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-ink-muted hover:border-primary hover:text-primary-deep">
-            <Icon name="globe" size={17} />
-            وب‌سایت
-          </a>
+          {creatorLinks.map((link) => (
+            <a
+              href={link.href}
+              rel="me noopener"
+              target="_blank"
+              class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-ink-muted hover:border-primary hover:text-primary-deep"
+            >
+              <Icon name={creatorIcon[link.kind] ?? 'globe'} size={17} />
+              {link.label}
+            </a>
+          ))}
         </div>
       </div>
     </nav>

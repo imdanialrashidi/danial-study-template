@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical verification gate for this repository.
-# Template self-checks first, then the cheapest project lane that applies.
+# Workflow self-checks first, then the cheapest project lane that applies.
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -15,29 +15,59 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git --no-pager diff --check || bad "git diff --check reported whitespace errors."
 fi
 
-# 2. Every skill needs name + description frontmatter (omp discovery requires description).
-for skill in .omp/skills/*/SKILL.md; do
+# 2. Every DSH project skill needs valid frontmatter and a matching name.
+for skill in .dsh/skills/*/SKILL.md; do
   [[ -f "$skill" ]] || continue
-  front="$(sed -n '1,/^---$/p' "$skill" | sed '1d;$d')"
-  grep -Eq '^name: .+' <<<"$front" || bad "$skill is missing frontmatter name."
-  grep -Eq '^description: .+' <<<"$front" || bad "$skill is missing frontmatter description."
+  dir="$(basename "$(dirname "$skill")")"
+  first="$(sed -n '1p' "$skill")"
+  if [[ "$first" != "---" ]]; then
+    bad "$skill does not start with YAML frontmatter."
+    continue
+  fi
+  close="$(awk 'NR > 1 && $0 == "---" { print NR; exit }' "$skill")"
+  if [[ -z "$close" ]]; then
+    bad "$skill has no closing frontmatter delimiter."
+    continue
+  fi
+  front="$(sed -n "2,$((close - 1))p" "$skill")"
+  name="$(printf '%s\n' "$front" | sed -n 's/^name:[[:space:]]*//p' | head -n 1)"
+  name="${name%\"}"
+  name="${name#\"}"
+  description="$(printf '%s\n' "$front" | sed -n 's/^description:[[:space:]]*//p' | head -n 1)"
+  [[ "$name" == "$dir" ]] || bad "$skill frontmatter name '$name' does not match directory '$dir'."
+  [[ "$name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || bad "$skill name is not kebab-case."
+  [[ -n "$description" ]] || bad "$skill is missing frontmatter description."
+  unknown="$(printf '%s\n' "$front" | sed -n 's/^\([A-Za-z][A-Za-z0-9_-]*\):.*/\1/p' | grep -v -x -E 'name|description|whenToUse|metadata|disable-model-invocation|user-invocable' || true)"
+  [[ -z "$unknown" ]] || bad "$skill has unsupported frontmatter keys: $unknown"
+  tail -n "+$((close + 1))" "$skill" | grep -q '[^[:space:]]' || bad "$skill has an empty instruction body."
 done
 
-# 3. Every file command needs a description frontmatter.
-for cmd in .omp/commands/*.md; do
-  [[ -f "$cmd" ]] || continue
-  head -n 5 "$cmd" | grep -Eq '^description: .+' || bad "$cmd is missing frontmatter description."
+for skill in quick-fix spec build verify review test-design; do
+  [[ -f ".dsh/skills/$skill/SKILL.md" ]] || bad "missing DSH project skill: $skill"
 done
 
-# 4. PR helper must parse.
-if command -v node >/dev/null 2>&1; then
-  node --check scripts/omp-pr.mjs || bad "scripts/omp-pr.mjs does not parse."
-else
-  note "SKIP: node not installed; cannot syntax-check scripts/omp-pr.mjs."
+# A skill file must be trackable; an ignored file would disappear on a fresh checkout.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  for skill in .dsh/skills/*/SKILL.md; do
+    [[ -f "$skill" ]] || continue
+    if git check-ignore -q "$skill"; then
+      bad "$skill is ignored by .gitignore and would not be committed."
+    fi
+  done
 fi
 
+# 3. Retired omp artifacts must not return.
+if [[ -e .omp || -e scripts/omp-pr.mjs ]]; then
+  bad "retired omp workflow artifacts are present; use .dsh/skills and docs/GIT_POLICY.md."
+fi
+
+# 4. The workflow entry point and its owned documents must exist.
+for required in AGENTS.md docs/WORKFLOW.md docs/QUALITY.md docs/GIT_POLICY.md; do
+  [[ -f "$required" ]] || bad "missing workflow file: $required"
+done
+
 [[ "$fail" -eq 0 ]] || exit 1
-note "Template self-checks passed."
+note "Workflow self-checks passed."
 
 # 5. Project override wins when the repo defines its own gate.
 if [[ -x scripts/project-verify.sh ]]; then
@@ -97,7 +127,7 @@ fi
 
 if [[ "$ran" -eq 0 ]]; then
   if grep -Fxq -- '- Primary users:' docs/PRODUCT.md; then
-    printf '\nTemplate-only verification passed. Fill docs/PRODUCT.md on the first /spec.\n'
+    printf '\nTemplate-only verification passed. Fill docs/PRODUCT.md during the first spec.\n'
     exit 0
   fi
   cat >&2 <<'MSG'

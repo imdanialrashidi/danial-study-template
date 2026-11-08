@@ -57,7 +57,7 @@ Use this file for the product-level path from idea to production. Put task-level
 ### 6. Release candidate
 
 - Scope: frozen release boundary; compatibility, data, security, visual, performance, operational hardening.
-- Exit evidence: `/ship` is `READY`; no unresolved BLOCKER/MAJOR; recovery/rollback and runbook proven.
+- Exit evidence: `verify` and `review` report ready; no unresolved BLOCKER/MAJOR; recovery/rollback and runbook proven.
 - Sign-off owners:
 
 ### 7. Staged production
@@ -68,8 +68,8 @@ Use this file for the product-level path from idea to production. Put task-level
 
 ### 8. Learning loop
 
-- Scope: product outcomes, failures, support signals, agent/harness evals.
-- Exit evidence: validated learning changes `docs/PRODUCT.md`, roadmap priorities, regression tests, or workflow eval cases.
+- Scope: product outcomes, failures, support signals, agent/workflow checks.
+- Exit evidence: validated learning changes `docs/PRODUCT.md`, roadmap priorities, regression tests, or workflow checks.
 - Review cadence:
 
 ## Critical path and risks

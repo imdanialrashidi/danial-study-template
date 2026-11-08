@@ -1,7 +1,7 @@
 // ESLint flat config for the educational site template.
 //
-// Scope: product source only. The Omp workflow files and their `node --test`
-// suites are a different toolchain and are excluded deliberately.
+// Scope: product source only. The DSH workflow skills are Markdown, and the
+// shell scripts are a different toolchain; both are excluded deliberately.
 
 import js from '@eslint/js';
 import globals from 'globals';
@@ -24,8 +24,6 @@ export default [
       'src/content/**',
       // Unit/output tests under `tests/**` ARE linted: they are plain
       // TypeScript with real regression value, not content prose.
-      '.omp/**',
-      'scripts/omp-pr.mjs',
       'scripts/verify.sh',
       'scripts/ci-install.sh',
     ],

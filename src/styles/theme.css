@@ -19,8 +19,10 @@
   --rgb-surface-sunken: 241 237 228; /* #F1EDE4 */
 
   --rgb-ink: 34 30 26; /* #221E1A */
-  --rgb-ink-muted: 107 98 87; /* #6B6257 */
-  --rgb-ink-faint: 139 129 114; /* #8B8172 — meta only, never body copy */
+  --rgb-ink-muted: 92 84 73; /* #5C5449 */
+  /* Meta only, never body copy — but meta text is still text, so it keeps
+     ≥4.5:1 on every surface. Ratios are pinned in tests/unit/contrast.test.ts. */
+  --rgb-ink-faint: 111 102 89; /* #6F6659 */
 
   --rgb-primary: 14 124 123; /* #0E7C7B */
   --rgb-primary-deep: 10 92 91; /* #0A5C5B */
@@ -96,7 +98,7 @@
 
   --rgb-ink: 242 237 227; /* #F2EDE3 */
   --rgb-ink-muted: 167 157 142; /* #A79D8E */
-  --rgb-ink-faint: 138 128 112; /* #8A8070 */
+  --rgb-ink-faint: 154 144 127; /* #9A907F */
 
   --rgb-primary: 94 234 212; /* #5EEAD4 */
   --rgb-primary-deep: 153 246 228; /* #99F6E4 */

@@ -19,6 +19,12 @@ import IslandIcon from './IslandIcon';
  * States covered: idle, loading (index arriving), results, and empty.
  */
 
+export interface SearchSuggestion {
+  title: string;
+  href: string;
+  type: SearchableItem['type'];
+}
+
 export interface SearchIslandProps {
   /**
    * Server-render fallback only. The client reads the single shared
@@ -28,11 +34,29 @@ export interface SearchIslandProps {
    * and hydration fills results from the shared payload on mount.
    */
   items?: SearchableItem[];
+  /**
+   * Idle-state entry points in course order, resolved at build time.
+   *
+   * A search page with an empty box used to show a decorative "you can search
+   * for…" card, which gave a lost learner nothing to tap. These are real
+   * links, so the idle state has a next action and stays in the static HTML.
+   */
+  suggestions?: SearchSuggestion[];
 }
 
 const SEARCH_LIMIT = 40;
 
-export default function SearchIsland({ items: ssrItems = [] }: SearchIslandProps) {
+/** Icon per content type, so idle suggestions read like the rest of the site. */
+const SUGGESTION_ICON = {
+  lesson: 'book',
+  concept: 'layers',
+  formula: 'formula',
+  example: 'beaker',
+  question: 'question',
+  glossary: 'glossary',
+} as const;
+
+export default function SearchIsland({ items: ssrItems = [], suggestions = [] }: SearchIslandProps) {
   // Client source of truth: the shared payload. The prop only feeds SSR.
   const sharedItems = useMemo(() => readSiteSearchIndex(ssrItems), [ssrItems]);
   const items = typeof document === 'undefined' ? ssrItems : sharedItems;
@@ -145,16 +169,33 @@ export default function SearchIsland({ items: ssrItems = [] }: SearchIslandProps
         </div>
       )}
 
-      {/* Idle state: what is searchable. */}
-      {!hasQuery && (
-        <div className="mt-4 rounded-lg border border-line bg-surface px-5 py-5">
-          <p className="text-xs font-bold tracking-wide text-ink-faint">می‌توانید جست‌وجو کنید</p>
-          <ul className="mt-2 grid gap-1.5 text-sm text-ink-muted">
-            <li>نام یک مفهوم، مثل «مشتق»</li>
-            <li>نام یک فرمول، مثل «زنجیره»</li>
-            <li>عنوان یک درس یا مثال حل‌شده</li>
+      {/* Idle state: real entry points, not a decorative example card. The
+          page header already says what can be searched; repeating it here
+          would be a second explanation of the same thing. */}
+      {!hasQuery && suggestions.length > 0 && (
+        <section className="mt-6 border-t border-line pt-5" aria-labelledby="search-idle-heading">
+          <h2 id="search-idle-heading" className="text-2xs font-bold tracking-wide text-ink-faint">
+            شروع از ابتدای دوره
+          </h2>
+          <ul className="mt-3 grid gap-1 sm:grid-cols-2">
+            {suggestions.map((suggestion) => (
+              <li key={suggestion.href}>
+                <a
+                  href={suggestion.href}
+                  className="group flex min-h-[44px] items-center gap-2.5 rounded-md px-2 py-2 text-sm text-ink transition-colors duration-fast hover:bg-primary-wash hover:text-primary-deep"
+                >
+                  <IslandIcon
+                    name={SUGGESTION_ICON[suggestion.type]}
+                    size={16}
+                    className="shrink-0 text-ink-faint group-hover:text-primary"
+                  />
+                  <span className="min-w-0 flex-1 truncate">{suggestion.title}</span>
+                  <span className="shrink-0 text-2xs text-ink-faint">{TYPE_LABELS[suggestion.type]}</span>
+                </a>
+              </li>
+            ))}
           </ul>
-        </div>
+        </section>
       )}
     </div>
   );

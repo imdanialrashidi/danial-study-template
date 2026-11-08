@@ -19,6 +19,12 @@ interface Props {
 }
 
 const { name, size = 20, class: className = '', strokeWidth = 1.5 } = Astro.props;
+
+// Chevrons encode a direction, and this site is RTL: `chevron-end` must point
+// left or every "next" affordance points backwards. Mirrored in CSS
+// (`.icon-directional`) rather than by swapping path data, so the same name
+// stays correct in either direction.
+const directional = name === 'chevron-start' || name === 'chevron-end';
 ---
 
 <svg
@@ -31,7 +37,7 @@ const { name, size = 20, class: className = '', strokeWidth = 1.5 } = Astro.prop
   stroke-width={strokeWidth}
   stroke-linecap="round"
   stroke-linejoin="round"
-  class={className}
+  class:list={[className, directional && 'icon-directional']}
   aria-hidden="true"
   focusable="false"
   set:html={ICON_PATHS[name]}

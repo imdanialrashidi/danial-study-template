@@ -87,6 +87,9 @@ describeIfBuilt('built output', () => {
   it('references creator identity consistently', () => {
     for (const file of htmlFiles) {
       const html = readFileSync(file, 'utf8');
+      // The main Persian home and the English site are both real surfaces, so
+      // every page must carry both links, not just one of them.
+      expect(html, file).toContain('https://danialrashidi.ir');
       expect(html, file).toContain('imdanialrashidi.github.io');
       expect(html, file).toContain('t.me/imdanialrashidi');
     }

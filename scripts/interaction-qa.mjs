@@ -185,7 +185,24 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
 
   await input.fill('');
   await page.waitForTimeout(200);
-  check('search: idle state lists what is searchable', (await page.getByText('می‌توانید جست‌وجو کنید').count()) === 1);
+  // Idle state: real entry points, not a decorative "you can search for…" card.
+  const starters = page.locator('main section[aria-labelledby="search-idle-heading"] ul li a');
+  const starterCount = await starters.count();
+  check('search: idle state offers real starter links', starterCount === 4, `${starterCount} links`);
+  const firstStarterHref = await starters.first().getAttribute('href');
+  check(
+    'search: starter links point into the course',
+    Boolean(firstStarterHref && firstStarterHref.includes('/lessons/')),
+    firstStarterHref ?? 'no href',
+  );
+
+  // The header search icon must land ready to type: one tap, not tap-then-tap.
+  await page.goto(`${base}/`, { waitUntil: 'networkidle' });
+  await page.locator('header a[aria-label="جست‌وجو در دوره"]').click();
+  await page.waitForURL('**/search**');
+  await page.waitForFunction(() => document.activeElement?.id === 'search-input', null, { timeout: 5000 });
+  check('search: header icon lands with the field focused', true);
+  check('search: focus param is not left in the URL', !page.url().includes('focus='), page.url());
   await context.close();
 }
 
@@ -230,6 +247,19 @@ const browser = await chromium.launch({ headless: true, executablePath: resolveC
   await page.waitForTimeout(300);
   const readout = await page.getByText('از دوره کامل شده').count();
   check('progress: homepage readout reflects stored progress', readout === 1);
+
+  // …and it must be actionable: the percentage names the next unread entry and
+  // the button links straight to it, so a returning learner does not rebuild
+  // their place from the contents index.
+  const resume = page.getByRole('link', { name: 'ادامهٔ یادگیری' });
+  const resumeHref = await resume.getAttribute('href');
+  check(
+    'progress: homepage resume links to the next unread entry',
+    Boolean(resumeHref && resumeHref.endsWith('/concepts/limit')),
+    resumeHref ?? 'no resume link',
+  );
+  const nextLabel = await page.getByText('بعدی:').count();
+  check('progress: homepage names the next entry', nextLabel >= 1);
 
   // Unmarking must remove it.
   await page.goto(`${base}/lessons/01-intro-to-calculus`, { waitUntil: 'networkidle' });

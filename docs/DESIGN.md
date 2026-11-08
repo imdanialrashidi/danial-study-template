@@ -30,7 +30,9 @@ everything else is **[proposed]** and may be revised without owner sign-off.
   state what the course is, what the learner gets, and one dominant primary action (secondary
   actions visually quieter). Header brand must be fixed through typography/spacing/alignment,
   not a larger logo. Creator socials are GitHub `@imdanialrashidi` and Instagram
-  `@imdanialrashidi`, presented as creator identity (not decorative badges); Telegram identity
+  `@imdanialrashidi`, presented as creator identity (not decorative badges); the personal sites are
+  `danialrashidi.ir` (Persian home) and `imdanialrashidi.github.io` (English), both real surfaces
+  rather than mirrors. Telegram identity
   invites learners to discover new subjects, study websites, and updates via a tasteful,
   non-intrusive, dismissible popup. Course numbers use only real metadata and must read less
   dashboard-like. A lightweight responsive roadmap must answer «از کجا شروع کنم و بعدش کجا برم؟»
@@ -85,10 +87,16 @@ No reference images were supplied, so nothing is recorded as owner-approved visu
 - **What must feel familiar:** the rhythm of a good textbook spread: term → definition → formula →
   worked example → check yourself.
 - **What must never look generic:** no icon-soup feature grid, no gradient hero, no stat-card trio.
+- **Dials:** `ENERGY 1 / RHYTHM 2 / MOTION 1` — calm surface, section composition that varies once per
+  major block (hero → catalogue → resume → roadmap → contents → creator), and no scroll-driven motion;
+  only state feedback (accordion, quiz verdict, search results) animates. A change that raises a dial
+  is a design decision, not a styling tweak.
 
 ## Semantic tokens
 
-Code source: `src/styles/theme.css`. Contrast measured with the WCAG 2.2 relative-luminance formula.
+Code source: `src/styles/theme.css`. Contrast measured with the WCAG 2.2 relative-luminance formula
+and pinned by `tests/unit/contrast.test.ts`, so a palette edit that drops a text role below AA fails
+`npm run test` instead of shipping.
 
 ### Color
 
@@ -98,7 +106,8 @@ Code source: `src/styles/theme.css`. Contrast measured with the WCAG 2.2 relativ
 | surface | light | `#FFFFFF` | — | — |
 | surface-sunken | light | `#F1EDE4` | — | — |
 | text | light | `#221E1A` | on canvas `#FAF7F0` | **15.47:1** PASS |
-| muted text | light | `#6B6257` | on canvas / surface / sunken | **5.59 / 5.98 / 5.12** PASS |
+| muted text | light | `#5C5449` | on canvas / surface / sunken | **6.96 / 7.45 / 6.38** PASS |
+| faint meta text | light | `#6F6659` | on canvas / surface / sunken | **5.28 / 5.64 / 4.83** PASS |
 | action | light | `#0E7C7B` | `#FFFFFF` on it | **5.01:1** PASS |
 | action-deep (hover) | light | `#0A5C5B` | `#FFFFFF` on it | **7.79:1** PASS |
 | accent (formula, current marker) | light | `#9A5B00` | on canvas `#FAF7F0` | **5.07:1** PASS |
@@ -110,7 +119,8 @@ Code source: `src/styles/theme.css`. Contrast measured with the WCAG 2.2 relativ
 | warning | light | `#8A5A00` | on canvas | **5.54:1** PASS |
 | canvas / surface / sunken | dark | `#14120F` / `#1D1A16` / `#242019` | — | — |
 | text | dark | `#F2EDE3` | on canvas / surface | **16.02 / 14.86** PASS |
-| muted text | dark | `#A79D8E` | on canvas / surface | **6.99 / 6.48** PASS |
+| muted text | dark | `#A79D8E` | on canvas / surface / sunken | **6.99 / 6.48 / 6.06** PASS |
+| faint meta text | dark | `#9A907F` | on canvas / surface / sunken | **5.94 / 5.50 / 5.15** PASS |
 | action | dark | `#5EEAD4` | `#08201F` on it | **11.48:1** PASS |
 | accent | dark | `#F0B429` | on canvas | **10.03:1** PASS |
 | border-control | dark | `#7A705E` | on canvas / surface | **3.83 / 3.55** PASS |
@@ -189,12 +199,15 @@ Latin/math contexts.
 | `Prerequisite` | — | default, missing-reference | new |
 | `InteractiveFigure` | — | loading, ready, missing | new |
 | Buttons / search field | primary, ghost, quiet | default, hover, focus, active, disabled | new |
+| `CourseProgress` | first visit, in progress, complete | resume target named, progressbar, storage unavailable | changed (2026-11-01) |
+| `PageHeader` | listing, glossary, saved | optional catalogue count | new |
 
 Required journey states: **loading** (search index load + figure), **empty** (search with no matches),
 **error/retry** (search failure, quiz submit without selection), **success** (quiz scored, quiz complete),
 **disabled** (reveal-before-attempt, submit with no selection), **focus** (visible ring on every control),
 **permission/offline** (progress stored locally; a private-mode failure degrades to non-persistent and
-says so rather than crashing).
+says so rather than crashing), **returning** (the homepage names the next unread entry and links to it,
+so a learner resumes in one tap instead of rebuilding their place from the index).
 
 ## Motion and feedback
 
@@ -262,3 +275,7 @@ says so rather than crashing).
 | 2026-10-06 | Template slice: no new visual system **[owner direction preserved]**; new surfaces reuse existing tokens | Brief requires the illuminated-worksheet identity to stay fixed; palette/thesis/type/motion unchanged | If a real course needs a motif beyond the accent override |
 | 2026-10-06 | Command palette as a quiet floating dialog; TOC as dot-leader-consistent rail + mobile disclosure; formula copy as a ghost button **[proposed]** | Must not introduce glassmorphism, badges, or cards that the brief rejects; appendix surfaces (map, palette) inherit paper/surface/hairline roles | If palette usage shows the dialog needs grouping or sections |
 | 2026-10-08 | Per-topic logo via `logo` in `src/config/course.ts` (header mark + generated `/favicon.svg`); announcements channel via `TELEGRAM_CHANNEL_URL` in `src/config/site.ts` (popup + homepage + about) **[owner]** | Reusing the template for another subject must change the logo, and new projects/study websites are announced in `t.me/danialrashidi_projects` | If a course needs fully custom artwork beyond monogram/icon |
+| 2026-11-01 | Header is solid canvas, no `backdrop-filter`, no translucency | The owner brief explicitly rejects glassmorphism; a full-width blur also re-composites on every scroll frame, and the hairline already separates chrome from page | Never, unless the owner asks for a translucent chrome |
+| 2026-11-01 | Directional chevrons mirror under `[dir='rtl']` | Inspected breadcrumbs and prev/next: `chevron-end` pointed right, i.e. backwards in an RTL reading flow. One CSS rule (`[dir='rtl'] .icon-directional`) fixes every call site without swapping path data | If a component needs a direction-neutral chevron |
+| 2026-11-01 | `ink-faint` and `ink-muted` darkened so every meta text pair clears 4.5:1 | Measured: the old `#8B8172` was 3.28:1 on `surface-sunken` and the dark `#8A8070` 4.17:1; meta text is still text. Ratios recorded above and pinned by `tests/unit/contrast.test.ts` | If a surface token changes |
+| 2026-11-01 | Homepage progress block becomes a resume panel: names the next unread entry and links to it | A percentage alone leaves a returning learner to rebuild their place from the contents index; the store already records completion, so this is presentation only | If cross-device progress is ever added |

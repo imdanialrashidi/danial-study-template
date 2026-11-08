@@ -1,6 +1,6 @@
 # Quality Contract
 
-This file defines the evaluator-facing quality bar for meaningful changes. Keep it project-specific after `/bootstrap`; do not turn it into a generic checklist dump.
+This file defines the evaluator-facing quality bar for meaningful changes in this repository. Keep it project-specific; do not turn it into a generic checklist dump.
 
 ## Release rule
 
@@ -72,13 +72,17 @@ For each evidence-backed finding give severity, `file:line` or symbol, a concret
 - **MINOR:** bounded defect or maintenance risk.
 - **NIT:** optional clarity/style improvement; never a release blocker.
 
-Return the acceptance evidence and one verdict: `PASS`, `PASS WITH FIXES`, or `BLOCK`. `PASS` requires proven required criteria and no unresolved BLOCKER/MAJOR. Use `/review` for the complete review procedure.
+Return the acceptance evidence and one verdict: `PASS`, `PASS WITH FIXES`, or `BLOCK`. `PASS` requires proven required criteria and no unresolved BLOCKER/MAJOR. Load the `review` skill for the complete review procedure.
+
+### Review independence
+
+A fresh-context DSH `subagent` is the preferred independent reviewer. Do not use `subagent_fork` for independence because it inherits the author's conversation. If no fresh reviewer is available, perform a disciplined self-review and report independent review as `UNEXECUTED`.
 
 ## User-facing quality
 
 For rendered interfaces:
 
-- exercise the critical journey in the real browser when browser behavior matters;
+- exercise the critical journey through `npm run preview` and the browser QA scripts when browser behavior matters;
 - preserve keyboard access, visible focus, semantic controls, labels, contrast, touch targets, and reduced-motion behavior;
 - check realistic data, long text, localization/RTL when relevant, and at least one narrow viewport for mobile-facing surfaces;
 - follow the accepted `docs/DESIGN.md`; use existing design tokens/components when they remain sound and change them deliberately when the accepted direction requires it;
@@ -95,7 +99,7 @@ Default accessibility baseline when the product has not chosen a stricter target
 
 ### Visual excellence
 
-For a new interface, redesign, launch surface, or explicitly high-aesthetic task, load `frontend-design` and evaluate the rendered result using its visual-quality rubric.
+For a new interface, redesign, launch surface, or explicitly high-aesthetic task, load the matching visual-design skill when the session provides one, and evaluate the rendered result using the rubric below and the hard gates in `docs/DESIGN.md`.
 
 Require:
 
@@ -104,10 +108,10 @@ Require:
 - semantic tokens and coherent components without turning every section into the same card;
 - mobile recomposition rather than simple shrinkage;
 - real content and deliberately designed loading, empty, error, success, focus, selected, disabled, and permission states as relevant;
-- one product/interaction browser pass and one independent studio/aesthetic pass;
+- one product/interaction QA pass through `scripts/interaction-qa.mjs` and `scripts/visual-qa.mjs`, and one independent aesthetic review when a fresh reviewer is available;
 - named desktop, mobile, and demanding-state evidence when the application can run.
 
-Hard-gate failures cannot be offset by aesthetic scoring. The ordinary production craft threshold is 2.75/4 with no dimension below 2; an explicitly flagship surface requires 3.25/4 with every dimension at least 3. Any criterion that depends on rendered evidence is `UNPROVEN` when only code was inspected.
+Hard-gate failures cannot be offset by aesthetic scoring. The ordinary production craft threshold is 2.75/4 with no dimension below 2; an explicitly flagship surface requires 3.25/4 with every dimension at least 3. Any criterion that depends on rendered evidence is `UNPROVEN` when only code was inspected, and `UNEXECUTED` when the browser check was planned but did not run.
 
 ## Reliability and performance
 
@@ -135,7 +139,7 @@ For production web surfaces without accepted product-specific field budgets, use
 Prefer stronger evidence when practical:
 
 1. deterministic automated test of the accepted behavior;
-2. real browser/API/database exercise of the relevant journey;
+2. real browser/API/database exercise of the relevant journey (in this repository, the preview plus `visual-qa.mjs`/`interaction-qa.mjs`);
 3. type/lint/structural/static analysis for invariant classes;
 4. reproducible measurement for performance/reliability claims;
 5. focused independent-evaluator inspection for aspects that cannot be automated economically.
@@ -151,11 +155,12 @@ For each acceptance criterion return one of:
 - **PASS** — implementation and evidence satisfy the criterion;
 - **FAIL** — evidence demonstrates incorrect/incomplete behavior;
 - **UNPROVEN** — implementation may exist but adequate evidence is missing;
-- **BLOCKED** — a genuine prerequisite prevents verification.
+- **BLOCKED** — a genuine prerequisite prevents verification;
+- **UNEXECUTED** — a required check was planned but did not run, was skipped, or was cancelled.
 
 Then inspect cross-cutting regression risk only where the diff makes it relevant.
 
-The overall task cannot be called complete while a required criterion is `FAIL` or `UNPROVEN`, or while a required independent review has an unresolved BLOCKER/MAJOR finding.
+The overall task cannot be called complete while a required criterion is `FAIL`, `UNPROVEN`, or `UNEXECUTED`, or while a required independent review has an unresolved BLOCKER/MAJOR finding.
 
 ## Project-specific quality invariants
 
@@ -197,8 +202,8 @@ breaks one fails CI rather than relying on review.
 8. Every page declares `lang="fa"` and `dir="rtl"`.
 9. Exactly one `<h1>` per page.
 10. No unrendered TeX command appears in visible page text.
-11. Creator identity (`imdanialrashidi.github.io`, `t.me/imdanialrashidi`) is
-    present on every page.
+11. Creator identity (`danialrashidi.ir`, `imdanialrashidi.github.io`,
+    `t.me/imdanialrashidi`) is present on every page.
 12. No institutional branding: no institutional email domains, no staff/student
     identifier labels, no named universities.
 13. No analytics, no third-party runtime calls, no server endpoints.
@@ -208,7 +213,7 @@ breaks one fails CI rather than relying on review.
 14. Semantic colour tokens live in `src/styles/theme.css` and are the only
     source; components reference roles, never raw hex. Every text pair meets
     4.5:1 and every interactive control border meets 3:1, measured and recorded
-    in `docs/DESIGN.md`.
+    in `docs/DESIGN.md`, and enforced by `tests/unit/contrast.test.ts`.
 15. A course themes itself only through `theme.colors` in `src/config/course.ts`.
     Forking `theme.css` for one course is a defect.
 16. Meaning is never carried by colour alone; focus is visible on every control;

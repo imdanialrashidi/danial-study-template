@@ -13,7 +13,7 @@
 docs/private/**
 !docs/private/.gitkeep
 
-# Omp local state is user-global or stored under .artifacts/; project config in .omp/ is committed.
+# DSH project skills in .dsh/ are committed; user-global state lives in $DSH_HOME.
 
 # Dependencies and environments
 node_modules/
@@ -24,7 +24,7 @@ vendor/
 # Build, test, browser, and framework output
 dist/
 .astro/
-build/
+/build/
 coverage/
 target/
 .next/

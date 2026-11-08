@@ -23,7 +23,11 @@ const all = await getAllEntries();
 
 const trackable = all.filter((e) => e.kind !== 'glossary');
 const glossaryCount = all.length - trackable.length;
-const entryIds = trackable.map((e) => e.qualifiedId);
+const resumeEntries = trackable.map((e) => ({
+  id: e.qualifiedId,
+  title: e.title,
+  href: withBase(e.path),
+}));
 const totalMinutes = trackable.reduce((sum, e) => sum + (e.estimatedMinutes ?? 0), 0);
 
 const firstEntry = sections[0]?.entries[0];
@@ -218,7 +222,7 @@ const courseJsonLd = {
   <!-- ── Course progress ─────────────────────────────────────────────────── -->
   {isEnabled('progress') && (
   <section class="no-print border-b border-line py-6" aria-label="پیشرفت شما در دوره">
-    <CourseProgress client:load entryIds={entryIds} />
+    <CourseProgress client:load entries={resumeEntries} />
   </section>
   )}
 

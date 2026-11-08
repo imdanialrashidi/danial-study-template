@@ -93,6 +93,19 @@ describe('gradeNumeric', () => {
     expect(gradeNumeric(close, '43')).toBe(false);
   });
 
+  it('accepts the Persian decimal separator ٫', () => {
+    const decimal: QuizQuestion = { ...numeric, numericAnswer: 3.5 };
+    expect(gradeNumeric(decimal, '۳٫۵')).toBe(true);
+    expect(gradeNumeric(decimal, '3٫5')).toBe(true);
+    expect(gradeNumeric(decimal, '35')).toBe(false);
+  });
+
+  it('ignores thousands separators and bidi marks', () => {
+    const thousand: QuizQuestion = { ...numeric, numericAnswer: 1000 };
+    expect(gradeNumeric(thousand, '۱٬۰۰۰')).toBe(true);
+    expect(gradeNumeric(thousand, '\u200f1000\u200f')).toBe(true);
+  });
+
   it('rejects empty and non-numeric input', () => {
     expect(gradeNumeric(numeric, '')).toBe(false);
     expect(gradeNumeric(numeric, 'زیاد')).toBe(false);

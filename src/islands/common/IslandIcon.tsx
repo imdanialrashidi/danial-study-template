@@ -18,6 +18,9 @@ export interface IslandIconProps {
 }
 
 export default function IslandIcon({ name, size = 18, className, strokeWidth = 1.5, fill = 'none' }: IslandIconProps) {
+  // Mirrors the Astro twin: directional chevrons flip in RTL via CSS.
+  const directional = name === 'chevron-start' || name === 'chevron-end';
+  const classes = [className, directional ? 'icon-directional' : undefined].filter(Boolean).join(' ');
   return (
     <svg
       width={size}
@@ -28,7 +31,7 @@ export default function IslandIcon({ name, size = 18, className, strokeWidth = 1
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={classes || undefined}
       aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: ICON_PATHS[name] }}
     />

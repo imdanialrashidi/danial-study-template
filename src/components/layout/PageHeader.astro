@@ -1,0 +1,38 @@
+---
+/**
+ * PageHeader — the shared top of a standalone page (listing, glossary, saved).
+ *
+ * The same three lines were copied into the listing layout, the glossary, and
+ * the saved page with slightly different spacing and type sizes. One component
+ * keeps the h1 scale, the measure, and the optional catalogue count identical
+ * everywhere a page is not an entry.
+ *
+ * Entry pages keep their own header in `CourseLayout` (kind, difficulty,
+ * reading time, bookmark), and `/search` keeps a bespoke one because its
+ * description carries the palette keyboard hint.
+ */
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Optional catalogue count, already formatted, e.g. «۷ مدخل». */
+  count?: string;
+  class?: string;
+}
+
+const { title, description, count, class: className = '' } = Astro.props;
+---
+
+<header class:list={['mb-10 max-w-2xl', className]}>
+  <h1 class="text-3xl">{title}</h1>
+  {description && <p class="mt-3 text-body leading-relaxed text-ink-muted">{description}</p>}
+  {
+    count && (
+      <p class="mt-4 inline-flex items-center gap-2 rounded-pill bg-surface-sunken px-3 py-1.5 text-xs text-ink-muted">
+        <Icon name="layers" size={14} />
+        {count}
+      </p>
+    )
+  }
+</header>

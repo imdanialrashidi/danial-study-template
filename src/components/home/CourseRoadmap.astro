@@ -11,7 +11,7 @@
  * start-edge bar per section (the same language as the contents index).
  */
 import Icon from '../ui/Icon.astro';
-import { toPersianDigits, toPersianNumeral, formatMinutes } from '../../lib/utils';
+import { toPersianDigits, formatMinutes } from '../../lib/utils';
 import { withBase } from '../../lib/url';
 import type { SectionGroup } from '../../lib/content';
 
@@ -66,9 +66,6 @@ const PREVIEW_COUNT = 4;
           <div class="min-w-0 flex-1 pb-1">
             <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <h3 class="font-display text-lg font-bold text-ink">{section.title}</h3>
-              <span class="text-2xs font-bold tracking-wide text-ink-faint">
-                بخش {toPersianNumeral(sIndex + 1)}
-              </span>
               {isFirst && (
                 <span class="rounded-pill bg-primary-wash px-2.5 py-0.5 text-2xs font-bold text-primary-deep">
                   از اینجا شروع کنید

@@ -26,10 +26,20 @@ export function gradeChoice(question: QuizQuestion, answer: string[]): boolean {
   return a.every((value, index) => value === b[index]);
 }
 
-/** Numeric grading with Persian-digit support and an absolute tolerance. */
+/**
+ * Numeric grading with Persian-digit support and an absolute tolerance.
+ *
+ * Persian keyboards emit `٫` (U+066B) as the decimal separator and `٬`
+ * (U+066C) for thousands. Neither is an ASCII character, so before this
+ * normalisation `۳٫۵` parsed as `NaN` and a correct answer was marked wrong.
+ * Bidi marks are stripped too: a copied Persian number often carries U+200F.
+ */
 export function gradeNumeric(question: QuizQuestion, raw: string): boolean {
   if (question.numericAnswer === undefined) return false;
-  const cleaned = toLatinDigits(raw.trim()).replace(/,/g, '.');
+  const cleaned = toLatinDigits(raw.trim())
+    .replace(/[\u200e\u200f\u061c\u202a-\u202e]/g, '') // bidi controls
+    .replace(/[\u066c\u00a0\s]/g, '') // Arabic thousands separator and spaces
+    .replace(/[,\u066b]/g, '.'); // decimal comma / Arabic decimal separator
   if (!cleaned) return false;
   const value = Number(cleaned);
   if (!Number.isFinite(value)) return false;

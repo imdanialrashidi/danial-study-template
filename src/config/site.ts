@@ -31,7 +31,8 @@ const GITHUB_USERNAME = 'imdanialrashidi';
 const INSTAGRAM_USERNAME = 'imdanialrashidi';
 const TELEGRAM_USERNAME = 'imdanialrashidi';
 
-const PERSONAL_WEBSITE = 'https://imdanialrashidi.github.io';
+const MAIN_WEBSITE = 'https://danialrashidi.ir';
+const ENGLISH_WEBSITE = 'https://imdanialrashidi.github.io';
 const STUDY_HUB = 'https://study.danialrashidi.ir';
 const TELEGRAM_CHANNEL_URL = 'https://t.me/danialrashidi_projects';
 
@@ -49,7 +50,7 @@ function channelUsername(url: string): string {
 export const creator: CreatorIdentity = {
   name: 'دانیال رشیدی',
   handle: `@${GITHUB_USERNAME}`,
-  website: PERSONAL_WEBSITE,
+  website: MAIN_WEBSITE,
   telegram: `https://t.me/${TELEGRAM_USERNAME}`,
   telegramUsername: TELEGRAM_USERNAME,
   telegramChannel: TELEGRAM_CHANNEL_URL,
@@ -89,6 +90,14 @@ export const socialLinks: SocialLink[] = [
     kind: 'website',
     detail: shortHost(creator.website),
   },
+  {
+    // The Persian home carries the projects and the study hub; the English
+    // site stays linked because it is a different surface, not a mirror.
+    label: 'وب انگلیسی',
+    href: ENGLISH_WEBSITE,
+    kind: 'website',
+    detail: shortHost(ENGLISH_WEBSITE),
+  },
 ];
 
 /** Creator links kept for backward compatibility (footer / mobile sheet). */
@@ -97,6 +106,7 @@ export const creatorLinks = [
   { label: 'اینستاگرام', href: creator.instagram, kind: 'instagram' as const },
   { label: 'تلگرام', href: creator.telegram, kind: 'telegram' as const },
   { label: 'وب‌سایت', href: creator.website, kind: 'website' as const },
+  { label: 'وب انگلیسی', href: ENGLISH_WEBSITE, kind: 'website' as const },
 ];
 
 /**
@@ -134,8 +144,12 @@ export const telegramPopup = {
 /**
  * Public base URL. Overridden by the SITE_URL environment variable at build
  * time so CI can set the real origin without editing code.
+ *
+ * The fallback stays the historical GitHub Pages origin on purpose: it is the
+ * deployment default for this template, not the creator's main site (which
+ * moved to `danialrashidi.ir`). CI always supplies `SITE_URL`.
  */
-export const siteUrl: string = process.env.SITE_URL ?? PERSONAL_WEBSITE;
+export const siteUrl: string = process.env.SITE_URL ?? ENGLISH_WEBSITE;
 
 /**
  * Deployment base path. Empty for a root deployment (Cloudflare Pages with a

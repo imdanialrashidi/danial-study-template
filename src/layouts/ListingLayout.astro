@@ -8,6 +8,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EntryCard from '../components/content/EntryCard.astro';
 import Icon from '../components/ui/Icon.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import type { CourseEntry } from '../lib/content';
 import { courseConfig } from '../config/course';
 import { absoluteUrl } from '../config/site';
@@ -50,16 +51,11 @@ const listJsonLd = {
 
 <BaseLayout title={title} description={description} noindex={noindex} jsonLd={[listJsonLd]}>
   <div class="mx-auto max-w-shell px-4 py-10 sm:px-6 lg:py-14">
-    <header class="mb-10 max-w-2xl">
-      <h1 class="text-3xl">{title}</h1>
-      <p class="mt-3 text-body leading-relaxed text-ink-muted">{description}</p>
-      {entries.length > 0 && (
-        <p class="mt-4 inline-flex items-center gap-2 rounded-pill bg-surface-sunken px-3 py-1.5 text-xs text-ink-muted">
-          <Icon name="layers" size={14} />
-          {toPersianDigits(entries.length)} مدخل
-        </p>
-      )}
-    </header>
+    <PageHeader
+      title={title}
+      description={description}
+      count={entries.length > 0 ? `${toPersianDigits(entries.length)} مدخل` : undefined}
+    />
 
     {
       entries.length === 0 ? (

@@ -38,7 +38,8 @@ educational website template; see `README-COURSE.md` for usage.
 3. Look up a formula or term by search and jump straight to it.
 4. Attempt a practice quiz, get graded feedback with explanations, and retry.
 5. Mark a page finished or bookmark it, and see course progress persist across
-   reloads on the same device.
+   reloads on the same device; the homepage names the next unread entry and
+   links to it, so a returning learner resumes in one tap.
 
 ## Non-goals
 
@@ -54,7 +55,8 @@ educational website template; see `README-COURSE.md` for usage.
       MDX + React Islands.
 - [x] The core UI is independent of any university, professor, or institution.
 - [x] Creator identity is consistently represented as Danial Rashidi with
-      `imdanialrashidi.github.io` and `t.me/imdanialrashidi`.
+      `danialrashidi.ir` (Persian home), `imdanialrashidi.github.io` (English
+      site), and `t.me/imdanialrashidi`.
 - [x] A new course can be created by changing configuration and content.
 - [x] Content is schema-validated and MDX composes reusable components.
 - [x] The site is static-first and deployable to GitHub Pages / Cloudflare Pages.
@@ -105,5 +107,3 @@ through the math helper is HTML-escaped. `tests/unit/math.test.ts` pins this.
 
 - Whether per-course visual motifs (beyond the accent override) are worth the
   maintenance cost. Deferred until a real course asks for one.
-- Whether to surface a "bookmarked" listing page; the store already records
-  bookmarks but no page reads them yet.

@@ -7,6 +7,10 @@ effort. Extended 2026-10-14 (commit `e7278d8`) with plans 013–024. Extended
 live code; `npm audit` run read-only; key browser defects reproduced with
 headless Chromium).
 
+**Workflow note 2026-11-01.** Historical plans may mention `.omp/`, `/skill:*`,
+or `scripts/omp-pr.mjs`. Those artifacts were retired in the DSH Workflow
+migration; treat plan references as historical context, not current commands.
+
 **Status reconciled 2026-10-21.** Plans 001–012 were executed in isolated
 copies but were **not landed**; only 013–024 are on `ai-changes`. The table
 below now reflects the live tree, not the isolated copies.

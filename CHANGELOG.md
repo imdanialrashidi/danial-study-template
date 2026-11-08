@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased — Creator websites: Persian home + English site
+
+- `danialrashidi.ir` is now the creator's main website (`creator.website`), so the footer, homepage creator block, mobile sheet, about page, and JSON-LD author URL point at the Persian home.
+- `imdanialrashidi.github.io` stays linked as «وب انگلیسی»; the two sites are presented as separate surfaces, not duplicates.
+- The mobile sheet now maps the shared `creatorLinks` list instead of four hand-written anchors, so adding a site or handle to `src/config/site.ts` updates it automatically.
+- The build-output identity check pins both personal-site URLs on every page.
+
+## Unreleased — Reading continuity, a11y, and page-shell cleanup
+
+- Homepage progress becomes a resume panel: it names the next unread entry and links straight to it ("ادامهٔ یادگیری"), keeps `role="progressbar"` values, and still renders an honest zero state without JavaScript.
+- Search page idle state replaces the decorative "you can search for…" card with four real course-order links; the header search icon now lands with the field focused (`?focus=search`, consumed and stripped by the header script).
+- Fix meta-text contrast: `ink-faint` was 3.28:1 on `surface-sunken` in light and 4.17:1 in dark. `ink-faint`/`ink-muted` are re-measured and pinned by `tests/unit/contrast.test.ts` (22 assertions across both themes).
+- Directional chevrons mirror under `[dir='rtl']`, so breadcrumbs, prev/next, and the new resume button point forward instead of backwards.
+- Header drops the `backdrop-blur`/translucency: the owner brief rejects glassmorphism, and the solid canvas removes a per-scroll composite.
+- Quiz numeric grading accepts the Persian decimal separator `٫` and strips Arabic thousands separators and bidi marks; an empty quiz now renders an honest "no questions yet" plate instead of a permanently disabled submit.
+- Sample practice copy corrected: `points: 5` and «پنج پرسش» match the five questions.
+- Extract `PageHeader.astro` for listing/glossary/saved pages so page tops share one h1 scale, measure, and catalogue-count treatment.
+- Roadmap drops the duplicate "بخش ۰۱" label; the timeline marker already carries the section number.
+
+## Unreleased — DSH Workflow migration
+
+- Replace the omp project workflow with [DSH Workflow](https://github.com/imdanialrashidi/dsh-workflow): six project skills under `.dsh/skills/`, a rewritten `AGENTS.md` entry point, and `docs/WORKFLOW.md`.
+- Retire `.omp/` commands, config, and skills, plus `scripts/omp-pr.mjs`; delivery is now opt-in and manual under `docs/GIT_POLICY.md`.
+- Update `docs/QUALITY.md`, `SECURITY.md`, `CONTRIBUTING.md`, `README.md`, the PR template, ESLint ignores, and exec-plan guidance for DSH tool names and evidence categories.
+- `scripts/verify.sh` now validates `.dsh/skills` frontmatter and rejects stale omp workflow artifacts.
+- The old workflow is archived locally under `.artifacts/omp-retired-*` (gitignored) and remains in Git history.
+
 ## Unreleased — Remove todo package
 
 - Remove `@juicesharp/rpiv-todo@2.12.0` from `.pi/settings.json` and its integrity record. Two npm packages remain (`pi-sub-agent`, `pi-web-search`).

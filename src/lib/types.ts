@@ -16,7 +16,7 @@ export interface CreatorIdentity {
   name: string;
   /** Canonical handle with leading @, e.g. `@imdanialrashidi`. */
   handle: string;
-  /** Personal website, e.g. `https://imdanialrashidi.github.io`. */
+  /** Main personal website, e.g. `https://danialrashidi.ir`. */
   website: string;
   /** Telegram channel/group URL. */
   telegram: string;

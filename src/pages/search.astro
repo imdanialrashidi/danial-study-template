@@ -7,6 +7,13 @@ import { isEnabled } from '../lib/features';
 
 const searchIndex = buildSearchIndex(await getAllEntries());
 const paletteOn = isEnabled('commandPalette');
+
+// Idle-state entry points: the first four entries in course order. Deliberately
+// not "popular searches" — there is no telemetry, so a popularity label would
+// be invented evidence. Course order is real and useful.
+const suggestions = searchIndex
+  .slice(0, 4)
+  .map(({ title, href, type }) => ({ title, href, type }));
 ---
 
 <BaseLayout
@@ -16,7 +23,7 @@ const paletteOn = isEnabled('commandPalette');
   searchIndex={searchIndex}
 >
   <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-16">
-    <header class="mb-8">
+    <header class="mb-10">
       <h1 class="text-3xl">جست‌وجو</h1>
       <p class="mt-3 text-body leading-relaxed text-ink-muted">
         نام یک مفهوم، فرمول یا عنوان درس را بنویسید. جست‌وجو روی همهٔ
@@ -27,6 +34,6 @@ const paletteOn = isEnabled('commandPalette');
       </p>
     </header>
 
-    <SearchIsland client:load />
+    <SearchIsland client:load suggestions={suggestions} />
   </div>
 </BaseLayout>

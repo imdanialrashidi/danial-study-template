@@ -5,7 +5,7 @@
 
 ## Acceptance evidence
 
-| Criterion | PASS / FAIL / UNPROVEN / BLOCKED | Exact evidence |
+| Criterion | PASS / FAIL / UNPROVEN / BLOCKED / UNEXECUTED | Exact evidence |
 |---|---|---|
 |  |  |  |
 
@@ -34,6 +34,6 @@ Delete this section when no rendered interface changed.
 ## Scope hygiene
 
 - [ ] No unrelated change, secret, private artifact, debug bypass, or generated output is included.
-- [ ] New/updated dependencies were source-reviewed, exactly pinned, integrity-recorded, and tested.
-- [ ] Documentation, eval cases, and changelog are current where applicable.
-- [ ] Delivery targets the existing `ai-changes` branch and this PR; no main write, auto-merge, release, deployment, or production mutation is implied.
+- [ ] New/updated dependencies were source-reviewed, pinned, and tested.
+- [ ] Documentation, workflow checks, and changelog are current where applicable.
+- [ ] Delivery targets a dedicated branch and this PR; no main write, auto-merge, release, deployment, or production mutation is implied.
